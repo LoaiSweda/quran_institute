@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class UserClass extends Model
+{
+    protected $table = 'users_classes';
+    public $incrementing = false;
+    protected $fillable = ['user_id','class_id'];
+}
+
