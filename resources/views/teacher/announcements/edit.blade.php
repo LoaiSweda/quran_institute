@@ -15,7 +15,7 @@
     </div>
 
     <div class="card-body">
-      <form method="POST" action="{{ route('teacher.announcements.update', $ad) }}">
+      <form method="POST" action="{{ route('teacher.announcements.update', $ad) }}" enctype="multipart/form-data">
         @csrf @method('PUT')
 
         <div class="row g-3">
@@ -104,6 +104,19 @@
             </div>
             @error('watches_roles')<div class="text-danger small">{{ $message }}</div>@enderror
           </div>
+        </div>
+
+         <div class="mb-3">
+            <label for="image" class="form-label">تغيير صورة الإعلان</label>
+            @if($ad->image)
+            <div class="mb-2">
+                <img src="{{ asset('storage/'.$ad->image) }}" alt="صورة حالية" class="img-thumbnail" style="max-width:150px;">
+            </div>
+            @endif
+            <input type="file" 
+                class="form-control @error('image') is-invalid @enderror"
+                id="image" name="image" accept="image/*">
+            @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
 
         <div class="text-center mt-4">

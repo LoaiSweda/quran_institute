@@ -41,7 +41,13 @@ class AnnouncementController extends Controller
             'status'      => 'required|in:active,inactive',
             'watches_roles'  => 'required|array',
             'watches_roles.*'=> 'in:student,guardian,teacher', 
+            'image'         => 'nullable|image|max:2048',
         ]);
+
+         // رفع الصورة
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('ads', 'public');
+        }
 
         $data['user_id'] = Auth::id();
         $ad = Ad::create($data);
@@ -85,7 +91,18 @@ class AnnouncementController extends Controller
             'status'         => 'required|in:active,inactive',
             'watches_roles'  => 'required|array',
             'watches_roles.*'=> 'in:student,guardian,teacher',
+            'image' => 'nullable|image|max:2048',
         ]);
+
+        // استبدال الصورة
+        if ($request->hasFile('image')) {
+            // حذف القديمة إن وجدت
+            if ($ad->image) {
+                Storage::disk('public')->delete($ad->image);
+            }
+            $data['image'] = $request->file('image')->store('ads', 'public');
+        }
+
 
         $ad->update($data);
 

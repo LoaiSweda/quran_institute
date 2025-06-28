@@ -12,7 +12,7 @@
 {{-- form مخفي افتراضياً --}}
 <div id="inlineForm" class="announcement-form">
     <h3>إضافة إعلان جديد</h3>
-    <form method="POST" action="{{ route('teacher.announcements.store') }}">
+    <form method="POST" action="{{ route('teacher.announcements.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="form-group">
@@ -73,6 +73,14 @@
             </div>
         </div>
 
+         <div class="form-group mt-3">
+            <label for="image" class="form-label">صورة الإعلان</label>
+            <input type="file" 
+                class="form-control @error('image') is-invalid @enderror"
+                id="image" name="image" accept="image/*">
+            @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror
+        </div>
+
         <button type="submit" class="btn-submit">حفظ الإعلان</button>
     </form>
 </div>
@@ -95,6 +103,7 @@
                 <th style="padding: 12px; border: 1px solid #bdc3c7;">رابط</th>
                 <th style="padding: 12px; border: 1px solid #bdc3c7;">تاريخ الانتهاء</th>
                 <th style="padding: 12px; border: 1px solid #bdc3c7;">الحالة</th>
+                <th>صورة</th>
                 <th style="width:120px; text-align:center;">إجراءات</th> {{-- جديد --}}
             </tr>
         </thead>
@@ -123,6 +132,15 @@
                             <span style="color:#27ae60;">نشط</span>
                         @else
                             <span style="color:#c0392b;">غير نشط</span>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        @if($ad->image)
+                            <img src="{{ asset('storage/'.$ad->image) }}"
+                                alt="صورة الإعلان" class="img-thumbnail"
+                                style="max-width:60px;">
+                        @else
+                            —
                         @endif
                     </td>
                     <td>

@@ -23,6 +23,13 @@
       </div>
     </div>
 
+    @if($ad->image)
+        <div class="text-center mb-4">
+            <img src="{{ asset('storage/'.$ad->image) }}"
+                alt="صورة الإعلان" class="img-fluid rounded">
+        </div>
+    @endif
+
     <div class="card-body">
       <div class="row gy-3">
         <div class="col-lg-6">
