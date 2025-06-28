@@ -1,0 +1,52 @@
+    {{-- resources/views/partials/sidebar.blade.php --}}
+    @auth
+        @php
+            // نستخدم ?-> للتفادي لو العلاقة لم تُحمَّل لسببٍ ما
+            $role = auth()->user()->role?->name;
+        @endphp
+
+        <div class="sidebar">
+            <ul>
+                @switch($role)
+                    @case('super admin')
+                        <li><a href="{{ url('/super-admin/dashboard') }}">الرئيسية</a></li>
+                        <li><a href="{{ url('/super-admin/dashboard') }}">لوحة المالك</a></li>
+                        <li><a href="{{ url('/super-admin/users') }}">إدارة المستخدمين</a></li>
+                        <li><a href="{{ url('/super-admin/settings') }}">إعدادات النظام</a></li>
+                        @break
+
+                    @case('admin')
+                        <li><a href="{{ url('/admin/dashboard') }}">الرئيسية</a></li>
+                        <li><a href="{{ url('/admin/dashboard') }}">لوحة المشرف</a></li>
+                        <li><a href="{{ url('/admin/reports') }}">التقارير</a></li>
+                        @break
+
+                    @case('institute manager')
+                        <li><a href="{{ url('/manager/dashboard') }}">الرئيسية</a></li>
+                        <li><a href="{{ url('/manager/dashboard') }}">لوحة مدير المعهد</a></li>
+                        <li><a href="{{ url('/manager/classes') }}">الحلقات</a></li>
+                        <li><a href="{{ url('/manager/teachers') }}">المعلمين</a></li>
+                        @break
+
+                    @case('teacher')
+                        <li>
+                        <a href="{{ url('teacher/dashboard') }}">
+                             <i class="icon-bullhorn">الرئيسية</i>
+                        </a>
+                        </li>
+                        <li class="{{ request()->is('teacher/announcements') ? 'active' : '' }}">
+                            <a href="{{ route('teacher.announcements.index') }}">
+                                <i class="icon-bullhorn">إعلاناتي</i>
+                            </a>
+                        </li>
+                        <li><a href="{{ url('/teacher/dashboard') }}">لوحة المعلم</a></li>
+                        <li><a href="{{ url('/teacher/classes') }}">حلقاتي</a></li>
+                        <li><a href="{{ url('/teacher/assignments') }}">الواجبات</a></li>
+                        @break
+
+                    @default
+                        {{-- يمكن إضافة روابط افتراضية هنا --}}
+                @endswitch
+            </ul>
+        </div>
+    @endauth
