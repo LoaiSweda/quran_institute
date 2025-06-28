@@ -75,3 +75,20 @@ Route::middleware(['auth','role:teacher'])
         Route::post('announcements', [AnnouncementController::class,'store'])
             ->name('announcements.store');
 });
+
+
+
+use App\Http\Controllers\SuperAdmin\InstituteController;
+
+Route::middleware(['auth','role:super admin'])
+    ->prefix('super-admin/institutes')
+    ->name('super-admin.institutes.')
+    ->group(function() {
+        Route::get('/', [InstituteController::class, 'index'])->name('index');
+        Route::get('create', [InstituteController::class, 'create'])->name('create');
+        Route::post('/', [InstituteController::class, 'store'])->name('store');
+        Route::get('{institute}', [InstituteController::class, 'show'])->name('show');
+        Route::get('{institute}/edit', [InstituteController::class, 'edit'])->name('edit');
+        Route::put('{institute}', [InstituteController::class, 'update'])->name('update');
+        Route::delete('{institute}', [InstituteController::class, 'destroy'])->name('destroy');
+    });

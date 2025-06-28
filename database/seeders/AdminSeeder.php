@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Models\Admin;
 use App\Models\Teacher;
+use Illuminate\Support\Str;
 
 class AdminSeeder extends Seeder
 {
@@ -23,8 +24,9 @@ class AdminSeeder extends Seeder
 
         foreach ($roles as $role) {
             // إنشاء مستخدم لكل دور بكلمة مرور افتراضية
+            $emailSlug = Str::slug($role->name, '_');   // يحول "super admin" إلى "super_admin"
             $user = User::create([
-                'email'    => $role->name . '@quran-institute.local',
+                'email'    => "{$emailSlug}@quran-institute.local",
                 'password' => Hash::make('123123123'),
                 'role_id'  => $role->id,
             ]);

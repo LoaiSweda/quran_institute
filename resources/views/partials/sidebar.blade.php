@@ -13,6 +13,7 @@
                         <li><a href="{{ url('/super-admin/dashboard') }}">لوحة المالك</a></li>
                         <li><a href="{{ url('/super-admin/users') }}">إدارة المستخدمين</a></li>
                         <li><a href="{{ url('/super-admin/settings') }}">إعدادات النظام</a></li>
+                        <li><a href="{{ url('/super-admin/institutes') }}">إعدادات المعاهد</a></li>
                         @break
 
                     @case('admin')
