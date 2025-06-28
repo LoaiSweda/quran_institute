@@ -14,9 +14,13 @@ Route::post('logout', [AuthController::class, 'logout'])
 Route::middleware(['auth:sanctum','role:student'])
     ->prefix('student')
     ->group(function() {
-        Route::get('profile', [StudentController::class, 'profile']);
-        Route::get('classes', [StudentController::class, 'classes']);
+        Route::get('announcements', [StudentController::class, 'announcements']);
+
+        Route::get('announcements/{ad}', [StudentController::class, 'announcementDetail']);
+
     });
+
+/*
 
 // مسارات الأوصياء
 Route::middleware(['auth:sanctum','role:guardian'])
@@ -25,3 +29,5 @@ Route::middleware(['auth:sanctum','role:guardian'])
         Route::get('profile', [GuardianController::class, 'profile']);
         Route::get('children', [GuardianController::class, 'children']);
     });
+
+*/

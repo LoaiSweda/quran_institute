@@ -33,4 +33,14 @@ class Ad extends Model
         return $this->hasMany(UserAd::class, 'ads_id');
     }
 
+    public function publisher()
+    {
+        return $this->belongsToMany(
+            \App\Models\User::class,
+            'user_ads',
+            'ads_id',
+            'publish_id'
+        )->distinct();
+    }
+
 }
