@@ -92,96 +92,102 @@
 @endif
 
 
-<div class="table-responsive" style="overflow-x:auto;">
-    <table style="width:100%; border-collapse: collapse; font-family: sans-serif;">
-        <thead>
-            <tr style="background: #ecf0f1; text-align:right;">
-                <th style="padding: 12px; border: 1px solid #bdc3c7;">#</th>
-                <th style="padding: 12px; border: 1px solid #bdc3c7;">العنوان</th>
-                <th style="padding: 12px; border: 1px solid #bdc3c7;">النوع</th>
-                <th style="padding: 12px; border: 1px solid #bdc3c7;">الوصف</th>
-                <th style="padding: 12px; border: 1px solid #bdc3c7;">رابط</th>
-                <th style="padding: 12px; border: 1px solid #bdc3c7;">تاريخ الانتهاء</th>
-                <th style="padding: 12px; border: 1px solid #bdc3c7;">الحالة</th>
-                <th>صورة</th>
-                <th style="width:120px; text-align:center;">إجراءات</th> {{-- جديد --}}
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($ads as $ad)
-                @php $status = $ad->computed_status; @endphp
-                <tr style="border-bottom:1px solid #ecf0f1;">
-                    <td style="padding: 10px; border: 1px solid #ecf0f1; text-align:right;">{{ $loop->iteration }}</td>
-                    <td style="padding: 10px; border: 1px solid #ecf0f1;">{{ $ad->title }}</td>
-                    <td style="padding: 10px; border: 1px solid #ecf0f1;">{{ $ad->type?->name ?? '—' }}</td>
-                    <td style="padding: 10px; border: 1px solid #ecf0f1;">{{ \Illuminate\Support\Str::limit($ad->description, 50) }}</td>
-                    <td style="padding: 10px; border: 1px solid #ecf0f1;">
-                        @if($ad->link)
-                            <a href="{{ $ad->link }}" target="_blank" style="color:#2980b9;">رابط الإعلان</a>
-                        @else
-                            —
-                        @endif
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ecf0f1;">
-                        {{ \Carbon\Carbon::parse($ad->end_date)->translatedFormat('Y-m-d') }}
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ecf0f1;">
-                        @if($status === 'expired')
-                            <span style="color:#7f8c8d;">منتهي</span>
-                        @elseif($status === 'active')
-                            <span style="color:#27ae60;">نشط</span>
-                        @else
-                            <span style="color:#c0392b;">غير نشط</span>
-                        @endif
-                    </td>
-                    <td class="text-center">
-                        @if($ad->image)
-                            <img src="{{ asset('storage/'.$ad->image) }}"
-                                alt="صورة الإعلان" class="img-thumbnail"
-                                style="max-width:60px;">
-                        @else
-                            —
-                        @endif
-                    </td>
-                    <td>
-                        <!-- عرض -->
-                        <a href="{{ route('teacher.announcements.show', $ad) }}"
-                        class="btn btn-sm btn-outline-primary me-1" title="عرض">
-                        <i class="bi bi-eye"></i>
-                        </a>
-                        <!-- تعديل -->
-                        <a href="{{ route('teacher.announcements.edit', $ad) }}"
-                        class="btn btn-sm btn-outline-warning me-1" title="تعديل">
-                        <i class="bi bi-pencil-square"></i>
-                        </a>
-                        <!-- حذف -->
-                        <form action="{{ route('teacher.announcements.destroy', $ad) }}"
-                            method="POST" class="d-inline"
-                            onsubmit="return confirm('هل أنت متأكد من حذف هذا الإعلان؟');">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" style="padding: 12px; text-align: center; color:#7f8c8d;">
-                        لا توجد إعلانات منشورة بعد.
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+<div class="card shadow-sm mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 fw-bold text-primary">الإعلانات الموجهة</h6>
+        {{-- هنا يمكنك إضافة فلاتر أو زر “إضافة” إذا لزم --}}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light text-end">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">العنوان</th>
+                        <th scope="col">النوع</th>
+                        <th scope="col">الوصف</th>
+                        <th scope="col">رابط</th>
+                        <th scope="col">تاريخ الانتهاء</th>
+                        <th scope="col">الحالة</th>
+                        <th scope="col" class="text-center">صورة</th>
+                        <th scope="col" class="text-center">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($ads as $ad)
+                        @php $status = $ad->computed_status; @endphp
+                        <tr>
+                            <td class="text-end">{{ $loop->iteration }}</td>
+                            <td>{{ $ad->title }}</td>
+                            <td>{{ $ad->type?->name ?? '—' }}</td>
+                            <td>{{ \Illuminate\Support\Str::limit($ad->description, 50) }}</td>
+                            <td>
+                                @if($ad->link)
+                                    <a href="{{ $ad->link }}" target="_blank">رابط الإعلان</a>
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($ad->end_date)->translatedFormat('Y-m-d') }}</td>
+                            <td>
+                                @if($status === 'expired')
+                                    <span class="badge bg-secondary">منتهي</span>
+                                @elseif($status === 'active')
+                                    <span class="badge bg-success">نشط</span>
+                                @else
+                                    <span class="badge bg-danger">غير نشط</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if($ad->image)
+                                    <img src="{{ asset('storage/'.$ad->image) }}"
+                                         alt="صورة الإعلان"
+                                         class="img-thumbnail"
+                                         style="max-width:60px;">
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ route('teacher.announcements.show', $ad) }}"
+                                   class="btn btn-sm btn-outline-primary" title="عرض">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{{ route('teacher.announcements.edit', $ad) }}"
+                                   class="btn btn-sm btn-outline-warning" title="تعديل">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{{ route('teacher.announcements.destroy', $ad) }}"
+                                      method="POST"
+                                      class="d-inline"
+                                      onsubmit="return confirm('هل أنت متأكد من حذف هذا الإعلان؟');">
+                                    @csrf @method('DELETE')
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            title="حذف">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                لا توجد إعلانات منشورة بعد.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if(isset($ads) && $ads instanceof \Illuminate\Pagination\AbstractPaginator && $ads->hasPages())
+        <div class="card-footer">
+            {{ $ads->withQueryString()->links('pagination::bootstrap-5') }}
+        </div>
+    @endif
 </div>
-
-{{-- Pagination --}}
-<div class="mt-3 px-3">
-    {{ $ads->links('pagination::bootstrap-5') }}
-</div>
-
-
 @endsection
 
 @push('styles')

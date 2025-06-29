@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\SessionSchedule;
+use App\Models\EducationClass;
 
 class SessionScheduleSeeder extends Seeder
 {
@@ -12,6 +13,27 @@ class SessionScheduleSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $teacherId = 2;
+
+        // اجلب جميع معرفات الصفوف
+        $classIds = EducationClass::pluck('id')->toArray();
+
+        if (empty($classIds)) {
+            $this->command->info('❌ لا توجد صفوف في جدول classes. يرجى تشغيل EducationClassSeeder أولاً.');
+            return;
+        }
+
+        // لكل يوم من السبت (0) إلى الخميس (5) أضف جلسة واحدة
+        foreach (range(0, 5) as $dayOfWeek) {
+            SessionSchedule::create([
+                'user_id'     => $teacherId,
+                'class_id'    => $classIds[array_rand($classIds)],
+                'day_of_week' => $dayOfWeek,
+                'start_time'  => '09:00:00',
+                'end_time'    => '10:00:00',
+            ]);
+        }
+
+        $this->command->info('✅ تم إنشاء بيانات SessionScheduleSeeder بنجاح.');
     }
 }

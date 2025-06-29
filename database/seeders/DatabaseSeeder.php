@@ -18,9 +18,13 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             TeacherSeeder::class,  
             GuardianSeeder::class,
-            StudentSeeder::class,
             AdsTypeSeeder::class, 
             AdSeeder::class, 
+            EducationClassSeeder::class,
+            StudentSeeder::class,
+            SessionScheduleSeeder::class,
+            UserClassSeeder::class,
+
         ]);
     }
 }

@@ -30,18 +30,41 @@
                         @break
 
                     @case('teacher')
-                        <li>
-                        <a href="{{ url('teacher/dashboard') }}">
-                             <i class="icon-bullhorn">الرئيسية</i>
-                        </a>
-                        </li>
-                        <li class="{{ request()->is('teacher/announcements') ? 'active' : '' }}">
-                            <a href="{{ route('teacher.announcements.index') }}">
-                                <i class="icon-bullhorn">إعلاناتي</i>
+                       <li class="{{ request()->is('teacher/dashboard') ? 'active' : '' }}">
+                            <a href="{{ url('teacher/dashboard') }}">
+                                <i class="bi bi-house-door-fill"></i>
+                                الرئيسية
                             </a>
                         </li>
+
+                        <li class="{{ request()->is('teacher/announcements*') ? 'active' : '' }}">
+                            <a href="{{ route('teacher.announcements.index') }}">
+                                <i class="bi bi-megaphone-fill"></i>
+                                إعلاناتي
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('teacher.schedule.index') }}" class="nav-link">
+                                <i class="bi bi-calendar-week"></i>
+                                الجدول الأسبوعي
+                            </a>
+                        </li>
+
+                         <li class="nav-item {{ request()->is('teacher/students') ? 'active' : '' }}">
+                            <a href="{{ route('teacher.students.index') }}" class="nav-link">
+                                <i class="bi bi-people-fill"></i>
+                                <span>جميع الطلاب</span>
+                            </a>
+                        </li>
+
+                        <li class="{{ request()->is('teacher/classes') ? 'active' : '' }}">
+                            <a href="{{ route('teacher.classes.index') }}">
+                                <i class="bi bi-journal-bookmark-fill"></i>
+                                حلقاتي
+                            </a>
+                        </li>
+
                         <li><a href="{{ url('/teacher/dashboard') }}">لوحة المعلم</a></li>
-                        <li><a href="{{ url('/teacher/classes') }}">حلقاتي</a></li>
                         <li><a href="{{ url('/teacher/assignments') }}">الواجبات</a></li>
                         @break
 

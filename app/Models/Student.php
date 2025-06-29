@@ -23,5 +23,10 @@ class Student extends Model
     {
         return $this->hasMany(StudentProgress::class);
     }
+
+    public function exams()
+    {
+        return $this->hasMany(\App\Models\Exam::class, 'student_id');
+    }
 }
 

@@ -35,4 +35,21 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(EducationClass::class, 'users_classes', 'user_id', 'class_id');
     }
+
+    public function sessionSchedules()
+    {
+        return $this->hasMany(\App\Models\SessionSchedule::class, 'user_id');
+    }
+
+    public function classes()
+    {
+        return $this->belongsToMany(
+            \App\Models\EducationClass::class,
+            'users_classes',
+            'user_id',
+            'class_id'
+        );
+    }
+
+
 }
