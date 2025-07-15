@@ -23,11 +23,31 @@
                         @break
 
                     @case('institute manager')
-                        <li><a href="{{ url('/manager/dashboard') }}">الرئيسية</a></li>
-                        <li><a href="{{ url('/manager/dashboard') }}">لوحة مدير المعهد</a></li>
-                        <li><a href="{{ url('/manager/classes') }}">الحلقات</a></li>
-                        <li><a href="{{ url('/manager/teachers') }}">المعلمين</a></li>
-                        @break
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/dashboard')) active @endif"
+                           href="{{ route('manager.dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> الرئيسية
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/classes*')) active @endif"
+                           href="{{ url('/manager/classes') }}">
+                            <i class="bi bi-collection"></i> الحلقات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/teachers*')) active @endif"
+                           href="{{ url('/manager/teachers') }}">
+                            <i class="bi bi-people"></i> المدرّسون
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/subjects*')) active @endif"
+                           href="{{ url('/manager/subjects') }}">
+                            <i class="bi bi-journal-bookmark"></i> المواد
+                        </a>
+                    </li>
+                    @break
 
                     @case('teacher')
                        <li class="{{ request()->is('teacher/dashboard') ? 'active' : '' }}">

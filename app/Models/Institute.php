@@ -31,11 +31,37 @@ class Institute extends Model
     }
 
     // علاقة بالمشرفين الإضافيين
+
     public function admins()
     {
-        return $this->belongsToMany(User::class, 'institute_user')
-            ->withPivot('role_institute');
+        return $this->belongsToMany(
+            User::class,
+            'institute_user',       // اسم الجدول
+            'institute_id',
+            'user_id'
+        )
+            ->withPivot('role_institute')
+            ->withTimestamps();
     }
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'institute_user')
+            ->withPivot('role_institute')
+            ->withTimestamps();
+    }
+    public function teachers()
+    {
+        return $this->belongsToMany(
+            Teacher::class,        // موديل المدرّس
+            'institute_user',      // جدول المحور
+            'institute_id',        // المفتاح على هذا الموديل
+            'user_id'              // المفتاح على موديل Teacher (user_id)
+        )
+            ->withPivot('role_institute')
+            ->wherePivot('role_institute','teacher')
+            ->withTimestamps();
+    }
+
 }
 
 

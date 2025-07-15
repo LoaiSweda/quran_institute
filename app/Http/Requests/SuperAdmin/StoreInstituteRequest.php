@@ -15,6 +15,7 @@ class StoreInstituteRequest extends FormRequest
             'address' => 'nullable|string|max:500',
             'image'   => 'nullable|image|max:2048',
             'user_id' => 'required|exists:users,id',
+
         ];
     }
 }

@@ -50,6 +50,23 @@ class User extends Authenticatable
             'class_id'
         );
     }
+    public function institutes()
+    {
+        // إذا كان دور المدير مرتبط بمعهد واحد فقط، يمكنك هنا استخدام ->first() لاحقًا
+        return $this->belongsToMany(
+            Institute::class,
+            'institute_user',
+            'user_id',
+            'institute_id'
+        )->withPivot('role_institute')->withTimestamps();
+    }
+
+    // in App\Models\User.php
+    public function institute()
+    {
+        return $this->hasOne(Institute::class,'user_id');
+    }
+
 
 
 }

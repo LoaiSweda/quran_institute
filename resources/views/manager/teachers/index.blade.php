@@ -1,18 +1,18 @@
 @extends('layouts.app')
-@section('title','إدارة المعاهد')
+@section('title','إدارة المدرّسين')
 
 @section('content')
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0 text-gray-800">إدارة المعاهد</h1>
-            <a href="{{ route('super-admin.institutes.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> إضافة معهد جديد
+            <h1 class="h3 mb-0 text-gray-800">إدارة المدرّسين</h1>
+            <a href="{{ route('manager.teachers.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> إضافة مدرس جديد
             </a>
         </div>
 
         <div class="card shadow-sm mb-4">
             <div class="card-header py-3">
-                <form method="GET" action="{{ route('super-admin.institutes.index') }}" class="row g-2 align-items-center">
+                <form method="GET" action="{{ route('manager.teachers.index') }}" class="row g-2 align-items-center">
                     <div class="col-md-4">
                         <input
                             type="text" name="search"
@@ -24,8 +24,9 @@
                     <div class="col-md-3">
                         <select name="sort" class="form-select">
                             <option value="">فرز حسب</option>
-                            <option value="name"       @selected(request('sort')=='name')>الاسم</option>
-                            <option value="created_at" @selected(request('sort')=='created_at')>تاريخ الإنشاء</option>
+                            <option value="first_name" @selected(request('sort')=='first_name')>الاسم الأول</option>
+                            <option value="last_name"  @selected(request('sort')=='last_name')>اسم العائلة</option>
+                            <option value="birthdate"  @selected(request('sort')=='birthdate')>تاريخ الميلاد</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -38,7 +39,7 @@
                         <button type="submit" class="btn btn-outline-primary">
                             <i class="bi bi-funnel-fill"></i> تطبيق
                         </button>
-                        <a href="{{ route('super-admin.institutes.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('manager.teachers.index') }}" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-counterclockwise"></i> إعادة ضبط
                         </a>
                     </div>
@@ -46,59 +47,59 @@
             </div>
 
             <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover mb-0 text-end">
+                <div class="table-responsive text-end">
+                    <table class="table table-striped table-hover mb-0">
                         <thead class="table-light">
                         <tr>
                             <th>#</th>
+                            <th>الصورة</th>
                             <th>الاسم</th>
-                            <th>المدير</th>
-                            <th>الحالة</th>
+                            <th>الهاتف</th>
+                            <th>العنوان</th>
+                            <th>تاريخ الميلاد</th>
                             <th class="text-center">إجراءات</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @forelse($institutes as $inst)
+                        @forelse($teachers as $teacher)
                             <tr>
-                                <td>{{ $loop->iteration + ($institutes->perPage() * ($institutes->currentPage()-1)) }}</td>
+                                <td>{{ $loop->iteration + ($teachers->perPage() * ($teachers->currentPage()-1)) }}</td>
                                 <td>
-                                    <a href="{{ route('super-admin.institutes.show', $inst) }}">
-                                        {{ $inst->name }}
-                                    </a>
-                                </td>
-                                <td>{{ $inst->manager->email }}</td>
-                                <td>
-                                    @if($inst->deleted_at)
-                                        <span class="badge bg-secondary">معطل</span>
+                                    @if($teacher->image)
+                                        <img src="{{ asset('storage/'.$teacher->image) }}"
+                                             alt="صورة المدرس"
+                                             width="40" height="40"
+                                             class="rounded-circle">
                                     @else
-                                        <span class="badge bg-success">نشط</span>
+                                        —
                                     @endif
                                 </td>
+                                <td>
+                                    <a href="{{ route('manager.teachers.show', $teacher) }}">
+                                        {{ $teacher->first_name }} {{ $teacher->last_name }}
+                                    </a>
+                                </td>
+                                <td>{{ $teacher->phone ?? '—' }}</td>
+                                <td>{{ $teacher->address ?? '—' }}</td>
+                                <td>{{ $teacher->birthdate?->format('Y-m-d') ?? '—' }}</td>
                                 <td class="text-center">
-                                    {{-- زر عرض التفاصيل --}}
-                                    <a href="{{ route('super-admin.institutes.show', $inst) }}"
-                                       class="btn btn-sm btn-outline-info"
-                                       title="عرض التفاصيل">
+                                    <a href="{{ route('manager.teachers.show', $teacher) }}"
+                                       class="btn btn-sm btn-outline-info" title="عرض التفاصيل">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
-
-                                    {{-- زر التعديل --}}
-                                    <a href="{{ route('super-admin.institutes.edit', $inst) }}"
-                                       class="btn btn-sm btn-outline-warning"
-                                       title="تعديل">
+                                    <a href="{{ route('manager.teachers.edit', $teacher) }}"
+                                       class="btn btn-sm btn-outline-warning" title="تعديل">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-
-                                    {{-- زر الحذف --}}
-                                    <form action="{{ route('super-admin.institutes.destroy', $inst) }}"
+                                    <form action="{{ route('manager.teachers.destroy', $teacher) }}"
                                           method="POST"
                                           class="d-inline"
-                                          onsubmit="return confirm('هل أنت متأكد من حذف هذا المعهد؟');">
+                                          onsubmit="return confirm('هل أنت متأكد من تعطيل هذا المدرس؟');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
                                                 class="btn btn-sm btn-outline-danger"
-                                                title="حذف">
+                                                title="تعطيل">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -106,8 +107,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-4 text-muted">
-                                    لا توجد معاهد لعرضها.
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    لا يوجد مدرسون لعرضهم.
                                 </td>
                             </tr>
                         @endforelse
@@ -116,9 +117,9 @@
                 </div>
             </div>
 
-            @if($institutes->hasPages())
+            @if($teachers->hasPages())
                 <div class="card-footer">
-                    {{ $institutes->withQueryString()->links('pagination::bootstrap-5') }}
+                    {{ $teachers->withQueryString()->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Manager\TeachersController;
 use App\Http\Controllers\Teacher\AnnouncementController;
 use App\Http\Controllers\Teacher\ScheduleController;
 use App\Http\Controllers\Teacher\StudentController;
@@ -43,10 +44,61 @@ Route::middleware(['auth','role:admin'])
      ->prefix('admin')
      ->group(fn() => Route::view('dashboard','dashboards.admin'));
 
-Route::middleware(['auth','role:institute manager'])
-     ->prefix('manager')
-     ->group(fn() => Route::view('dashboard','dashboards.manager'));
+// routes/web.php
 
+use App\Http\Controllers\Manager\SubjectsController;
+
+Route::middleware(['auth', 'role:institute manager'])
+    ->prefix('manager')
+    ->name('manager.')
+    ->group(function () {
+        // لوحة التحكم
+        Route::view('dashboard', 'dashboards.manager')->name('dashboard');
+
+
+        // إدارة المدرّسين
+        Route::prefix('teachers')->name('teachers.')->group(function() {
+
+            // ** صفحة إنشاء مستخدم جديد (كيان User) **
+            Route::get('new-user', [TeachersController::class,'createUser'])->name('newUser');
+            Route::post('new-user',[TeachersController::class,'storeUser' ])->name('storeUser');
+            // 4.4.2.4 عرض جميع المدرّسين
+            Route::get('/', [TeachersController::class, 'index'])->name('index');
+            // 4.4.2.1 إضافة مدرس
+            Route::get('create', [TeachersController::class, 'create'])->name('create');
+            Route::post('/',    [TeachersController::class, 'store'])->name('store');
+            // 4.4.2.5 عرض مدرس محدد
+            Route::get('{teacher}',       [TeachersController::class, 'show'])->name('show');
+            // 4.4.2.2 تعديل بيانات مدرس
+            Route::get('{teacher}/edit',  [TeachersController::class, 'edit'])->name('edit');
+            Route::put('{teacher}',       [TeachersController::class, 'update'])->name('update');
+            // 4.4.2.3 حذف/تعطيل مدرس
+            Route::delete('{teacher}',    [TeachersController::class, 'destroy'])->name('destroy');
+        });
+
+
+        // إدارة المواد
+        Route::prefix('subjects')->name('subjects.')->group(function() {
+            // قائمة المواد مع بحث وفرز
+            Route::get('/', [SubjectsController::class, 'index'])->name('index');
+            // نموذج إضافة مادة
+            Route::get('create', [SubjectsController::class, 'create'])->name('create');
+            // حفظ المادة الجديدة
+            Route::post('/', [SubjectsController::class, 'store'])->name('store');
+            // عرض تفاصيل مادة
+            Route::get('{subject}', [SubjectsController::class, 'show'])->name('show');
+            // نموذج تعديل مادة
+            Route::get('{subject}/edit', [SubjectsController::class, 'edit'])->name('edit');
+            // تحديث بيانات المادة
+            Route::put('{subject}', [SubjectsController::class, 'update'])->name('update');
+            // تعطيل/تفعيل المادة
+            Route::delete('{subject}', [SubjectsController::class, 'destroy'])->name('destroy');
+        });
+    });
+// routes/web.php
+Route::patch('manager/subjects/{subject}/toggle', [SubjectsController::class,'toggle'])
+    ->name('manager.subjects.toggle')
+    ->middleware(['auth','role:institute manager']);
 
 
 Route::middleware(['auth','role:teacher'])
@@ -121,17 +173,27 @@ Route::middleware(['auth','role:teacher'])
 
 
 
+// routes/web.php
+
 use App\Http\Controllers\SuperAdmin\InstituteController;
 
 Route::middleware(['auth','role:super admin'])
     ->prefix('super-admin/institutes')
     ->name('super-admin.institutes.')
     ->group(function() {
-        Route::get('/', [InstituteController::class, 'index'])->name('index');
-        Route::get('create', [InstituteController::class, 'create'])->name('create');
-        Route::post('/', [InstituteController::class, 'store'])->name('store');
-        Route::get('{institute}', [InstituteController::class, 'show'])->name('show');
-        Route::get('{institute}/edit', [InstituteController::class, 'edit'])->name('edit');
-        Route::put('{institute}', [InstituteController::class, 'update'])->name('update');
+        // عرض نموذج إنشاء مدير معهد منفصل
+        Route::get('manager/create',      [InstituteController::class, 'createManager'])
+            ->name('manager.create');
+        Route::post('manager/store',      [InstituteController::class, 'storeManager'])
+            ->name('manager.store');
+
+        // إدارة المعاهد
+        Route::get('/',            [InstituteController::class, 'index'])->name('index');
+        Route::get('create',       [InstituteController::class, 'create'])->name('create');
+        Route::post('/',           [InstituteController::class, 'store'])->name('store');
+        Route::get('{institute}',  [InstituteController::class, 'show'])->name('show');
+        Route::get('{institute}/edit',   [InstituteController::class, 'edit'])->name('edit');
+        Route::put('{institute}',  [InstituteController::class, 'update'])->name('update');
         Route::delete('{institute}', [InstituteController::class, 'destroy'])->name('destroy');
     });
+
