@@ -53,6 +53,12 @@
                             <i class="bi bi-person-lines-fill"></i> الطلاب
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/guardians*')) active @endif"
+                           href="{{ url('/manager/guardians') }}">
+                            <i class="bi bi-person-badge"></i> أولياء الأمور
+                        </a>
+                    </li>
                     @break
 
                     @case('teacher')

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Manager\GuardiansController;
 use App\Http\Controllers\Manager\StudentsController;
 use App\Http\Controllers\Manager\TeachersController;
 use App\Http\Controllers\Teacher\AnnouncementController;
@@ -55,6 +56,28 @@ Route::middleware(['auth', 'role:institute manager'])
     ->group(function () {
         // لوحة التحكم
         Route::view('dashboard', 'dashboards.manager')->name('dashboard');
+
+
+        // إدارة أولياء الأمور
+        Route::prefix('guardians')->name('guardians.')->group(function () {
+            // 4.4.6.3 عرض جميع أولياء الأمور
+            Route::get('/', [GuardiansController::class, 'index'])->name('index');
+
+            // 4.4.6.1 إنشاء ولي أمر (عرض النموذج + حفظ)
+            Route::get('create', [GuardiansController::class, 'create'])->name('create');
+            Route::post('/', [GuardiansController::class, 'store'])->name('store');
+
+            // 4.4.6.4 عرض ولي أمر محدد
+            Route::get('{guardian}', [GuardiansController::class, 'show'])->name('show');
+
+            // 4.4.6.1 تعديل ولي أمر (عرض النموذج + حفظ)
+            Route::get('{guardian}/edit', [GuardiansController::class, 'edit'])->name('edit');
+            Route::put('{guardian}', [GuardiansController::class, 'update'])->name('update');
+
+            // 4.4.6.2 حذف/تعطيل ولي أمر
+            Route::delete('{guardian}', [GuardiansController::class, 'destroy'])->name('destroy');
+        });
+
 
 
         // إدارة الطلاب
