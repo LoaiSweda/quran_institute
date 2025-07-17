@@ -47,6 +47,12 @@
                             <i class="bi bi-journal-bookmark"></i> المواد
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/students*')) active @endif"
+                           href="{{ url('/manager/students') }}">
+                            <i class="bi bi-person-lines-fill"></i> الطلاب
+                        </a>
+                    </li>
                     @break
 
                     @case('teacher')

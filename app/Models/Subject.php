@@ -30,4 +30,14 @@ class Subject extends Model
     {
         return $this->hasMany(EducationClass::class, 'subject_id');
     }
+    public function classes()
+    {
+        return $this->belongsToMany(
+            EducationClass::class,
+            'users_classes', // أو pivot table المناسب
+            'user_id',       // أو student_id إذا استخدمت pivot مستقلّ
+            'class_id'
+        )->withTimestamps();
+    }
+
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Manager\StudentsController;
 use App\Http\Controllers\Manager\TeachersController;
 use App\Http\Controllers\Teacher\AnnouncementController;
 use App\Http\Controllers\Teacher\ScheduleController;
@@ -54,6 +55,27 @@ Route::middleware(['auth', 'role:institute manager'])
     ->group(function () {
         // لوحة التحكم
         Route::view('dashboard', 'dashboards.manager')->name('dashboard');
+
+
+        // إدارة الطلاب
+        Route::prefix('students')->name('students.')->group(function () {
+            // 4.4.4.4 عرض جميع الطلاب مع فلترة
+            Route::get('/', [StudentsController::class, 'index'])->name('index');
+
+            // 4.4.4.1 إضافة طالب (عرض النموذج + حفظ)
+            Route::get('create', [StudentsController::class, 'create'])->name('create');
+            Route::post('/', [StudentsController::class, 'store'])->name('store');
+
+            // 4.4.4.5 عرض طالب محدد
+            Route::get('{student}', [StudentsController::class, 'show'])->name('show');
+
+            // 4.4.4.2 تعديل بيانات طالب (عرض النموذج + حفظ)
+            Route::get('{student}/edit', [StudentsController::class, 'edit'])->name('edit');
+            Route::put('{student}', [StudentsController::class, 'update'])->name('update');
+
+            // 4.4.4.3 حذف/تعطيل طالب
+            Route::delete('{student}', [StudentsController::class, 'destroy'])->name('destroy');
+        });
 
 
         // إدارة المدرّسين
