@@ -89,4 +89,110 @@
             </div>
         </div>
     </div>
+    {{-- جدول حلقات الطالب --}}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">الحلقات المشتركة للطالب</h5>
+        </div>
+        <div class="card-body p-0">
+            @if($student->classes->isEmpty())
+                <p class="text-center text-muted py-4">لم يشترك الطالب في أية حلقات.</p>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0 text-end">
+                        <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>اسم الحلقة</th>
+                            <th>المادة</th>
+                            <th>المدرِّس</th>
+                            <th class="text-center">إجراءات</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($student->classes as $idx => $class)
+                            <tr>
+                                <td>{{ $idx + 1 }}</td>
+                                <td>{{ $class->name }}</td>
+                                <td>{{ optional($class->subject)->name ?: '—' }}</td>
+                                <td>
+                                    {{ optional($class->teacher)->first_name }}
+                                    {{ optional($class->teacher)->last_name }}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ route('manager.classes.show', $class) }}"
+                                       class="btn btn-sm btn-outline-info" title="عرض الحلقة">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
+    {{-- جدول مواعيد الطالب الأسبوعي --}}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">جدول توقيت المواد للطالب</h5>
+        </div>
+        <div class="card-body p-0">
+            @php
+                // نجمع كل المواعيد من حلقات الطالب
+                $slots = $student->classes
+                    ->flatMap(function($cls) {
+                        return $cls->sessionSchedules->map(fn($s) => [
+                            'class' => $cls,
+                            'slot'  => $s,
+                        ]);
+                    })
+                    ->sortBy(fn($item) => [$item['slot']->day_of_week, $item['slot']->start_time]);
+            @endphp
+
+            @if($slots->isEmpty())
+                <p class="text-center text-muted py-4">لا يوجد جدول مواعيد.</p>
+            @else
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0 text-end">
+                        <thead class="table-light">
+                        <tr>
+                            <th>اليوم</th>
+                            <th>من</th>
+                            <th>إلى</th>
+                            <th>اسم الحلقة</th>
+                            <th>المادة</th>
+                            <th>المدرِّس</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach($slots as $item)
+                            @php
+                                $cls  = $item['class'];
+                                $sch  = $item['slot'];
+                                $day  = \Carbon\Carbon::parse($sch->start_time)->translatedFormat('l');
+                                $from = \Carbon\Carbon::parse($sch->start_time)->format('H:i');
+                                $to   = \Carbon\Carbon::parse($sch->end_time)->format('H:i');
+                            @endphp
+                            <tr>
+                                <td>{{ $day }}</td>
+                                <td>{{ $from }}</td>
+                                <td>{{ $to }}</td>
+                                <td>{{ $cls->name }}</td>
+                                <td>{{ optional($cls->subject)->name }}</td>
+                                <td>
+                                    {{ optional($cls->teacher)->first_name }}
+                                    {{ optional($cls->teacher)->last_name }}
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
+
+
 @endsection

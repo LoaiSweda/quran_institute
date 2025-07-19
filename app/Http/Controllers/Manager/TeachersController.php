@@ -147,8 +147,11 @@ class TeachersController extends Controller
     {
         $teacher = $this->institute()
             ->teachers()
-            ->with('classes')      // <— هنا نحمّل الحلقات
+            ->with('teachingClasses.sessionSchedules')
+            ->with('teachingClasses.subject')  // نحمل الموضوع أيضاً إن احتجنا
+
             ->findOrFail($id);
+
 
         return view('manager.teachers.show', compact('teacher'));
     }

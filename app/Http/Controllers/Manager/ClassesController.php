@@ -96,31 +96,45 @@ class ClassesController extends Controller
             'subject_id'     => 'required|exists:subjects,id',
             'user_id'        => 'required|exists:users,id',   // هذا هو الـ teacher
             'students_count' => 'required|integer|min:1',
+            // إضافة التحقق للجداول
+            'schedules'      => 'nullable|array',
+            'schedules.*.day_of_week' => 'required_with:schedules|in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
+            'schedules.*.start_time'  => 'required_with:schedules|date_format:H:i',
+            'schedules.*.end_time'    => 'required_with:schedules|date_format:H:i|after:schedules.*.start_time',
+
         ]);
+        DB::transaction(function() use ($data, $inst, $request, &$cls) {
 
-        // 1) إنشاء الحلقة
-        $cls = EducationClass::create($data);
+            // 1) إنشاء الحلقة
+            $cls = EducationClass::create($data);
 
-        // 2) تأكد أولًا أنّ المدرّس موجود كعضو في المعهد
-        DB::table('institute_user')->updateOrInsert(
-            [
-                'institute_id'      => $inst->id,
-                'user_id'           => $data['user_id'],
-            ],
-            [
-                'role_institute'    => 'teacher',
-            ]
-        );
+            // 2) تأكد أولًا أنّ المدرّس موجود كعضو في المعهد
+            DB::table('institute_user')->updateOrInsert(
+                [
+                    'institute_id' => $inst->id,
+                    'user_id' => $data['user_id'],
+                ],
+                [
+                    'role_institute' => 'teacher',
+                ]
+            );
 
-        // 3) اربط المدرّس بالحلقة في pivot users_classes
-        //    استخدم attach أو syncWithoutDetaching لتجنّب خطأ التكرار
-        $cls->users()->syncWithoutDetaching($data['user_id']);
+            // 3) اربط المدرّس بالحلقة في pivot users_classes
+            //    استخدم attach أو syncWithoutDetaching لتجنّب خطأ التكرار
+            $cls->users()->syncWithoutDetaching($data['user_id']);
 
-        // — بقية خطواتك (QR code مثلاً) …
+            // — بقية خطواتك (QR code مثلاً) …
+            // إنشاء جداول المواعيد إذا وجدت
+            if (!empty($data['schedules'])) {
+                foreach ($data['schedules'] as $sch) {
+                    $cls->sessionSchedules()->create($sch);
+                }
+            }
+        });
 
         return redirect()
             ->route('manager.classes.index')
-            ->with('success', 'تم إنشاء الحلقة وتعيين المدرّس بنجاح');
+            ->with('success', 'تم إنشاء الحلقة وتحديد جداول المواعيد بنجاح');
     }
 
 
@@ -169,8 +183,8 @@ class ClassesController extends Controller
     {
         $inst = $this->currentInstitute();
         abort_if($class->subject->institute_id !== $inst->id, 403);
+        $class->load(['teacher', 'subject', 'users', 'sessions', 'exams', 'progress', 'sessionSchedules']);
 
-        $class->load(['teacher', 'subject', 'users', 'sessions', 'exams', 'progress']);
 
         $studentsCount = $class->users()
             ->where('users.role_id', '<>', 4)
@@ -201,8 +215,12 @@ class ClassesController extends Controller
         $inst = $this->currentInstitute();
         abort_if($class->subject->institute_id !== $inst->id, 403);
 
-        // نفس جلب الـ subjects كما في create()
+        // جلب العلاقة sessionSchedules حتى لا تكون null
+        $class->load(['subject', 'teacher', 'sessionSchedules']);
+
+        // جلب المواد والمدرّسين كما قبل
         $subjects = Subject::where('institute_id', $inst->id)->get();
+
 
         // نفس جلب الـ teachers كما في create()
         $teachers = DB::table('institute_user')
@@ -234,11 +252,35 @@ class ClassesController extends Controller
             'students_count' => 'required|integer|min:1',
         ]);
 
-        $class->update($data);
+        DB::transaction(function() use ($class, $data){
+            $class->update($data);
 
-        return back()->with('success', 'تم حفظ التعديلات');
+            // نجمع الـ IDs الموجودة لتحاشي حذفها
+            $keep = [];
+
+            if (!empty($data['schedules'])) {
+                foreach ($data['schedules'] as $sch) {
+                    if (!empty($sch['id'])) {
+                        // تحديث الجدول الحالي
+                        $schedule = $class->sessionSchedules()->findOrFail($sch['id']);
+                        $schedule->update($sch);
+                        $keep[] = $schedule->id;
+                    } else {
+                        // إنشاء جديد
+                        $new = $class->sessionSchedules()->create($sch);
+                        $keep[] = $new->id;
+                    }
+                }
+            }
+
+            // حذف أي جداول لم تعد موجودة بالطلب
+            $class->sessionSchedules()
+                ->whereNotIn('id', $keep)
+                ->delete();
+        });
+
+        return back()->with('success', 'تم حفظ التعديلات على الحلقة وجداول المواعيد');
     }
-
     /**
      * حذف/تعطيل حلقة
      */

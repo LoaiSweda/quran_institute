@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Manager\GuardiansController;
+use App\Http\Controllers\Manager\SessionScheduleController;
 use App\Http\Controllers\Manager\StudentsController;
 use App\Http\Controllers\Manager\TeachersController;
 use App\Http\Controllers\Teacher\AnnouncementController;
@@ -77,6 +78,21 @@ Route::middleware(['auth', 'role:institute manager'])
             Route::get('{class}/edit',[ClassesController::class,'edit'])->name('edit');
             Route::put('{class}',   [ClassesController::class,'update'])->name('update');
             Route::delete('{class}',[ClassesController::class,'destroy'])->name('destroy');
+
+            Route::prefix('{class}/schedules')
+                ->name('schedules.')
+                ->group(function(){
+                    Route::get('create',   [SessionScheduleController::class,'create'])
+                        ->name('create');
+                    Route::post('/',       [SessionScheduleController::class,'store'])
+                        ->name('store');
+                    Route::get('{schedule}/edit', [SessionScheduleController::class,'edit'])
+                        ->name('edit');
+                    Route::put('{schedule}',      [SessionScheduleController::class,'update'])
+                        ->name('update');
+                    Route::delete('{schedule}',   [SessionScheduleController::class,'destroy'])
+                        ->name('destroy');
+                });
         });
 
 
@@ -168,6 +184,25 @@ Route::patch('manager/subjects/{subject}/toggle', [SubjectsController::class,'to
     ->name('manager.subjects.toggle')
     ->middleware(['auth','role:institute manager']);
 
+
+
+Route::get('manager/schedules', [SessionScheduleController::class,'index'])
+    ->name('manager.schedules.index')
+    ->middleware(['auth','role:institute manager']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////
 
 Route::middleware(['auth','role:teacher'])
      ->prefix('teacher')

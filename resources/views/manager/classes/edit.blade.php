@@ -94,5 +94,56 @@
             </div>
         </div>
 
+        {{-- Session Schedules Card --}}
+        <div class="card shadow-sm">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-primary">جداول مواعيد الحلقة</h6>
+                <a href="{{ route('manager.classes.schedules.create', $class->id) }}" class="btn btn-sm btn-success">
+                    <i class="bi bi-plus-lg"></i> إضافة موعد جديد
+                </a>
+            </div>
+            <div class="card-body">
+                @if($class->sessionSchedules->isEmpty())
+                    <p>لا توجد جداول مواعيد حتى الآن.</p>
+                @else
+                    <div class="table-responsive">
+                        <table class="table table-bordered mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th>اليوم</th>
+                                <th>وقت البدء</th>
+                                <th>وقت الانتهاء</th>
+                                <th class="text-center">إجراءات</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach($class->sessionSchedules as $schedule)
+                                <tr>
+                                    <td>{{ $schedule->day_of_week }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($schedule->start_time)->format('H:i') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($schedule->end_time)->format('H:i') }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ route('manager.classes.schedules.edit', [$class->id, $schedule->id]) }}"
+                                           class="btn btn-sm btn-warning">
+                                            <i class="bi bi-pencil"></i> تعديل
+                                        </a>
+                                        <form action="{{ route('manager.classes.schedules.destroy', [$class->id, $schedule->id]) }}"
+                                              method="POST" class="d-inline-block"
+                                              onsubmit="return confirm('هل أنت متأكد من حذف هذا الموعد؟');">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i> حذف
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        </div>
+
     </div>
 @endsection

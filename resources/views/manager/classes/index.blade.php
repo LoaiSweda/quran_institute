@@ -1,3 +1,4 @@
+{{-- resources/views/manager/classes/index.blade.php --}}
 @extends('layouts.app')
 @section('title','إدارة الحلقات')
 
@@ -35,29 +36,45 @@
                                 <td>{{ $cls->name }}</td>
                                 <td>{{ optional($cls->subject)->name }}</td>
                                 <td>
-                                    {{-- الاسم الأول + الكنية --}}
                                     {{ optional($cls->teacher)->first_name }}
                                     {{ optional($cls->teacher)->last_name }}
                                 </td>
                                 <td>{{ $cls->students_count }}</td>
                                 <td>{{ number_format($cls->present_percentage,1) }}%</td>
                                 <td class="text-center">
-                                    <a href="{{ route('manager.classes.show',$cls) }}"
-                                       class="btn btn-sm btn-outline-info">
+
+                                    {{-- زر الانتقال لصفحة إضافة موعد --}}
+                                    <a href="{{ route('manager.classes.schedules.create', $cls->id) }}"
+                                       class="btn btn-sm btn-outline-success"
+                                       title="إضافة موعد للحلقة">
+                                        <i class="bi bi-calendar-plus"></i>
+                                    </a>
+
+                                    {{-- Show --}}
+                                    <a href="{{ route('manager.classes.show', $cls) }}"
+                                       class="btn btn-sm btn-outline-info"
+                                       title="عرض التفاصيل">
                                         <i class="bi bi-eye-fill"></i>
                                     </a>
-                                    <a href="{{ route('manager.classes.edit',$cls) }}"
-                                       class="btn btn-sm btn-outline-warning">
+
+                                    {{-- Edit --}}
+                                    <a href="{{ route('manager.classes.edit', $cls) }}"
+                                       class="btn btn-sm btn-outline-warning"
+                                       title="تعديل الحلقة">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="{{ route('manager.classes.destroy',$cls) }}"
+
+                                    {{-- Delete --}}
+                                    <form action="{{ route('manager.classes.destroy', $cls) }}"
                                           method="POST" class="d-inline"
                                           onsubmit="return confirm('هل تريد حذف الحلقة؟')">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                title="حذف الحلقة">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+
                                 </td>
                             </tr>
                         @empty

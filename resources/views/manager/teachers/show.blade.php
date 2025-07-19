@@ -101,14 +101,21 @@
                 <h5 class="mb-0">الحلقات المسندة</h5>
             </div>
             <div class="card-body p-0">
-                @if($teacher->classes?->isEmpty() ?? true)
+                @php
+                    $assigned = $teacher->teachingClasses;
+                @endphp
+
+                @if($assigned->isEmpty())
                     <p class="text-center text-muted py-4">لا توجد حلقات مسندة.</p>
                 @else
                     <ul class="list-group list-group-flush text-end">
-                        @foreach($teacher->classes as $class)
-                            <li class="list-group-item">
-                                <strong>{{ $class->name }}</strong>
-                                <span class="text-muted">({{ $class->level }})</span>
+                        @foreach($assigned as $class)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>
+              <strong>{{ $class->name }}</strong>
+              <small class="text-muted">({{ $class->level }})</small>
+            </span>
+                                <span class="badge bg-primary">{{ $class->subject->name ?? '—' }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -116,29 +123,37 @@
             </div>
         </div>
 
-        {{-- الجدول الأسبوعي --}}
+        @php
+            // نجمع كل الجداول من حلقات التدريس فقط
+            $slots = $teacher->teachingClasses
+                ->flatMap(fn($cls) => $cls->sessionSchedules)
+                ->sortBy(fn($s) => [$s->day_of_week, $s->start_time]);
+        @endphp
+
         <div class="card shadow-sm mb-4">
             <div class="card-header">
                 <h5 class="mb-0">الجدول الأسبوعي</h5>
             </div>
             <div class="card-body p-0">
-                @if($teacher->schedule?->isEmpty() ?? true)
+                @if($slots->isEmpty())
                     <p class="text-center text-muted py-4">لا يوجد جدول.</p>
                 @else
                     <table class="table table-hover mb-0 text-end">
                         <thead class="table-light">
                         <tr>
+                            <th>الحلقة</th>
                             <th>اليوم</th>
                             <th>من</th>
                             <th>إلى</th>
                         </tr>
                         </thead>
                         <tbody>
-                        @foreach($teacher->schedule as $slot)
+                        @foreach($slots as $slot)
                             <tr>
-                                <td>{{ $slot->day }}</td>
-                                <td>{{ $slot->from }}</td>
-                                <td>{{ $slot->to }}</td>
+                                <td>{{ $slot->educationClass->name }}</td>
+                                <td>{{ $slot->day_of_week }}</td>
+                                <td>{{ \Carbon\Carbon::parse($slot->start_time)->format('H:i') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}</td>
                             </tr>
                         @endforeach
                         </tbody>
@@ -146,7 +161,6 @@
                 @endif
             </div>
         </div>
-
     </div>
 @endsection
 

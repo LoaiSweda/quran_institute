@@ -64,6 +64,13 @@
                             <i class="bi bi-person-badge"></i> أولياء الأمور
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/schedules*')) active @endif"
+                           href="{{ route('manager.schedules.index') }}">
+                            <i class="bi bi-calendar3"></i> جداول المواعيد
+                        </a>
+                    </li>
+
                     @break
 
 

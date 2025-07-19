@@ -82,6 +82,12 @@ class Teacher extends Model
             'class_id'
         )->withTimestamps();
     }
+    public function teachingClasses()
+    {
+        return $this->hasMany(\App\Models\EducationClass::class, 'user_id', 'user_id');
+    }
+
+
 
     /**
      * (اختياري) إذا أردت جدولاً أسبوعياً،

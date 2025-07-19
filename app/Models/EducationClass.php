@@ -50,5 +50,8 @@ class EducationClass extends Model
     {
         return $this->hasMany(StudentProgress::class, 'class_id');
     }
-
+    public function sessionSchedules()
+    {
+        return $this->hasMany(SessionSchedule::class, 'class_id');
+    }
 }

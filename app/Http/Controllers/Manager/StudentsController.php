@@ -215,6 +215,9 @@ class StudentsController extends Controller
         $student->load([
             'user',
             'guardian',
+            'classes.teacher',   // ← إحمِل هنا العلاقة
+            'classes.sessionSchedules',  // ← حمّل جداول المواعيد لكل حلقة
+
             'classes.subject',
             'exams',
             'progress',
