@@ -9,13 +9,16 @@ class AddStudentIdToExamsTable extends Migration
     public function up()
     {
         Schema::table('exams', function (Blueprint $table) {
-            $table->foreignId('student_id')
-                  ->after('class_id')
-                  ->constrained('students')
-                  ->onDelete('cascade');
+            // نضيف العمود فقط إذا لم يكن موجوداً
+            if (! Schema::hasColumn('exams', 'student_id')) {
+                $table->foreignId('student_id')
+                      ->after('class_id')
+                      ->constrained('students')
+                      ->onDelete('cascade');
+            }
         });
     }
-
+    
     public function down()
     {
         Schema::table('exams', function (Blueprint $table) {
