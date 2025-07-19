@@ -25,8 +25,16 @@ class Teacher extends Model
      * عمل cast لحقل birthdate ليُرجع كائن Carbon.
      */
     protected $casts = [
-        'birthdate' => 'date',
+        'birthdate'   => 'date',
+        'created_at'  => 'datetime',
+        'updated_at'  => 'datetime',
     ];
+    protected $table = 'teachers';
+    protected $primaryKey = 'user_id';
+    public $incrementing = false;
+    public $timestamps = false; // إذا لم تستخدم timestamps في teachers
+
+
 
     /**
      * علاقة Teacher ⇄ User.
@@ -46,11 +54,13 @@ class Teacher extends Model
         return $this->belongsToMany(
             Institute::class,
             'institute_user',
-            'user_id',       // المفتاح في جدول institute_user على Teacher
-            'institute_id'   // المفتاح في جدول institute_user على Institute
+            'user_id',      // اسم العمود في جدول pivot الذي يشير لـ هذا النموذج
+            'institute_id', // اسم العمود في جدول pivot الذي يشير للمعهد
+            'user_id',      // ***هذا هو عمود الـ localKey في this model***
+            'id'            // عمود المفتاح في جدول Institute (عادة id)
         )
             ->withPivot('role_institute')
-            ->wherePivot('role_institute', 'teacher')
+            ->wherePivot('role_institute','teacher')
             ->withTimestamps();
     }
 
@@ -63,6 +73,15 @@ class Teacher extends Model
     // {
     //     return $this->hasMany(TeachingAssignment::class, 'teacher_id');
     // }
+    public function classes()
+    {
+        return $this->belongsToMany(
+            \App\Models\EducationClass::class,
+            'users_classes',
+            'user_id',
+            'class_id'
+        )->withTimestamps();
+    }
 
     /**
      * (اختياري) إذا أردت جدولاً أسبوعياً،

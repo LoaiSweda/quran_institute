@@ -94,6 +94,8 @@ class SubjectsController extends Controller
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'level'          => 'nullable|string|max:100',
             'degree'         => 'nullable|numeric|min:0',
+            'exams_count'    => 'nullable|integer|min:0',    // ← أضف هذا
+
             'total_sessions' => 'nullable|integer|min:0',
             'is_active'      => 'nullable|boolean',
         ]);
@@ -141,6 +143,8 @@ class SubjectsController extends Controller
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'level'          => 'nullable|string|max:100',
             'degree'         => 'nullable|numeric|min:0',
+            'exams_count'    => 'nullable|integer|min:0',    // ← أضف هذا
+
             'total_sessions' => 'nullable|integer|min:0',
             'is_active'      => 'nullable|boolean',
         ]);

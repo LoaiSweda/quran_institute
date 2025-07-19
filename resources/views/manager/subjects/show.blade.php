@@ -20,7 +20,7 @@
             <div class="col-sm-6 col-lg-3">
                 <div class="card text-white bg-primary h-100 shadow-sm">
                     <div class="card-body">
-                        <h5 class="card-title mb-1">إجمالي الحلقات</h5>
+                        <h5 class="card-title mb-1">إجمالي الجلسات</h5>
                         <p class="display-6">{{ $subject->total_sessions }}</p>
                     </div>
                 </div>

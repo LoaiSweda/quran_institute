@@ -9,13 +9,27 @@ class EducationClass extends Model
     protected $table = 'classes';
 
     protected $fillable = [
-        'name','students_count','user_id','session_count','qr','present_percentage'
+        'name',
+        'subject_id',         // ← أضفه هنا
+        'user_id',
+        'students_count',
+        'session_count',
+        'qr',
+        'present_percentage',
     ];
-
+//    public function teacher()
+//    {
+//        return $this->belongsTo(User::class, 'user_id');
+//    }
     public function teacher()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Teacher::class,
+            'user_id',   // FK في جدول classes
+            'user_id'    // PK في جدول teachers
+        );
+
     }
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'users_classes', 'class_id', 'user_id');

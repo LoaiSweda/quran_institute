@@ -88,11 +88,28 @@ class TeachersController extends Controller
      */
     public function create()
     {
-        $users = User::where('role_id', 4)->get();
+        $inst     = $this->institute();
 
-        return view('manager.teachers.create', compact('users'));
+        // الحلقات لغرض اختيار الحلقة (إذا احتجت)
+        $classes  = $inst->classes()->get();
+
+        // جلب المعلمين المرتبطين بمعهد المدير
+        $teachers = DB::table('institute_user')
+            ->join('teachers', 'institute_user.user_id', '=', 'teachers.user_id')
+            ->join('users',    'teachers.user_id',       '=', 'users.id')
+            ->where('institute_user.institute_id', $inst->id)
+            ->where('institute_user.role_institute', 'teacher')
+            ->select([
+                'teachers.user_id as id',
+                'teachers.first_name',
+                'teachers.last_name',
+                'teachers.phone',
+                'users.email',
+            ])
+            ->get();
+
+        return view('manager.teachers.create', compact('classes','teachers'));
     }
-
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -130,11 +147,11 @@ class TeachersController extends Controller
     {
         $teacher = $this->institute()
             ->teachers()
+            ->with('classes')      // <— هنا نحمّل الحلقات
             ->findOrFail($id);
 
         return view('manager.teachers.show', compact('teacher'));
     }
-
     /**
      * 4.4.2.2 عرض نموذج تعديل بيانات مدرس
      */

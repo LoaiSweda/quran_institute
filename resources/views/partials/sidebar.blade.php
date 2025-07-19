@@ -29,30 +29,35 @@
                             <i class="bi bi-speedometer2"></i> الرئيسية
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link @if(request()->is('manager/classes*')) active @endif"
-                           href="{{ url('/manager/classes') }}">
-                            <i class="bi bi-collection"></i> الحلقات
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/teachers*')) active @endif"
                            href="{{ url('/manager/teachers') }}">
                             <i class="bi bi-people"></i> المدرّسون
                         </a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/subjects*')) active @endif"
                            href="{{ url('/manager/subjects') }}">
                             <i class="bi bi-journal-bookmark"></i> المواد
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/classes*')) active @endif"
+                           href="{{ route('manager.classes.index') }}">
+                            <i class="bi bi-easel2"></i> الحلقات
+                        </a>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/students*')) active @endif"
                            href="{{ url('/manager/students') }}">
                             <i class="bi bi-person-lines-fill"></i> الطلاب
                         </a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/guardians*')) active @endif"
                            href="{{ url('/manager/guardians') }}">
@@ -60,6 +65,7 @@
                         </a>
                     </li>
                     @break
+
 
                     @case('teacher')
                        <li class="{{ request()->is('teacher/dashboard') ? 'active' : '' }}">

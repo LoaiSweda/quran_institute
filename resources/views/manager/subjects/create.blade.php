@@ -12,7 +12,7 @@
             </button>
         </div>
 
-        {{-- Inline Form --}}
+        {{-- Form Card --}}
         <div class="card shadow-sm mb-4 p-4">
             <form action="{{ route('manager.subjects.store') }}" method="POST" class="row g-3">
                 @csrf
@@ -41,33 +41,47 @@
                     @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
-                {{-- Dates & Degree & Sessions --}}
+                {{-- Start Date --}}
                 <div class="col-md-3">
                     <label for="start_date" class="form-label">تاريخ البداية</label>
                     <input type="date" id="start_date" name="start_date" value="{{ old('start_date') }}"
                            class="form-control form-control-sm @error('start_date') is-invalid @enderror">
                     @error('start_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+
+                {{-- End Date --}}
                 <div class="col-md-3">
                     <label for="end_date" class="form-label">تاريخ النهاية</label>
                     <input type="date" id="end_date" name="end_date" value="{{ old('end_date') }}"
                            class="form-control form-control-sm @error('end_date') is-invalid @enderror">
                     @error('end_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-3">
+
+                {{-- Degree --}}
+                <div class="col-md-2">
                     <label for="degree" class="form-label">الدرجة</label>
                     <input type="number" step="0.01" id="degree" name="degree" value="{{ old('degree') }}"
                            class="form-control form-control-sm @error('degree') is-invalid @enderror">
                     @error('degree')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-3">
-                    <label for="total_sessions" class="form-label">إجمالي الحلقات</label>
+
+                {{-- Total Sessions --}}
+                <div class="col-md-2">
+                    <label for="total_sessions" class="form-label">إجمالي الجلسات</label>
                     <input type="number" id="total_sessions" name="total_sessions" value="{{ old('total_sessions') }}"
                            class="form-control form-control-sm @error('total_sessions') is-invalid @enderror">
                     @error('total_sessions')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
-                {{-- Active Checkbox --}}
+                {{-- Exams Count --}}
+                <div class="col-md-2">
+                    <label for="exams_count" class="form-label">عدد الاختبارات</label>
+                    <input type="number" id="exams_count" name="exams_count" value="{{ old('exams_count', 0) }}"
+                           class="form-control form-control-sm @error('exams_count') is-invalid @enderror" min="0">
+                    @error('exams_count')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                {{-- Active --}}
                 <div class="col-12">
                     <input type="hidden" name="is_active" value="0">
                     <div class="form-check">
@@ -90,7 +104,7 @@
         {{-- Existing Subjects List --}}
         <div class="card shadow-sm">
             <div class="card-header">
-                <h5 class="mb-0">المواد المنشأة حديثًا</h5>
+                <h5 class="mb-0">المواد المنشأة حديثًا ({{ $subjects->total() }})</h5>
             </div>
             <div class="card-body p-0">
                 @if($subjects->count())
@@ -102,21 +116,21 @@
                                 <th>الاسم</th>
                                 <th>بداية</th>
                                 <th>نهاية</th>
-                                <th>الحالة</th>
+                                <th>حالة</th>
                                 <th class="text-center">إجراءات</th>
                             </tr>
                             </thead>
                             <tbody>
                             @foreach($subjects as $subject)
                                 <tr>
-                                    <td>{{ $loop->iteration + ($subjects->perPage() * ($subjects->currentPage()-1)) }}</td>
+                                    <td>{{ $loop->iteration + ($subjects->perPage() * ($subjects->currentPage() - 1)) }}</td>
                                     <td>{{ $subject->name }}</td>
                                     <td>{{ $subject->start_date?->format('Y-m-d') ?? '—' }}</td>
                                     <td>{{ $subject->end_date?->format('Y-m-d') ?? '—' }}</td>
                                     <td>
-                                        <span class="badge {{ $subject->is_active ? 'bg-success' : 'bg-secondary' }}">
-                                            {{ $subject->is_active ? 'نشط' : 'معطل' }}
-                                        </span>
+                                            <span class="badge {{ $subject->is_active ? 'bg-success' : 'bg-secondary' }}">
+                                                {{ $subject->is_active ? 'نشط' : 'معطل' }}
+                                            </span>
                                     </td>
                                     <td class="text-center">
                                         <a href="{{ route('manager.subjects.edit', $subject) }}"
@@ -154,7 +168,11 @@
 
 @push('styles')
     <style>
-        .content-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; }
-        .btn-open { display:none; }
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
     </style>
 @endpush

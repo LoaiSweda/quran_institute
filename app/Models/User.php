@@ -50,6 +50,7 @@ class User extends Authenticatable
             'class_id'
         );
     }
+
     public function institutes()
     {
         // إذا كان دور المدير مرتبط بمعهد واحد فقط، يمكنك هنا استخدام ->first() لاحقًا
@@ -67,6 +68,9 @@ class User extends Authenticatable
         return $this->hasOne(Institute::class,'user_id');
     }
 
-
+    public function studentProfile()
+    {
+        return $this->hasOne(\App\Models\Student::class, 'user_id');
+    }
 
 }

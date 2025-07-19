@@ -84,6 +84,64 @@ class StudentsController extends Controller
     /**
      * حفظ طالب جديد مع توليد QR تلقائي
      */
+//    public function store(Request $request)
+//    {
+//        // 1) Validation
+//        $data = $request->validate([
+//            'first_name'   => 'required|string|max:50',
+//            'last_name'    => 'required|string|max:50',
+//            'birthdate'    => 'nullable|date',
+//            'phone'        => 'nullable|string',
+//            'address'      => 'nullable|string',
+//            'father_name'  => 'nullable|string',
+//            'guardian_id'  => 'nullable|exists:guardians,id',
+//            'email'        => ['required','email','unique:users,email'],
+//            'password'     => 'required|string|min:6|confirmed',
+//        ]);
+//
+//        // 2) توليد QR فريد
+//        $qr = Str::upper(Str::random(8));
+//        while (Student::where('qr', $qr)->exists()) {
+//            $qr = Str::upper(Str::random(8));
+//        }
+//
+//        // 3) جلب role_id بطريقة آمنة
+//        // الخيار الأوّل (من ملف config/roles.php):
+//      //  $roleId = config('roles.student');
+//        // الخيار الثاني (من جدول roles مباشرةً):
+//         $roleId = Role::where('name','student')->value('id');
+//
+//        if (! $roleId) {
+//            abort(500, "Role 'student' not configured or not found.");
+//        }
+//
+//        // 4) إنشاء المستخدم
+//        $user = User::create([
+//            'name'     => "{$data['first_name']} {$data['last_name']}",
+//            'email'    => $data['email'],
+//            'password' => Hash::make($data['password']),
+//            'role_id'  => $roleId,
+//        ]);
+//
+//        // 5) إنشاء الطالب
+//        Student::create([
+//            'first_name'        => $data['first_name'],
+//            'last_name'         => $data['last_name'],
+//            'birthdate'         => $data['birthdate'],
+//            'phone'             => $data['phone'],
+//            'address'           => $data['address'],
+//            'father_name'       => $data['father_name'],
+//            'guardian_id'       => $data['guardian_id'],
+//            'qr'                => $qr,
+//            'user_id'           => $user->id,
+//            'points'            => 0,
+//            'present_percentage'=> 0,
+//        ]);
+//
+//        return redirect()
+//            ->route('manager.students.index')
+//            ->with('success','تم إضافة الطالب بنجاح.');
+//    }
     public function store(Request $request)
     {
         // 1) Validation
@@ -105,14 +163,10 @@ class StudentsController extends Controller
             $qr = Str::upper(Str::random(8));
         }
 
-        // 3) جلب role_id بطريقة آمنة
-        // الخيار الأوّل (من ملف config/roles.php):
-      //  $roleId = config('roles.student');
-        // الخيار الثاني (من جدول roles مباشرةً):
-         $roleId = Role::where('name','student')->value('id');
-
+        // 3) جلب role_id
+        $roleId = Role::where('name','student')->value('id');
         if (! $roleId) {
-            abort(500, "Role 'student' not configured or not found.");
+            abort(500, "Role 'student' not found.");
         }
 
         // 4) إنشاء المستخدم
@@ -124,7 +178,7 @@ class StudentsController extends Controller
         ]);
 
         // 5) إنشاء الطالب
-        Student::create([
+        $student = Student::create([
             'first_name'        => $data['first_name'],
             'last_name'         => $data['last_name'],
             'birthdate'         => $data['birthdate'],
@@ -138,9 +192,19 @@ class StudentsController extends Controller
             'present_percentage'=> 0,
         ]);
 
+        // 6) جلب معهد المدير
+        $institute = auth()->user()->institute;
+
+        if ($institute) {
+            // 7) ربط الطالب (المستخدم) بالمعهد
+            $institute->users()->attach($user->id, [
+                'role_institute' => 'student',
+            ]);
+        }
+
         return redirect()
             ->route('manager.students.index')
-            ->with('success','تم إضافة الطالب بنجاح.');
+            ->with('success','تم إضافة الطالب وربطه بالمعهد بنجاح.');
     }
 
     /**

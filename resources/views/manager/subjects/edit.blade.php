@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label for="total_sessions" class="form-label">إجمالي الحلقات</label>
+                    <label for="total_sessions" class="form-label">إجمالي الجلسات</label>
                     <input type="number" id="total_sessions" name="total_sessions"
                            value="{{ old('total_sessions', $subject->total_sessions) }}"
                            class="form-control form-control-sm @error('total_sessions') is-invalid @enderror">

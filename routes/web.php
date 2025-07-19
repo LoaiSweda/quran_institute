@@ -47,7 +47,8 @@ Route::middleware(['auth','role:admin'])
      ->group(fn() => Route::view('dashboard','dashboards.admin'));
 
 // routes/web.php
-
+use App\Http\Controllers\Manager\ClassesController;
+use App\Http\Controllers\Manager\ClasStudentsController;
 use App\Http\Controllers\Manager\SubjectsController;
 
 Route::middleware(['auth', 'role:institute manager'])
@@ -56,6 +57,27 @@ Route::middleware(['auth', 'role:institute manager'])
     ->group(function () {
         // لوحة التحكم
         Route::view('dashboard', 'dashboards.manager')->name('dashboard');
+
+        // إدارة الحلقات (Classes = الحلقات)
+        Route::prefix('classes')->name('classes.')->group(function(){
+
+            // 1) CRUD للحلقات
+            Route::get('/', [ClassesController::class,'index'])->name('index');
+            Route::get('create', [ClassesController::class,'create'])->name('create');
+            Route::post('/', [ClassesController::class,'store'])->name('store');
+
+            // 2) **هنا** مسارات إدارة طلاب الحلقة
+            Route::get('{class}/students',          [ClasStudentsController::class,'index'])  ->name('students.index');
+            Route::get('{class}/students/create',   [ClasStudentsController::class,'create'])->name('students.create');
+            Route::post('{class}/students',         [ClasStudentsController::class,'store']) ->name('students.store');
+            Route::delete('{class}/students/{user}',[ClasStudentsController::class,'destroy'])->name('students.destroy');
+
+            // 3) ثم مسار العرض العام للحلقة
+            Route::get('{class}',   [ClassesController::class,'show'])->name('show');
+            Route::get('{class}/edit',[ClassesController::class,'edit'])->name('edit');
+            Route::put('{class}',   [ClassesController::class,'update'])->name('update');
+            Route::delete('{class}',[ClassesController::class,'destroy'])->name('destroy');
+        });
 
 
         // إدارة أولياء الأمور
@@ -138,9 +160,10 @@ Route::middleware(['auth', 'role:institute manager'])
             Route::put('{subject}', [SubjectsController::class, 'update'])->name('update');
             // تعطيل/تفعيل المادة
             Route::delete('{subject}', [SubjectsController::class, 'destroy'])->name('destroy');
+
         });
     });
-// routes/web.php
+
 Route::patch('manager/subjects/{subject}/toggle', [SubjectsController::class,'toggle'])
     ->name('manager.subjects.toggle')
     ->middleware(['auth','role:institute manager']);
