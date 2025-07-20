@@ -15,6 +15,8 @@ use App\Models\Exam;
 use App\Models\UserPersent;
 use App\Models\CertificateRequest;
 use App\Models\File;
+use App\Models\Teacher;
+
 
 class StudentController extends Controller
 {
@@ -210,7 +212,7 @@ class StudentController extends Controller
         }
 
         // تحميل العلاقات الأساسية
-        $class->load(['subject','teacher.user','sessionSchedules.users']);
+        $class->load(['subject', 'teacher', 'sessionSchedules.users']);
 
         // بيانات الطالب الحالي
         $stud = $studentUser->studentProfile;
@@ -300,11 +302,11 @@ class StudentController extends Controller
                 'is_active'     => (bool) $class->subject->is_active,
                 'image_url'     => $class->subject->image_url ?? null,
             ],
-            'teacher' => [
-                'id'         => $class->teacher->id,
-                'first_name' => $class->teacher->user->first_name,
-                'last_name'  => $class->teacher->user->last_name,
-                'email'      => $class->teacher->user->email,
+             'teacher' => [
+                'id'         => $class->teacher->user_id,          // أو $class->teacher->id
+                'first_name' => $class->teacher->first_name,       // من جدول teachers
+                'last_name'  => $class->teacher->last_name,        // من جدول teachers
+                'email'      => $class->teacher->user->email,      // إذا احتجت إيميل اليوزر
             ],
             'session_schedules' => $class->sessionSchedules->map(fn($s) => [
                 'id'          => $s->id,

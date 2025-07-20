@@ -32,6 +32,8 @@ class DatabaseSeeder extends Seeder
             ExamSeeder::class,
             UserPersentSeeder::class,
             CertificateRequestSeeder::class,
+            StudentProgressSeeder::class,
+
         ]);
     }
 }
