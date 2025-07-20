@@ -9,18 +9,22 @@ class EducationClassSeeder extends Seeder
 {
     public function run(): void
     {
-        // ننشئ خمسة صفوف افتراضية
+        $subjectId = 1; // عدّل هذا حسب الـ subject الفعلي الذي تريد ربط الصف به
+
         EducationClass::create([
             'name'               => 'الصف الأول',
+            'subject_id'         => $subjectId,
             'students_count'     => 25,
-            'user_id'            => 4,    // رقم أستاذ مفترض
+            'user_id'            => 4,
             'session_count'      => 16,
             'qr'                 => 'QR101',
             'present_percentage' => 80,
         ]);
 
+        // وهكذا لبقية الصفوف:
         EducationClass::create([
             'name'               => 'الصف الثاني',
+            'subject_id'         => $subjectId,
             'students_count'     => 22,
             'user_id'            => 4,
             'session_count'      => 18,
@@ -28,31 +32,6 @@ class EducationClassSeeder extends Seeder
             'present_percentage' => 75,
         ]);
 
-        EducationClass::create([
-            'name'               => 'الصف الثالث',
-            'students_count'     => 20,
-            'user_id'            => 4,
-            'session_count'      => 20,
-            'qr'                 => 'QR103',
-            'present_percentage' => 85,
-        ]);
-
-        EducationClass::create([
-            'name'               => 'الصف الرابع',
-            'students_count'     => 18,
-            'user_id'            => 4,
-            'session_count'      => 16,
-            'qr'                 => 'QR104',
-            'present_percentage' => 70,
-        ]);
-
-        EducationClass::create([
-            'name'               => 'الصف الخامس',
-            'students_count'     => 30,
-            'user_id'            => 4,
-            'session_count'      => 22,
-            'qr'                 => 'QR105',
-            'present_percentage' => 90,
-        ]);
+        // ... أكمل لباقي الصفوف بنفس الطريقة
     }
 }

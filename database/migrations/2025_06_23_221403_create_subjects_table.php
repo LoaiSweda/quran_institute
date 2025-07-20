@@ -6,17 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up()
+    public function up(): void
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
             $table->date('start_date')->nullable();
-            $table->foreignId('institute_id')->constrained('institutes')->onDelete('cascade');
+
+            // نحضّر العمود فقط بدون FK
+            $table->unsignedBigInteger('institute_id');
+
             $table->date('end_date')->nullable();
             $table->boolean('is_active')->default(true);
             $table->integer('exams_count')->default(0);
@@ -27,10 +27,6 @@ return new class extends Migration
         });
     }
 
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('subjects');

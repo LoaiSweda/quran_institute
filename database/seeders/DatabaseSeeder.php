@@ -20,12 +20,12 @@ class DatabaseSeeder extends Seeder
             GuardianSeeder::class,
             AdsTypeSeeder::class, 
             AdSeeder::class, 
+            InstituteSeeder::class,
+            SubjectSeeder::class,
             EducationClassSeeder::class,
             StudentSeeder::class,
             SessionScheduleSeeder::class,
             UserClassSeeder::class,
-            InstituteSeeder::class,
-            SubjectSeeder::class,
             InstituteUserSeeder::class,
         ]);
     }
