@@ -3,103 +3,145 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Ad;
-use App\Models\UserAd;
 use App\Models\EducationClass;
+use App\Models\User;
 
 class StudentController extends Controller
 {
-    public function announcements(Request $request)
+    /**
+     * 1) إعلانات المعاهد:
+     *    - super-admin (1): كل إعلاناته
+     *    - مدير المعهد (2) أو مشرف (3) في معهد الطالب
+     */
+    public function instituteAnnouncements(Request $request)
     {
-        // 1. نأخذ الطالب الحالي
         $student = $request->user();
-        $studentId = $student->id;
 
-        // 2. نحصّل معرِّفات الصفوف التي يشارك فيها الطالب
-        $classIds = $student
-            ->classes()               // علاقة belongsToMany عبر users_classes
-            ->pluck('classes.id')     // نأخذ عمود id من جدول classes
-            ->toArray();
+        // 1) كل الـ class IDs للطالب
+        $classIds = $student->classes()
+                            ->pluck('classes.id')
+                            ->toArray();
 
-        // 3. نحصّل معرِّفات المعلمين المالكين لهذه الصفوف
-        $teacherIds = EducationClass::query()
-            ->whereIn('id', $classIds)   // الصفوف التي في $classIds
-            ->pluck('user_id')            // عمود user_id في جدول classes هو صاحب الصفّ (المعلم)
+        // 2) عن طريق جدول classes → subjects تحدد institute_id
+        $instIds = \App\Models\EducationClass::query()
+            ->whereIn('classes.id', $classIds)
+            ->join('subjects', 'classes.subject_id', '=', 'subjects.id')
+            ->pluck('subjects.institute_id')
             ->unique()
             ->toArray();
 
-        // 4. نبني الاستعلام لجلب الإعلانات
-        $ads = Ad::query()
-            // أ) مخصصة للطالب
-            ->whereHas('userAds', function($q) {
-                $q->where('watches_role', 'student');
-            })
-            // ب) من معلمين دورهُم = 4
-            ->whereIn('user_id', $teacherIds)   // ads.user_id هو معرّف الناشر الحقيقي
-            // (اختياري) يمكنك التأكد من role_id أيضاً لو أحببت:
-            ->whereHas('publisher', function($q) {
-                $q->where('role_id', 4);
-            })
-            // ج) تحميل العلاقات الضرورية
-            ->with([
-                'type:id,name',
-                'userAds' => function($q) {
-                    $q->where('watches_role', 'student');
-                },
-                'publisher:id,email,role_id',
-            ])
-            ->orderByDesc('created_at')
-            ->get([
-                'id','title','description','link','image',
-                'end_date','status','type_id','user_id'
-            ]);
+        // 3) جلب مدراء ومشرفين هذه المعاهد
+        $instUserIds = DB::table('institute_user')
+            ->whereIn('institute_id', $instIds)
+            ->pluck('user_id')
+            ->unique()
+            ->toArray();
 
-        return response()->json([
-            'data' => $ads
-        ], 200);
+        // 4) جلب جميع super-admin
+        $superIds = User::where('role_id', 1)
+                        ->pluck('id')
+                        ->toArray();
+
+        // 5) دمج الثلاث مجموعات: super-admins + managers + supervisors
+        $publisherIds = array_unique(array_merge($instUserIds, $superIds));
+
+        // 6) استعلام الإعلانات
+        $ads = Ad::query()
+            ->whereIn('user_id', $publisherIds)                       
+            ->whereHas('userAds', fn($q)=> $q->where('watches_role','student'))
+            ->with(['type:id,name','publisher:id,email,role_id'])
+            ->orderByDesc('created_at')
+            ->get(['id','title','description','link',
+                'image','end_date','status','type_id','user_id']);
+
+        return response()->json(['data' => $ads], 200);
     }
 
 
+    /**
+     * 2) إعلانات المعلمين لصف معين:
+     *    - المعلم صاحب الـ class
+     */
+    public function classAnnouncements(Request $request, EducationClass $class)
+    {
+        $student = $request->user();
+
+        // تأكد أن الطالب مسجَّل في الصف
+        if (! $student->classes()->where('classes.id', $class->id)->exists()) {
+            return response()->json([
+                'message' => 'غير مصرح لك بمشاهدة هذه الإعلانات.'
+            ], 403);
+        }
+
+        // صاحب الإعلان هو المعلم (user_id) للصف
+        $teacherId = $class->user_id;
+
+        $ads = Ad::query()
+            ->where('user_id', $teacherId)
+            ->whereHas('userAds', fn($q) => $q->where('watches_role','student'))
+            ->with(['type:id,name','publisher:id,email,role_id'])
+            ->orderByDesc('created_at')
+            ->get([
+                'id','title','description','link',
+                'image','end_date','status','type_id','user_id'
+            ]);
+
+        return response()->json(['data' => $ads], 200);
+    }
+
+      /**
+     * عرض تفاصيل إعلان واحد
+     */
     public function announcementDetail(Request $request, Ad $ad)
     {
-        $user = $request->user();
+        $student = $request->user();
 
-        // نتأكد أن لهذا الإعلان سجل user_ads بدور 'student'
-        $allowed = $ad->userAds()
-                    ->where('watches_role', 'student')
-                    ->exists();
+        // 1) نتأكد أن الإعلان موجه للطالب
+        $hasAccess = $ad->userAds()
+                        ->where('watches_role', 'student')
+                        ->exists();
 
-        if (! $allowed) {
+        if (! $hasAccess) {
             return response()->json([
                 'message' => 'غير مصرح لك بمشاهدة هذا الإعلان.'
             ], 403);
         }
 
-        // نحمّل النوع والناشر
+        // 2) تحميل العلاقات الضرورية
         $ad->load([
             'type:id,name',
             'publisher:id,email,role_id',
+            'userAds'  // لو احتجت معلومات إضافية من pivot
         ]);
 
+        // 3) إعداد الهيكل النهائي للـ JSON
+        $data = [
+            'id'              => $ad->id,
+            'title'           => $ad->title,
+            'description'     => $ad->description,
+            'link'            => $ad->link,
+            'image_url'       => $ad->image ? asset('storage/'.$ad->image) : null,
+            'end_date'        => $ad->end_date,
+            'computed_status' => $ad->computed_status,
+            'type' => [
+                'id'   => $ad->type->id,
+                'name' => $ad->type->name,
+            ],
+            'publisher' => [
+                'id'      => $ad->publisher->id,
+                'email'   => $ad->publisher->email,
+                'role_id' => $ad->publisher->role_id,
+            ],
+            // لو احتجت بيانات pivot:
+            'watches_role' => $ad->userAds
+                                  ->firstWhere('watches_role', 'student')
+                                  ->watches_role ?? null,
+        ];
+
         return response()->json([
-            'data' => [
-                'id'              => $ad->id,
-                'title'           => $ad->title,
-                'description'     => $ad->description,
-                'link'            => $ad->link,
-                'image_url'       => $ad->image ? asset('storage/'.$ad->image) : null,
-                'end_date'        => $ad->end_date,
-                'computed_status' => $ad->computed_status,
-                'type' => [
-                    'id'   => $ad->type->id,
-                    'name' => $ad->type->name,
-                ],
-                'publisher' => [
-                    'id'    => optional($ad->publisher)->id,
-                    'email' => optional($ad->publisher)->email,
-                ],
-            ]
+            'data' => $data
         ], 200);
     }
-
 }

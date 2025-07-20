@@ -24,7 +24,9 @@ class DatabaseSeeder extends Seeder
             StudentSeeder::class,
             SessionScheduleSeeder::class,
             UserClassSeeder::class,
-
+            InstituteSeeder::class,
+            SubjectSeeder::class,
+            InstituteUserSeeder::class,
         ]);
     }
 }
