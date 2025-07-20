@@ -144,4 +144,47 @@ class StudentController extends Controller
             'data' => $data
         ], 200);
     }
+
+
+    /**
+     * إرجاع حلقات الطالب المسجل دخوله
+     */
+    public function classes(Request $request)
+    {
+        // 1) الطالب المُسجّل دخوله
+        $user = $request->user();
+        
+        // 2) جلب الحلقات المرتبطة به مع بعض العلاقات المفيدة
+        $classes = $user
+            ->classes()                // من علاقة belongsToMany في موديل User
+            ->with([
+                'subject',             // بيانات المادّة
+                'teacher.user'         // بيانات المدرّس (من Teacher → User)
+            ])
+            ->get();
+
+        // 3) ترجيع JSON مُنسّق
+        return response()->json([
+            'classes' => $classes->map(function($class) {
+                return [
+                    'id'                => $class->id,
+                    'name'              => $class->name,
+                    'subject'           => [
+                        'id'    => $class->subject->id,
+                        'name'  => $class->subject->name,
+                    ],
+                    'teacher'           => [
+                        'id'         => $class->teacher->id,
+                        'first_name' => $class->teacher->user->first_name,
+                        'last_name'  => $class->teacher->user->last_name,
+                        'email'      => $class->teacher->user->email,
+                    ],
+                    'students_count'    => $class->students_count,
+                    'session_count'     => $class->session_count,
+                    'qr'                => $class->qr,
+                    'present_percentage'=> $class->present_percentage,
+                ];
+            }),
+        ]);
+    }
 }

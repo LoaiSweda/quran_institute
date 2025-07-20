@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\GuardianController;
+use App\Http\Controllers\Api\EducationClassController;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])
@@ -17,9 +18,9 @@ Route::middleware(['auth:sanctum','role:student'])
         //Route::get('announcements', [StudentController::class, 'announcements']);
         Route::get('institute-announcements', [StudentController::class, 'instituteAnnouncements']);
         Route::get('class-announcements/{class}', [StudentController::class, 'classAnnouncements']);
-
         Route::get('announcements/{ad}', [StudentController::class, 'announcementDetail']);
-
+        
+        Route::get('classes', [StudentController::class, 'classes']); 
     });
 
 /*
