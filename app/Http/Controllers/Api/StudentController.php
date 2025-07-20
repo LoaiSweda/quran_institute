@@ -51,7 +51,7 @@ class StudentController extends Controller
         $ads = Ad::query()
             ->whereIn('user_id', $publisherIds)                       
             ->whereHas('userAds', fn($q)=> $q->where('watches_role','student'))
-            ->with(['type:id,name','publisher:id,email,role_id'])
+            ->with(['type:id,name','publisher:id,name,email,role_id'])
             ->orderByDesc('created_at')
             ->get(['id','title','description','link',
                 'image','end_date','status','type_id','user_id']);
