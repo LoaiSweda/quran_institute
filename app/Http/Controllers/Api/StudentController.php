@@ -146,32 +146,34 @@ class StudentController extends Controller
     }
 
 
-    /**
-     * إرجاع حلقات الطالب المسجل دخوله
-     */
     public function classes(Request $request)
     {
-        // 1) الطالب المُسجّل دخوله
         $user = $request->user();
         
-        // 2) جلب الحلقات المرتبطة به مع بعض العلاقات المفيدة
         $classes = $user
-            ->classes()                // من علاقة belongsToMany في موديل User
-            ->with([
-                'subject',             // بيانات المادّة
-                'teacher.user'         // بيانات المدرّس (من Teacher → User)
-            ])
+            ->classes()
+            ->with(['subject', 'teacher.user'])
             ->get();
 
-        // 3) ترجيع JSON مُنسّق
         return response()->json([
             'classes' => $classes->map(function($class) {
                 return [
                     'id'                => $class->id,
                     'name'              => $class->name,
                     'subject'           => [
-                        'id'    => $class->subject->id,
-                        'name'  => $class->subject->name,
+                        'id'          => $class->subject->id,
+                        'name'        => $class->subject->name,
+                        'image'       => $class->subject->image,
+                        'description' => $class->subject->description,
+                        'start_date'  => $class->subject->start_date
+                                                ? $class->subject->start_date->toDateString()
+                                                : null,
+                        'end_date'    => $class->subject->end_date
+                                                ? $class->subject->end_date->toDateString()
+                                                : null,
+                        'level'       => $class->subject->level,
+                        'degree'      => $class->subject->degree,
+                        'is_active'   => (bool) $class->subject->is_active,
                     ],
                     'teacher'           => [
                         'id'         => $class->teacher->id,
@@ -187,4 +189,141 @@ class StudentController extends Controller
             }),
         ]);
     }
+
+     /**
+     * عرض كل تفاصيل حلقة معينة
+     */
+    public function classDetail(Request $request, EducationClass $class)
+    {
+        $student = $request->user();
+
+        // 1) تأكد أن الطالب مسجل في هذه الحلقة
+        if (! $student->classes()->where('classes.id', $class->id)->exists()) {
+            return response()->json([
+                'message' => 'غير مصرح لك بمشاهدة تفاصيل هذه الحلقة.'
+            ], 403);
+        }
+
+        // 2) تحميل علاقات الأساسية
+        $class->load([
+            'subject',            // بيانات المادة
+            'teacher.user',       // بيانات المدرس → User
+            'sessionSchedules',   // جداول الحصص
+        ]);
+
+        // 3) إعداد بيانات الطلاب داخل الحلقة
+        $students = $class->users()->get()->map(function($user) use ($class) {
+            // معلومات الطالب
+            $stud = $user->studentProfile;
+
+            // التقدم الدراسي (progress) لهذه الحلقة
+            $prog = StudentProgress::where([
+                        ['student_id', $stud->id],
+                        ['class_id',   $class->id],
+                    ])->first();
+
+            // الامتحانات الخاصة بهذا الطالب وهذه الحلقة
+            $exams = Exam::where([
+                        ['student_id', $stud->id],
+                        ['class_id',   $class->id],
+                    ])->get();
+
+            // نسب الحضور (users_persents)
+            $persents = UserPersent::where([
+                        ['user_id',  $user->id],
+                        ['class_id', $class->id],
+                    ])->get()->map(fn($p) => [
+                        'persent_id' => $p->persent_id,
+                        'status'     => $p->status,
+                    ]);
+
+            // طلبات الشهادة (للمادة)
+            $certs = CertificateRequest::with('file')
+                        ->where([
+                            ['student_id', $stud->id],
+                            ['subject_id', $class->subject_id],
+                        ])->get();
+
+            return [
+                'user' => [
+                    'id'         => $user->id,
+                    'first_name' => $stud->first_name,
+                    'last_name'  => $stud->last_name,
+                    'phone'      => $stud->phone,
+                    'address'    => $stud->address,
+                    'birthdate'  => $stud->birthdate?->toDateString(),
+                ],
+                'progress' => $prog ? [
+                    'observation_rate'        => $prog->eohservation_rate,
+                    'degree_avg'              => $prog->degree_avg,
+                    'number_sessions_attended'=> $prog->number_sessions_attended,
+                    'total_points_subject'    => $prog->total_points_subject,
+                ] : null,
+                'exams' => $exams->map(fn($e) => [
+                    'id'    => $e->id,
+                    'name'  => $e->name,
+                    'notes' => $e->notes,
+                    'points'=> $e->points,
+                    'degree'=> $e->degree,
+                ]),
+                'persents'  => $persents,
+                'certificates' => $certs->map(fn($c) => [
+                    'id'            => $c->id,
+                    'request_at'    => $c->request_at,
+                    'status'        => $c->status,
+                    'reviewed_at'   => $c->revieweded_at,
+                    'file'          => $c->file ? [
+                        'id'   => $c->file->id,
+                        'name' => $c->file->name,
+                        'path' => asset('storage/' . $c->file->path),
+                        'size' => $c->file->size,
+                        'mime' => $c->file->mime,
+                    ] : null,
+                ]),
+            ];
+        });
+
+        // 4) تحضير النتيجة النهائية
+        $data = [
+            'id'                 => $class->id,
+            'name'               => $class->name,
+            'qr'                 => $class->qr,
+            'students_count'     => $class->students_count,
+            'session_count'      => $class->session_count,
+            'present_percentage' => $class->present_percentage,
+            'subject'            => [
+                'id'           => $class->subject->id,
+                'name'         => $class->subject->name,
+                'description'  => $class->subject->description,
+                'start_date'   => $class->subject->start_date?->toDateString(),
+                'end_date'     => $class->subject->end_date?->toDateString(),
+                'level'        => $class->subject->level,
+                'degree'       => $class->subject->degree,
+                'total_sessions'=> $class->subject->total_sessions,
+                'is_active'    => (bool) $class->subject->is_active,
+                'image_url'    => $class->subject->image_url ?? null,
+            ],
+            'teacher' => [
+                'id'         => $class->teacher->id,
+                'first_name' => $class->teacher->user->first_name,
+                'last_name'  => $class->teacher->user->last_name,
+                'email'      => $class->teacher->user->email,
+            ],
+            'session_schedules' => $class->sessionSchedules->map(fn($s) => [
+                'id'          => $s->id,
+                'day_of_week' => $s->day_of_week,
+                'start_time'  => $s->start_time->format('H:i'),
+                'end_time'    => $s->end_time->format('H:i'),
+                'attendees'   => $s->users->map(fn($u) => [
+                    'id'         => $u->id,
+                    'first_name' => $u->studentProfile->first_name ?? $u->first_name,
+                    'last_name'  => $u->studentProfile->last_name  ?? $u->last_name,
+                ]),
+            ]),
+            'students' => $students,
+        ];
+
+        return response()->json(['data' => $data], 200);
+    }
+
 }

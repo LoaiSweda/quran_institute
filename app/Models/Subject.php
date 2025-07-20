@@ -12,7 +12,7 @@ class Subject extends Model
         'start_date','end_date',
         'level','degree',
         'total_sessions','is_active',
-        'institute_id','exams_count',
+        'institute_id','exams_count','image',
     ];
 
     // Add this:
@@ -38,6 +38,14 @@ class Subject extends Model
             'user_id',       // أو student_id إذا استخدمت pivot مستقلّ
             'class_id'
         )->withTimestamps();
+    }
+
+     // إضافة accesor لعرض URL الصورة
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image
+            ? asset('storage/subjects/' . $this->image)
+            : null;
     }
 
 }

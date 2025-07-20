@@ -21,6 +21,7 @@ Route::middleware(['auth:sanctum','role:student'])
         Route::get('announcements/{ad}', [StudentController::class, 'announcementDetail']);
         
         Route::get('classes', [StudentController::class, 'classes']); 
+        Route::get('classes/{class}', [StudentController::class, 'classDetail']);
     });
 
 /*
