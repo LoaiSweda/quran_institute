@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>مسح باركود حضور الطلاب</title>
-  <!-- مكتبة ZXing لمسح QR عبر جافاسكربت -->
+  <!-- ZXing لمسح QR عبر جافاسكربت -->
   <script src="https://unpkg.com/@zxing/library@latest"></script>
   <!-- CSRF Token -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -47,8 +47,8 @@
         statusElem.textContent = `تم المسح: ${qr} — جاريّ التسجيل…`;
 
         try {
-          // 3) استدعاء الـ API مع الجلسة (Session)
-          const resp = await fetch('/api/attendance/scan', {
+          // 3) استدعاء الـ API مع الجلسة
+          const resp = await fetch('/attendance/scan', {
             method: 'POST',
             credentials: 'same-origin',
             headers: {

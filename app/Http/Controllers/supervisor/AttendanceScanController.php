@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/Web/AttendanceScanController.php
 
 namespace App\Http\Controllers\supervisor;
 

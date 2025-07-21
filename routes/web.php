@@ -13,6 +13,7 @@ use App\Http\Controllers\Teacher\StudentController;
 use App\Http\Controllers\Teacher\ExamController;
 use App\Http\Controllers\Teacher\ClassController;
 use App\Http\Controllers\supervisor\AttendanceScanController;
+use App\Http\Controllers\Api\AttendanceController;
 use Illuminate\Support\Facades\Route;
 
 // عرض نموذج الدخول عند "/"
@@ -304,4 +305,8 @@ Route::middleware(['auth','role:super admin'])
 
     Route::middleware(['auth','role:admin'])
      ->get('/attendance/scan', [AttendanceScanController::class, 'show'])
+     ->name('attendance.scan');
+
+     Route::middleware(['auth','role:admin'])
+     ->post('/attendance/scan', [AttendanceController::class,'scan'])
      ->name('attendance.scan');

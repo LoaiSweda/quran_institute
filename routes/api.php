@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\EducationClassController;
-use App\Http\Controllers\Api\AttendanceController;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])
@@ -23,13 +22,12 @@ Route::middleware(['auth:sanctum','role:student'])
         
         Route::get('classes', [StudentController::class, 'classes']); 
         Route::get('classes/{class}', [StudentController::class, 'classDetail']);
+
+        Route::get('profile', [StudentController::class, 'profile']);
+
     });
 
 
-
-
-    Route::middleware(['auth:sanctum','role:admin'])
-        ->post('attendance/scan',[AttendanceController::class,'scan']);
 
     
 /*

@@ -326,4 +326,31 @@ class StudentController extends Controller
         return response()->json(['data' => $data], 200);
     }
 
+
+       public function profile(Request $request)
+    {
+        $user   = $request->user();
+        $student = $user->studentProfile; // علاقة hasOne(Student::class)
+
+        if (! $student) {
+            return response()->json([
+                'message' => 'لا يوجد ملف للطالب'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => [
+                'id'              => $student->id,
+                'first_name'      => $student->first_name,
+                'last_name'       => $student->last_name,
+                'phone'           => $student->phone,
+                'address'         => $student->address,
+                'birthdate'       => $student->birthdate?->toDateString(),
+                'guardian_id'     => $student->guardian_id,
+                'present_percentage' => $student->present_percentage,
+                'qr'              => $student->qr,
+            ]
+        ], 200);
+    }
+
 }
