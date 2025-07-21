@@ -1,16 +1,15 @@
 <?php
 
+
 namespace App\Http\Controllers\supervisor;
 
 use App\Http\Controllers\Controller;
 
 class AttendanceScanController extends Controller
 {
-    /**
-     * عرض صفحة مسح الباركود للمشرف
-     */
     public function show()
     {
+        // هذه الـ blade تعرض سكربت الـ ZXing
         return view('attendance.scan');
     }
 }

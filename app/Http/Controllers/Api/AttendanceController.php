@@ -1,5 +1,7 @@
 <?php
 
+// app/Http/Controllers/Api/AttendanceController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -25,8 +27,8 @@ class AttendanceController extends Controller
         // 2) إيجاد الحصة
         $schedule = SessionSchedule::findOrFail($req->session_schedule_id);
 
-        // 3) (اختياري) تأكد يوم ووقت الحصة
-        $today = now()->dayOfWeekIso;  // 1=Mon … 7=Sun
+        // (اختياري) تحقق من اليوم والوقت
+        $today = now()->dayOfWeekIso;  
         if ($schedule->day_of_week != $today) {
             return response()->json(['message'=>'ليست هذه الحصة اليوم'], 403);
         }
@@ -36,11 +38,11 @@ class AttendanceController extends Controller
             return response()->json(['message'=>'ليست ضمن وقت الحصة'], 403);
         }
 
-        // 4) سجل في pivot session_users
+        // 3) سجّل في pivot session_users
         $schedule->users()->syncWithoutDetaching($student->user_id);
 
-        // 5) سجل في users_persents
-        $persent = Persent::firstOrCreate(['date'=>now()->toDateString()]);
+        // 4) سجّل في users_persents
+        $persent = Persent::firstOrCreate(['date'=> now()->toDateString()]);
         UserPersent::updateOrCreate(
           [
             'user_id'    => $student->user_id,
@@ -50,20 +52,15 @@ class AttendanceController extends Controller
           ['status'=>'present']
         );
 
-        // 6) حدث student_progress
-        $progress = StudentProgress::firstOrCreate([
-            'student_id'=>$student->id,
-            'class_id'  =>$schedule->class_id,
-        ],[
-            'number_sessions_attended'=>0,
-            'eohservation_rate'=>0,
-            'degree_avg'=>0,
-            'total_points_subject'=>0,
-        ]);
-        $progress->increment('number_sessions_attended');
-        $progress->update([
+        // 5) حدِّث student_progress
+        $prog = StudentProgress::firstOrCreate(
+            ['student_id'=>$student->id,'class_id'=>$schedule->class_id],
+            ['number_sessions_attended'=>0,'eohservation_rate'=>0,'degree_avg'=>0,'total_points_subject'=>0]
+        );
+        $prog->increment('number_sessions_attended');
+        $prog->update([
             'eohservation_rate' => round(
-                $progress->number_sessions_attended /
+                $prog->number_sessions_attended /
                 $schedule->educationClass->session_count
                 * 100
             ),

@@ -304,9 +304,9 @@ Route::middleware(['auth','role:super admin'])
 
 
     Route::middleware(['auth','role:admin'])
-     ->get('/attendance/scan', [AttendanceScanController::class, 'show'])
-     ->name('attendance.scan');
+          ->get('/attendance/scan', [AttendanceScanController::class, 'show'])
+          ->name('attendance.scan');
 
      Route::middleware(['auth','role:admin'])
-     ->post('/attendance/scan', [AttendanceController::class,'scan'])
-     ->name('attendance.scan');
+          ->post('/attendance/scan', [AttendanceController::class,'scan'])
+          ->name('attendance.scan.post');

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>مسح باركود حضور الطلاب</title>
-  <!-- ZXing لمسح QR عبر جافاسكربت -->
+  <!-- ZXing library -->
   <script src="https://unpkg.com/@zxing/library@latest"></script>
   <!-- CSRF Token -->
   <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -22,10 +22,10 @@
   <script>
     (async () => {
       const codeReader = new ZXing.BrowserMultiFormatReader();
-      const videoElem = document.getElementById('preview');
+      const videoElem  = document.getElementById('preview');
       const statusElem = document.getElementById('status');
 
-      // 1) ابدأ الكاميرا الخلفية
+      // 1. ابدأ الكاميرا
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'environment' }
@@ -37,7 +37,7 @@
         return;
       }
 
-      // 2) ابدأ المسح المستمر
+      // 2. المسح المستمر
       let processing = false;
       codeReader.decodeFromVideoElementContinuously(videoElem, async (result, err) => {
         if (processing || !result) return;
@@ -47,13 +47,15 @@
         statusElem.textContent = `تم المسح: ${qr} — جاريّ التسجيل…`;
 
         try {
-          // 3) استدعاء الـ API مع الجلسة
+          // 3. استدعاء الراوت في web.php
           const resp = await fetch('/attendance/scan', {
             method: 'POST',
-            credentials: 'same-origin',
+            credentials: 'same-origin',              // <<< مهم لمرور الـ Laravel Session & CSRF cookie
             headers: {
               'Content-Type': 'application/json',
-              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+              'Accept':       'application/json',
+              'X-CSRF-TOKEN': document
+                                .querySelector('meta[name="csrf-token"]').content
             },
             body: JSON.stringify({
               qr: qr,
@@ -61,18 +63,20 @@
             })
           });
 
+          // 4. تعامل مع الاستجابة
           const json = await resp.json();
           if (resp.ok) {
-            statusElem.textContent = '✅ ' + (json.message || 'تمّ تسجيل الحضور');
+            statusElem.textContent = '✅ ' + (json.message || 'تمّ تسجيل الحضور بنجاح');
           } else {
             statusElem.textContent = '❌ ' + (json.message || resp.status);
           }
+
         } catch (e) {
           statusElem.textContent = '❌ خطأ في الاتصال';
           console.error(e);
         }
 
-        // 4) إعادة تمكين المسح بعد 3 ثوانٍ
+        // 5. إعادة التمكين بعد 3 ثوانٍ
         setTimeout(() => {
           processing = false;
           statusElem.textContent = 'وجّه الكاميرا إلى باركود الطالب…';
