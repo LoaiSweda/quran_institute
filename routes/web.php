@@ -310,3 +310,9 @@ Route::middleware(['auth','role:super admin'])
      Route::middleware(['auth','role:admin'])
           ->post('/attendance/scan', [AttendanceController::class,'scan'])
           ->name('attendance.scan.post');
+          
+
+   // إضافة مسار جديد لتسجيل الغياب
+     Route::middleware(['auth','role:admin'])
+          ->post('/attendance/mark-absent', [AttendanceController::class, 'markAbsent'])
+          ->name('attendance.mark.absent');

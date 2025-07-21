@@ -54,4 +54,28 @@ class EducationClass extends Model
     {
         return $this->hasMany(SessionSchedule::class, 'class_id');
     }
+
+     // إضافة علاقة بالطلاب المسجلين
+    public function students()
+    {
+        return $this->belongsToMany(Student::class, 'users_classes', 'class_id', 'user_id')
+            ->withPivot('created_at', 'updated_at');
+    }
+
+    public function enrolledUsers()
+{
+    return $this->belongsToMany(
+        User::class,
+        'users_classes',
+        'class_id',
+        'user_id'
+    );
+}
+
+public function enrolledStudents()
+{
+    return $this->enrolledUsers()
+        ->whereHas('student') // فقط المستخدمين الذين لديهم سجل طالب
+        ->with('student');
+}
 }
