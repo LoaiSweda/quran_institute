@@ -28,7 +28,7 @@ Route::middleware(['auth:sanctum','role:student'])
 
 
 
-    Route::middleware(['auth:sanctum','role:supervisor'])
+    Route::middleware(['auth:sanctum','role:admin'])
         ->post('attendance/scan',[AttendanceController::class,'scan']);
 
     
