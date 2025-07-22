@@ -42,7 +42,7 @@ class AttendanceController extends Controller
         // Check if the current time is within the session's time
         $now = Carbon::now('Asia/Damascus')->format('H:i');  // Syria Time
         if ($now < $schedule->start_time->format('H:i') || $now > $schedule->end_time->format('H:i')) {
-            return response()->json(['message' => 'ليست ضمن وقت الحصة'], 403);
+            return response()->json(['message' => 'ليست ضمن وقت الحصة'], 403, [], JSON_UNESCAPED_UNICODE);
         }
 
         // Check if the student is already marked present for this schedule
