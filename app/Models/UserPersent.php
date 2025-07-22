@@ -14,5 +14,11 @@ class UserPersent extends Model
     {
         return $this->belongsTo(Persent::class);
     }
+
+     // **العلاقة المفقودة** لربط سجلّ الحضور بالمستخدم
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
 

@@ -149,7 +149,7 @@
             6 => 'السبت',
         ];
     @endphp
-    
+        
     <label for="schedule">اختر جدول الحصة (يوم {{ $days[\Carbon\Carbon::now('Asia/Damascus')->dayOfWeek] }}):</label>
     <select id="schedule">
       <option value="">-- اختر جدول الحصة --</option>

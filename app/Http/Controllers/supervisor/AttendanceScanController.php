@@ -23,7 +23,7 @@ class AttendanceScanController extends Controller
             ->toArray();
 
         // رقم اليوم الحالي: 0=الأحد … 6=السبت
-        $today = Carbon::now()->dayOfWeek;
+        $today = Carbon::now('Asia/Damascus')->dayOfWeek;
 
         // جلب جداول الحصص التي يومها اليوم الحالي
         $schedules = SessionSchedule::with('educationClass')

@@ -324,3 +324,14 @@ Route::middleware(['auth','role:super admin'])
      Route::middleware(['auth','role:admin'])
           ->get('/attendance/session-status', [AttendanceController::class, 'sessionStatus'])
           ->name('attendance.session-status');
+
+
+
+
+          /*
+
+          كنت عم اشتغل بقصة ال session_count بس ما تخزنت بس بتعرض لازم اخرنها 
+          والطالب بس يسجل بمحاضرة معينة 
+          ويرجع يسجل الاسبوع الجايي بنفس اليوم ما بيرضى 
+
+          */

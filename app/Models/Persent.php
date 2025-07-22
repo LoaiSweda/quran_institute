@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Persent extends Model
 {
-    protected $fillable = ['date', 'time'];
+    protected $fillable = ['date', 'time', 'session_schedule_id'];
     
     protected $casts = [
         'date' => 'date:Y-m-d',

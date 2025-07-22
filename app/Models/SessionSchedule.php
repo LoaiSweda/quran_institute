@@ -56,4 +56,10 @@ class SessionSchedule extends Model
             'short' => true,
         ]);
     }
+
+    public function persents()
+    {
+        return $this->hasMany(Persent::class, 'session_schedule_id');
+    }
+
 }
