@@ -114,6 +114,14 @@ class AttendanceController extends Controller
             ], 400);
         }
 
+         // التحقق من انتهاء وقت الحصة
+        if (!$schedule->isSessionEnded()) {
+            return response()->json([
+                'message' => 'لا يمكن تسجيل الغياب قبل نهاية الحصة'
+            ], 400);
+        }
+
+
         $classId = $schedule->class_id;
         $today = now()->toDateString();
         
@@ -168,6 +176,20 @@ class AttendanceController extends Controller
         
         return response()->json([
             'marked' => $schedule->isAttendanceMarked()
+        ]);
+    }
+
+    public function sessionStatus(Request $request)
+    {
+        $request->validate([
+            'schedule_id' => 'required|exists:session_schedules,id'
+        ]);
+
+        $schedule = SessionSchedule::findOrFail($request->schedule_id);
+        
+        return response()->json([
+            'ended' => $schedule->isSessionEnded(),
+            'time_remaining' => $schedule->timeRemaining()
         ]);
     }
 }

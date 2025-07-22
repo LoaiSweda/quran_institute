@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class SessionSchedule extends Model
 {
@@ -37,5 +38,22 @@ class SessionSchedule extends Model
     {
         $this->attendance_marked = true;
         $this->save();
+    }
+
+
+     public function isSessionEnded()
+    {
+        $now = Carbon::now('Asia/Damascus');
+        return $now->greaterThanOrEqualTo($this->end_time);
+    }
+
+    public function timeRemaining()
+    {
+        $now = Carbon::now('Asia/Damascus');
+        return $this->end_time->diffForHumans($now, [
+            'syntax' => Carbon::DIFF_ABSOLUTE,
+            'parts' => 2,
+            'short' => true,
+        ]);
     }
 }

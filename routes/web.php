@@ -318,5 +318,9 @@ Route::middleware(['auth','role:super admin'])
           ->name('attendance.mark.absent');
 
      Route::middleware(['auth','role:admin'])
-    ->get('/attendance/status', [AttendanceController::class, 'attendanceStatus'])
-    ->name('attendance.status');
+          ->get('/attendance/status', [AttendanceController::class, 'attendanceStatus'])
+          ->name('attendance.status');
+
+     Route::middleware(['auth','role:admin'])
+          ->get('/attendance/session-status', [AttendanceController::class, 'sessionStatus'])
+          ->name('attendance.session-status');

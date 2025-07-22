@@ -97,6 +97,28 @@
       animation: spin 1s ease-in-out infinite;
       margin-right: 10px;
     }
+
+    .session-info {
+      margin: 15px 0;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #3498db;
+    }
+    
+    .session-ended {
+      border-left-color: #27ae60;
+    }
+    
+    .session-not-ended {
+      border-left-color: #e74c3c;
+    }
+    
+    .time-remaining {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
@@ -113,6 +135,11 @@
         <li>وجه الكاميرا نحو كود الطالب لتسجيل حضوره</li>
         <li>اضغط على زر تسجيل الغياب عند انتهاء الحصة</li>
       </ol>
+    </div>
+
+     <div id="sessionInfo" class="session-info" style="display: none;">
+      <div id="sessionStatus"></div>
+      <div id="timeRemaining" class="time-remaining"></div>
     </div>
     
     @php
