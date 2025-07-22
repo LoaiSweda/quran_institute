@@ -57,7 +57,6 @@ class AttendanceController extends Controller
         // Register the student in the session_users pivot table
         $schedule->users()->attach($student->user_id);
 
-        // Record attendance in users_persents
 
         // Record attendance in users_persents
         $persent = Persent::firstOrCreate([
@@ -109,7 +108,12 @@ class AttendanceController extends Controller
     $schedule = SessionSchedule::findOrFail($request->session_schedule_id);
     $classId = $schedule->class_id;
     $today = now()->toDateString();
-    $persent = Persent::firstOrCreate(['date' => $today]);
+    
+    // Record attendance in users_persents
+    $persent = Persent::firstOrCreate([
+        'date' => now()->toDateString(),
+        'time' => now()->toTimeString()
+    ]);
 
     // 1. الحصول على جميع الطلاب المسجلين في الحلقة
     $classStudents = EducationClass::findOrFail($classId)
