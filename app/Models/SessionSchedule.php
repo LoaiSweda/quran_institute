@@ -24,7 +24,19 @@ class SessionSchedule extends Model
             User::class,
             'session_users',         // اسم الجدول الوسيط
             'session_schedule_id',   // FK في جدول pivot إلى session_schedules
-            'user_id'                // FK في جدول pivot إلى users
+            'user_id',               // FK في جدول pivot إلى users
+            'attendance_marked',                
         )->withTimestamps();
+    }
+
+    public function isAttendanceMarked()
+    {
+        return $this->attendance_marked;
+    }
+
+    public function markAttendanceCompleted()
+    {
+        $this->attendance_marked = true;
+        $this->save();
     }
 }

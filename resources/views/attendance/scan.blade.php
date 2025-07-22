@@ -141,7 +141,11 @@
     {{-- إضافة زر لتسجيل الغياب --}}
     <button id="markAbsentBtn" class="btn btn-danger mt-3">
         تسجيل الغياب للطلاب المتبقين
-    </button>  
+    </button>
+     
+    <div id="attendanceStatus" class="mt-3" style="display: none;">
+        <span class="badge bg-success">تم تسجيل الغياب</span>
+    </div>  
 </div>
 
 <script>
@@ -235,35 +239,86 @@
       
      // ... الكود السابق ...
 
-// دالة لتسجيل الغياب
-    document.getElementById('markAbsentBtn').addEventListener('click', async function() {
+      // دالة لتسجيل الغياب
+      document.getElementById('markAbsentBtn').addEventListener('click', async function() {
         const scheduleId = document.getElementById('schedule').value;
         if (!scheduleId) {
-            alert('الرجاء اختيار جدول الحصة أولاً');
+          alert('الرجاء اختيار جدول الحصة أولاً');
+          return;
+        }
+
+        // تحقق من حالة التسجيل
+        try {
+          const statusResponse = await fetch(`/attendance/status?schedule_id=${scheduleId}`);
+          const statusData = await statusResponse.json();
+          
+          if (statusData.marked) {
+            alert('لقد قمت بتسجيل الغياب لهذه الجلسة مسبقاً');
+            document.getElementById('attendanceStatus').style.display = 'block';
             return;
+          }
+        } catch (e) {
+          console.error('خطأ في التحقق من الحالة:', e);
         }
 
         if (!confirm('هل أنت متأكد من تسجيل الغياب لجميع الطلاب الذين لم يحضروا؟')) {
-            return;
+          return;
         }
+
+        const btn = this;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading"></span> جاري التسجيل...';
 
         try {
-            const response = await fetch('/attendance/mark-absent', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({ session_schedule_id: scheduleId })
-            });
+          const response = await fetch('/attendance/mark-absent', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ session_schedule_id: scheduleId })
+          });
 
-            const result = await response.json();
+          const result = await response.json();
+          
+          if (response.ok) {
             alert(result.message);
+            document.getElementById('attendanceStatus').style.display = 'block';
+          } else {
+            alert('❌ ' + (result.message || 'حدث خطأ أثناء تسجيل الغياب'));
+          }
         } catch (error) {
-            console.error('Error:', error);
-            alert('حدث خطأ أثناء تسجيل الغياب');
+          console.error('Error:', error);
+          alert('حدث خطأ أثناء تسجيل الغياب');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalText;
         }
-    });
+      });
+
+      // التحقق من حالة التسجيل عند تغيير الجدول
+      document.getElementById('schedule').addEventListener('change', async function() {
+        const scheduleId = this.value;
+        if (!scheduleId) return;
+        
+        try {
+          const response = await fetch(`/attendance/status?schedule_id=${scheduleId}`);
+          const data = await response.json();
+          
+          const statusElem = document.getElementById('attendanceStatus');
+          if (data.marked) {
+            statusElem.style.display = 'block';
+            document.getElementById('markAbsentBtn').disabled = true;
+          } else {
+            statusElem.style.display = 'none';
+            document.getElementById('markAbsentBtn').disabled = false;
+          }
+        } catch (e) {
+          console.error('خطأ في التحقق من حالة التسجيل:', e);
+        }
+      });
+
     })();
 </script>
 </body>

@@ -100,49 +100,74 @@ class AttendanceController extends Controller
     }
 
     public function markAbsent(Request $request)
-{
-    $request->validate([
-        'session_schedule_id' => 'required|exists:session_schedules,id',
-    ]);
+    {
+        $request->validate([
+            'session_schedule_id' => 'required|exists:session_schedules,id',
+        ]);
 
-    $schedule = SessionSchedule::findOrFail($request->session_schedule_id);
-    $classId = $schedule->class_id;
-    $today = now()->toDateString();
-    
-    // Record attendance in users_persents
-    $persent = Persent::firstOrCreate([
-        'date' => now()->toDateString(),
-        'time' => now()->toTimeString()
-    ]);
-
-    // 1. الحصول على جميع الطلاب المسجلين في الحلقة
-    $classStudents = EducationClass::findOrFail($classId)
-        ->enrolledStudents()
-        ->get();
-
-    // 2. الحصول على الطلاب الذين حضروا (سجلوا عبر QR)
-    $presentStudents = $schedule->users()
-        ->pluck('users.id')
-        ->toArray();
-
-    $absentCount = 0;
-    
-    foreach ($classStudents as $user) {
-        if (!in_array($user->id, $presentStudents)) {
-            UserPersent::updateOrCreate(
-                [
-                    'user_id' => $user->id,
-                    'class_id' => $classId,
-                    'persent_id' => $persent->id,
-                ],
-                ['status' => 'absent']
-            );
-            $absentCount++;
+        $schedule = SessionSchedule::findOrFail($request->session_schedule_id);
+        
+        // التحقق مما إذا تم تسجيل الغياب مسبقاً
+        if ($schedule->isAttendanceMarked()) {
+            return response()->json([
+                'message' => 'لقد قمت بتسجيل الغياب لهذه الجلسة مسبقاً'
+            ], 400);
         }
+
+        $classId = $schedule->class_id;
+        $today = now()->toDateString();
+        
+        // Record attendance in users_persents
+        $persent = Persent::firstOrCreate([
+            'date' => $today,
+            'time' => now()->toTimeString()
+        ]);
+
+        // 1. الحصول على جميع الطلاب المسجلين في الحلقة
+        $classStudents = EducationClass::findOrFail($classId)
+            ->enrolledStudents()
+            ->get();
+
+        // 2. الحصول على الطلاب الذين حضروا (سجلوا عبر QR)
+        $presentStudents = $schedule->users()
+            ->pluck('users.id')
+            ->toArray();
+
+        $absentCount = 0;
+        
+        foreach ($classStudents as $user) {
+            if (!in_array($user->id, $presentStudents)) {
+                UserPersent::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'class_id' => $classId,
+                        'persent_id' => $persent->id,
+                    ],
+                    ['status' => 'absent']
+                );
+                $absentCount++;
+            }
+        }
+
+        // وضع علامة أن الغياب تم تسجيله
+        $schedule->markAttendanceCompleted();
+
+        return response()->json([
+            'message' => "تم تسجيل $absentCount طالب كغائبين بنجاح"
+        ], 200);
     }
 
-    return response()->json([
-        'message' => "تم تسجيل $absentCount طالب كغائبين بنجاح"
-    ], 200);
-}
+
+    public function attendanceStatus(Request $request)
+    {
+        $request->validate([
+            'schedule_id' => 'required|exists:session_schedules,id'
+        ]);
+
+        $schedule = SessionSchedule::findOrFail($request->schedule_id);
+        
+        return response()->json([
+            'marked' => $schedule->isAttendanceMarked()
+        ]);
+    }
 }
