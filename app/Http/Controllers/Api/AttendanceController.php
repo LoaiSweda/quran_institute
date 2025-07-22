@@ -14,6 +14,7 @@ use App\Models\EducationClass;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+
 class AttendanceController extends Controller
 {
     /**
@@ -57,7 +58,13 @@ class AttendanceController extends Controller
         $schedule->users()->attach($student->user_id);
 
         // Record attendance in users_persents
-        $persent = Persent::firstOrCreate(['date' => now()->toDateString()]);
+
+        // Record attendance in users_persents
+        $persent = Persent::firstOrCreate([
+            'date' => now()->toDateString(),
+            'time' => now()->toTimeString()
+        ]);
+
         UserPersent::updateOrCreate(
             [
                 'user_id'    => $student->user_id,
