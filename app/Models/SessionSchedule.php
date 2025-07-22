@@ -25,7 +25,6 @@ class SessionSchedule extends Model
             'session_users',         // اسم الجدول الوسيط
             'session_schedule_id',   // FK في جدول pivot إلى session_schedules
             'user_id',               // FK في جدول pivot إلى users
-            'attendance_marked',                
         )->withTimestamps();
     }
 
