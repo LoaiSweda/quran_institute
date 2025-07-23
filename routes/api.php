@@ -24,7 +24,7 @@ Route::middleware(['auth:sanctum','role:student'])
         Route::get('classes/{class}', [StudentController::class, 'classDetail']);
 
         Route::get('profile', [StudentController::class, 'profile']);
-
+        Route::get('weekly-schedule', [StudentController::class, 'weeklySchedule']);
     });
 
 

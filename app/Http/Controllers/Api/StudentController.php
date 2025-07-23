@@ -17,6 +17,8 @@ use App\Models\UserPersent;
 use App\Models\CertificateRequest;
 use App\Models\File;
 use App\Models\Teacher;
+use App\Models\SessionSchedule;
+
 
 class StudentController extends Controller
 {
@@ -355,4 +357,67 @@ class StudentController extends Controller
             ]
         ], 200);
     }
+
+    /**
+     * GET /api/student/weekly-schedule
+     * يُرجع الحصص الأسبوعية لكل يوم، مُرتَّبة بحسب الوقت.
+     */
+    public function weeklySchedule(Request $request)
+    {
+        $user = $request->user();
+
+        // 1) احصل على كلّ class_id التي الطالب مسجَّل بها
+        $classIds = $user->classes()->pluck('classes.id')->toArray();
+
+        // 2) جلب الجداول المرتبطة بهذه الحلقات
+        $schedules = SessionSchedule::with([
+            'educationClass.subject'
+        ])
+        ->whereIn('class_id', $classIds)
+        ->whereHas('educationClass')                            // تضمن وجود الصف
+        ->whereHas('educationClass.subject')                    // تضمن وجود المادة
+        ->orderBy('day_of_week')
+        ->orderBy('start_time')
+        ->get([
+            'id','class_id','day_of_week','start_time','end_time'
+        ]);
+
+        // 3) نُعِد مصفوفة الأيام من 0=الأحد إلى 6=السبت
+        $days = [
+            0 => 'الأحد',
+            1 => 'الإثنين',
+            2 => 'الثلاثاء',
+            3 => 'الأربعاء',
+            4 => 'الخميس',
+            5 => 'الجمعة',
+            6 => 'السبت',
+        ];
+
+        // 4) نبني الناتج: كل يوم يحتوي مصفوفة من الحصص
+        $weekly = [];
+        foreach ($days as $dow => $label) {
+            $weekly[$label] = [];
+        }
+
+        foreach ($schedules as $sch) {
+            $weekly[$days[$sch->day_of_week]][] = [
+                'schedule_id' => $sch->id,
+                'class'       => [
+                    'id'   => $sch->educationClass->id,
+                    'name' => $sch->educationClass->name,
+                ],
+                'subject'     => [
+                    'id'   => $sch->educationClass->subject->id,
+                    'name' => $sch->educationClass->subject->name,
+                ],
+                'start_time'  => $sch->start_time->format('H:i'),
+                'end_time'    => $sch->end_time->format('H:i'),
+            ];
+        }
+
+        return response()->json([
+            'data' => $weekly,
+        ], 200);
+    }
+
 }
