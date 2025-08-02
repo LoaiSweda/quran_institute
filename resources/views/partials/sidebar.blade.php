@@ -70,6 +70,12 @@
                             <i class="bi bi-calendar3"></i> جداول المواعيد
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/library*')) active @endif"
+                           href="{{ route('manager.library.index') }}">
+                            <i class="bi bi-book"></i> المكتبة الإلكترونية
+                        </a>
+                    </li>
 
                     @break
 
@@ -106,6 +112,12 @@
                             <a href="{{ route('teacher.classes.index') }}">
                                 <i class="bi bi-journal-bookmark-fill"></i>
                                 حلقاتي
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @if(request()->is('teacher/library*')) active @endif"
+                               href="{{ route('teacher.library.index') }}">
+                                <i class="bi bi-book"></i> المكتبة الإلكترونية
                             </a>
                         </li>
 
