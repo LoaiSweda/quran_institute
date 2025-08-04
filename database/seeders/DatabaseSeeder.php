@@ -28,11 +28,12 @@ class DatabaseSeeder extends Seeder
             InstituteUserSeeder::class,
 
             // الـ Seeders الجديدة
-            PersentSeeder::class,
+           // PersentSeeder::class,
             ExamSeeder::class,
             UserPersentSeeder::class,
             CertificateRequestSeeder::class,
             StudentProgressSeeder::class,
+            CategorySeeder::class,
 
         ]);
     }

@@ -21,7 +21,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Student::class, 'user_id');
     }
-    
+
     public function teacher()
     {
         return $this->hasOne(Teacher::class);
@@ -69,6 +69,40 @@ class User extends Authenticatable
     public function studentProfile()
     {
         return $this->hasOne(\App\Models\Student::class, 'user_id');
+    }
+
+    public function hasRole(string|array $roles): bool
+    {
+        if (!$this->role) { // If the user has no role assigned
+            return false;
+        }
+
+        if (is_array($roles)) {
+            return in_array($this->role->name, $roles);
+        }
+
+        return $this->role->name === $roles;
+    }
+
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->hasRole($roles);
+    }
+
+    // You might also want to add direct accessors for role names if frequently used
+    public function getRoleNameAttribute(): ?string
+    {
+        return $this->role->name ?? null;
+    }
+    public function getInstituteIdAttribute(): ?int
+    {
+        // Eager load the 'institute' relationship if it's not already loaded
+        // This prevents N+1 query problem if you access institute_id multiple times
+        if (!$this->relationLoaded('institute')) {
+            $this->load('institute');
+        }
+
+        return $this->institute->id ?? null;
     }
 
 }

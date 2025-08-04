@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\Manager\GuardiansController;
 use App\Http\Controllers\Manager\SessionScheduleController;
 use App\Http\Controllers\Manager\StudentsController;
@@ -134,6 +135,7 @@ Route::middleware(['auth', 'role:institute manager'])
           });
 
 
+<<<<<<< HEAD
           Route::prefix('subjects')->name('subjects.')->group(function() {
                Route::get('/', [SubjectsController::class, 'index'])->name('index');
                Route::get('create', [SubjectsController::class, 'create'])->name('create');
@@ -144,6 +146,39 @@ Route::middleware(['auth', 'role:institute manager'])
                Route::delete('{subject}', [SubjectsController::class, 'destroy'])->name('destroy');
           });
      });
+=======
+        // إدارة المواد
+        Route::prefix('subjects')->name('subjects.')->group(function() {
+            // قائمة المواد مع بحث وفرز
+            Route::get('/', [SubjectsController::class, 'index'])->name('index');
+            // نموذج إضافة مادة
+            Route::get('create', [SubjectsController::class, 'create'])->name('create');
+            // حفظ المادة الجديدة
+            Route::post('/', [SubjectsController::class, 'store'])->name('store');
+            // عرض تفاصيل مادة
+            Route::get('{subject}', [SubjectsController::class, 'show'])->name('show');
+            // نموذج تعديل مادة
+            Route::get('{subject}/edit', [SubjectsController::class, 'edit'])->name('edit');
+            // تحديث بيانات المادة
+            Route::put('{subject}', [SubjectsController::class, 'update'])->name('update');
+            // تعطيل/تفعيل المادة
+            Route::delete('{subject}', [SubjectsController::class, 'destroy'])->name('destroy');
+
+        });
+        // Library Routes for Institute Manager
+        Route::prefix('library')->name('library.')->group(function()
+        {
+                Route::get('/', [LibraryController::class, 'index'])->name('index');
+                Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+                Route::get('create', [LibraryController::class, 'create'])->name('create');
+                Route::post('/', [LibraryController::class, 'store'])->name('store');
+                Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+                Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+                Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+                Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
+        });
+    });
+>>>>>>> 2728f4cbdc871e46de94aec6f8a9278ef8429906
 
 Route::patch('manager/subjects/{subject}/toggle', [SubjectsController::class,'toggle'])
     ->name('manager.subjects.toggle')
@@ -204,11 +239,27 @@ Route::middleware(['auth','role:teacher'])
           Route::get('classes', [ClassController::class, 'index'])
                ->name('classes.index');
 
+<<<<<<< HEAD
           Route::get('classes/{class}', [ClassController::class, 'show'])
                ->name('classes.show');
 
           Route::get('classes/{class}/students', [ClassController::class, 'students'])
                ->name('classes.students');
+=======
+     Route::get('classes/{class}/students', [ClassController::class, 'students'])
+          ->name('classes.students');
+         // Library Routes for Institute Manager
+     Route::prefix('library')->name('library.')->group(function()
+     {
+             Route::get('/', [LibraryController::class, 'index'])->name('index');
+             Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+             Route::get('create', [LibraryController::class, 'create'])->name('create');
+             Route::post('/', [LibraryController::class, 'store'])->name('store');
+             Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+             Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+             Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+     });
+>>>>>>> 2728f4cbdc871e46de94aec6f8a9278ef8429906
 });
 
 
@@ -268,9 +319,40 @@ Route::middleware(['auth','role:admin'])
 
 
 
+<<<<<<< HEAD
+=======
+        // إدارة المعاهد
+        Route::get('/',            [InstituteController::class, 'index'])->name('index');
+        Route::get('create',       [InstituteController::class, 'create'])->name('create');
+        Route::post('/',           [InstituteController::class, 'store'])->name('store');
+        Route::get('{institute}',  [InstituteController::class, 'show'])->name('show');
+        Route::get('{institute}/edit',   [InstituteController::class, 'edit'])->name('edit');
+        Route::put('{institute}',  [InstituteController::class, 'update'])->name('update');
+        Route::delete('{institute}', [InstituteController::class, 'destroy'])->name('destroy');
+
+
+        Route::prefix('library')->name('library.')->group(function()
+        {
+            Route::get('/', [LibraryController::class, 'index'])->name('index');
+            Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+            Route::get('create', [LibraryController::class, 'create'])->name('create');
+            Route::post('/', [LibraryController::class, 'store'])->name('store');
+            Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+            Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+            Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+        });
+    });
+>>>>>>> 2728f4cbdc871e46de94aec6f8a9278ef8429906
 
 
 
+<<<<<<< HEAD
+=======
+     Route::middleware(['auth','role:admin'])
+          ->post('/attendance/scan', [AttendanceController::class,'scan'])
+          ->name('attendance.scan.post');
+
+>>>>>>> 2728f4cbdc871e46de94aec6f8a9278ef8429906
 
 
 
@@ -280,8 +362,8 @@ Route::middleware(['auth','role:admin'])
 
           /*
 
-          كنت عم اشتغل بقصة ال session_count بس ما تخزنت بس بتعرض لازم اخرنها 
-          والطالب بس يسجل بمحاضرة معينة 
-          ويرجع يسجل الاسبوع الجايي بنفس اليوم ما بيرضى 
+          كنت عم اشتغل بقصة ال session_count بس ما تخزنت بس بتعرض لازم اخرنها
+          والطالب بس يسجل بمحاضرة معينة
+          ويرجع يسجل الاسبوع الجايي بنفس اليوم ما بيرضى
 
           */
