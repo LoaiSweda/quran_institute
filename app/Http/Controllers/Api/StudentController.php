@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
-// موديلاتك
 use App\Models\Ad;
 use App\Models\User;
 use App\Models\EducationClass;
@@ -22,21 +20,17 @@ use App\Models\SessionSchedule;
 
 class StudentController extends Controller
 {
-    /**
-     * 1) إعلانات المعاهد:
-     *    - super-admin (1): كل إعلاناته
-     *    - مدير المعهد (2) أو مشرف (3) في معهد الطالب
-     */
+    
     public function instituteAnnouncements(Request $request)
     {
         $student = $request->user();
 
-        // 1) كل الـ class IDs للطالب
+        // 1) class IDs
         $classIds = $student->classes()
                             ->pluck('classes.id')
                             ->toArray();
 
-        // 2) عن طريق جدول classes → subjects تحدد institute_id
+        // 2) institute_id
         $instIds = EducationClass::query()
             ->whereIn('classes.id', $classIds)
             ->join('subjects', 'classes.subject_id', '=', 'subjects.id')
@@ -44,22 +38,22 @@ class StudentController extends Controller
             ->unique()
             ->toArray();
 
-        // 3) جلب مدراء ومشرفين هذه المعاهد
+        // 3) managers - supervisores 
         $instUserIds = DB::table('institute_user')
             ->whereIn('institute_id', $instIds)
             ->pluck('user_id')
             ->unique()
             ->toArray();
 
-        // 4) جلب جميع super-admin
+        // 4) super-admin
         $superIds = User::where('role_id', 1)
                         ->pluck('id')
                         ->toArray();
 
-        // 5) دمج الثلاث مجموعات
+        // 5) merge
         $publisherIds = array_unique(array_merge($instUserIds, $superIds));
 
-        // 6) استعلام الإعلانات
+        // 6) ads
         $ads = Ad::query()
             ->whereIn('user_id', $publisherIds)
             ->whereHas('userAds', fn($q) => $q->where('watches_role', 'student'))
@@ -73,15 +67,11 @@ class StudentController extends Controller
         return response()->json(['data' => $ads], 200);
     }
 
-    /**
-     * 2) إعلانات المعلمين لصف معين:
-     *    - المعلم صاحب الـ class
-     */
+   
     public function classAnnouncements(Request $request, EducationClass $class)
     {
         $student = $request->user();
 
-        // تأكد أن الطالب مسجَّل في الصف
         if (! $student->classes()->where('classes.id', $class->id)->exists()) {
             return response()->json([
                 'message' => 'غير مصرح لك بمشاهدة هذه الإعلانات.'
@@ -103,21 +93,18 @@ class StudentController extends Controller
         return response()->json(['data' => $ads], 200);
     }
 
-    /**
-     * عرض تفاصيل إعلان واحد
-     */
+    
     public function announcementDetail(Request $request, Ad $ad)
     {
         $student = $request->user();
 
-        // تأكد أن الإعلان موجه للطالب
         if (! $ad->userAds()->where('watches_role', 'student')->exists()) {
             return response()->json([
                 'message' => 'غير مصرح لك بمشاهدة هذا الإعلان.'
             ], 403);
         }
 
-        // تحميل العلاقات الضرورية
+
         $ad->load([
             'type:id,name',
             'publisher:id,email,role_id',
@@ -149,9 +136,7 @@ class StudentController extends Controller
         return response()->json(['data' => $data], 200);
     }
 
-    /**
-     * قائمة الصفوف للمستخدم (طالب)
-     */
+    
     public function classes(Request $request)
     {
         $user = $request->user();
@@ -194,36 +179,29 @@ class StudentController extends Controller
         return response()->json(['classes' => $result], 200);
     }
 
-    /**
-     * تفاصيل الصف للمستخدم (طالب)
-     */
+    
     public function classDetail(Request $request, EducationClass $class)
     {
         $studentUser = $request->user();
 
-        // تأكد أن الطالب مسجّل في هذه الحلقة
         if (! $studentUser->classes()->where('classes.id', $class->id)->exists()) {
             return response()->json([
                 'message' => 'غير مصرح لك بمشاهدة تفاصيل هذه الحلقة.'
             ], 403);
         }
 
-        // تحميل العلاقات الأساسية
         $class->load(['subject', 'teacher', 'sessionSchedules.persents.userPersents.user.studentProfile']);
 
         $stud = $studentUser->studentProfile;
 
-        // تقدّم الطالب
         $prog = $stud->progress()
                      ->where('class_id', $class->id)
                      ->first();
 
-        // امتحانات الطالب
         $exams = $stud->exams()
                       ->where('class_id', $class->id)
                       ->get();
 
-        // نسب الحضور الكاملة
         $persents = UserPersent::where([
                         ['user_id',  $studentUser->id],
                         ['class_id', $class->id],
@@ -235,14 +213,12 @@ class StudentController extends Controller
                         'status'     => $p->status,
                     ]);
 
-        // طلبات الشهادة
         $certs = CertificateRequest::with('file')
                     ->where([
                         ['student_id', $stud->id],
                         ['subject_id', $class->subject_id],
                     ])->get();
 
-        // بيانات الطالب
         $studentDetail = [
             'user' => [
                 'id'         => $studentUser->id,
@@ -281,7 +257,6 @@ class StudentController extends Controller
                              ]),
         ];
 
-        // بناء الرد النهائي
         $data = [
             'id'                 => $class->id,
             'name'               => $class->name,
@@ -329,9 +304,7 @@ class StudentController extends Controller
         return response()->json(['data' => $data], 200);
     }
 
-    /**
-     * بروفايل الطالب
-     */
+    
     public function profile(Request $request)
     {
         $user = $request->user();
@@ -358,31 +331,28 @@ class StudentController extends Controller
         ], 200);
     }
 
-    /**
-     * GET /api/student/weekly-schedule
-     * يُرجع الحصص الأسبوعية لكل يوم، مُرتَّبة بحسب الوقت.
-     */
+    
     public function weeklySchedule(Request $request)
     {
         $user = $request->user();
 
-        // 1) احصل على كلّ class_id التي الطالب مسجَّل بها
+        // 1) class_id 
         $classIds = $user->classes()->pluck('classes.id')->toArray();
 
-        // 2) جلب الجداول المرتبطة بهذه الحلقات
+        // 2) 
         $schedules = SessionSchedule::with([
             'educationClass.subject'
         ])
         ->whereIn('class_id', $classIds)
-        ->whereHas('educationClass')                            // تضمن وجود الصف
-        ->whereHas('educationClass.subject')                    // تضمن وجود المادة
+        ->whereHas('educationClass')                            
+        ->whereHas('educationClass.subject')                    
         ->orderBy('day_of_week')
         ->orderBy('start_time')
         ->get([
             'id','class_id','day_of_week','start_time','end_time'
         ]);
 
-        // 3) نُعِد مصفوفة الأيام من 0=الأحد إلى 6=السبت
+        // 3) 
         $days = [
             0 => 'الأحد',
             1 => 'الإثنين',

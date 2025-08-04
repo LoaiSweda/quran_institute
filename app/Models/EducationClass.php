@@ -10,22 +10,20 @@ class EducationClass extends Model
 
     protected $fillable = [
         'name',
-        'subject_id',         // ← أضفه هنا
+        'subject_id',         
         'user_id',
         'students_count',
         'session_count',
         'qr',
         'present_percentage',
     ];
-//    public function teacher()
-//    {
-//        return $this->belongsTo(User::class, 'user_id');
-//    }
+
+    
     public function teacher()
     {
         return $this->belongsTo(Teacher::class,
-            'user_id',   // FK في جدول classes
-            'user_id'    // PK في جدول teachers
+            'user_id',   // FK in classes
+            'user_id'    // PK in teachers
         );
 
     }
@@ -55,7 +53,6 @@ class EducationClass extends Model
         return $this->hasMany(SessionSchedule::class, 'class_id');
     }
 
-     // إضافة علاقة بالطلاب المسجلين
     public function students()
     {
         return $this->belongsToMany(Student::class, 'users_classes', 'class_id', 'user_id')
@@ -75,7 +72,7 @@ class EducationClass extends Model
 public function enrolledStudents()
 {
     return $this->enrolledUsers()
-        ->whereHas('student') // فقط المستخدمين الذين لديهم سجل طالب
+        ->whereHas('student') 
         ->with('student');
 }
 }

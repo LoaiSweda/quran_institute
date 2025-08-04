@@ -31,7 +31,6 @@ class User extends Authenticatable
         return $this->hasOne(Admin::class);
     }
 
-    // الحلقات التي يشارك فيها (للمعلمين أو الطلاب)
     public function educationClasses()
     {
         return $this->belongsToMany(EducationClass::class, 'users_classes', 'user_id', 'class_id');
@@ -54,7 +53,6 @@ class User extends Authenticatable
 
     public function institutes()
     {
-        // إذا كان دور المدير مرتبط بمعهد واحد فقط، يمكنك هنا استخدام ->first() لاحقًا
         return $this->belongsToMany(
             Institute::class,
             'institute_user',
@@ -63,7 +61,6 @@ class User extends Authenticatable
         )->withPivot('role_institute')->withTimestamps();
     }
 
-    // in App\Models\User.php
     public function institute()
     {
         return $this->hasOne(Institute::class,'user_id');

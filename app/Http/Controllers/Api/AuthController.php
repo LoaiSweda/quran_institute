@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/Api/AuthController.php
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -19,8 +19,7 @@ class AuthController extends Controller
         ]);
 
         if ($data['type'] === '0') {
-            // تسجيل دخول طالب
-            $student = \App\Models\Student::with(['classes', 'exams', 'progress']) // لو حابب تجيب العلاقات
+            $student = \App\Models\Student::with(['classes', 'exams', 'progress'])
                 ->where('phone', $data['phone'])
                 ->first();
 
@@ -30,7 +29,6 @@ class AuthController extends Controller
 
             $user = $student->user;
         } else {
-            // تسجيل دخول ولي أمر
             $guardian = \App\Models\Guardian::with('students')
                 ->where('phone', $data['phone'])
                 ->first();
@@ -48,7 +46,6 @@ class AuthController extends Controller
 
         $token = $user->createToken('mobile-token')->plainTextToken;
 
-        // بناء الـ JSON للرد بناءً على النوع
         if ($data['type'] === '0') {
             return response()->json([
                 'type'    => 'student',
@@ -63,7 +60,6 @@ class AuthController extends Controller
                     'father_name'       => $student->father_name,
                     'points'            => $student->points,
                     'present_percentage'=> $student->present_percentage,
-                    // إذا حابب ترسل العلاقات:
                     'classes' => $student->classes,
                     'exams'   => $student->exams,
                     'progress'=> $student->progress,

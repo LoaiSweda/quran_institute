@@ -15,17 +15,16 @@ class AttendanceScanController extends Controller
     {
         $supervisor = Auth::user();
 
-        // اجلب المعاهد التي هو مشرف لها
+        // instIds
         $instIds = $supervisor
             ->institutes()
             ->wherePivot('role_institute','supervisor')
             ->pluck('institutes.id')
             ->toArray();
 
-        // رقم اليوم الحالي: 0=الأحد … 6=السبت
+        
         $today = Carbon::now('Asia/Damascus')->dayOfWeek;
 
-        // جلب جداول الحصص التي يومها اليوم الحالي
         $schedules = SessionSchedule::with('educationClass')
             ->whereIn('class_id', function($q) use($instIds) {
                 $q->select('classes.id')

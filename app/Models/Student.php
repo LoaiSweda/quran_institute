@@ -31,7 +31,6 @@ class Student extends Model
         return $this->hasMany(\App\Models\Exam::class, 'student_id');
     }
    
-    // إضافة علاقة بالحلقات المسجل فيها
     public function classes()
     {
         return $this->belongsToMany(

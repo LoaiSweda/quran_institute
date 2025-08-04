@@ -11,20 +11,17 @@ class Ad extends Model
         'title','description','link','end_date','user_id','type_id','status','image'
     ];
 
-    // علاقة بنوع الإعلان
     public function type()
     {
         return $this->belongsTo(AdsType::class, 'type_id');
     }
 
-     // صفة محسوبة للحالة الحقيقية
     public function getComputedStatusAttribute()
     {
-        // إذا انتهى التاريخ
         if (Carbon::parse($this->end_date)->isPast()) {
             return 'expired';
         }
-        return $this->status; // "active" أو "inactive" أو غيرها
+        return $this->status; 
     }
 
 
@@ -36,7 +33,6 @@ class Ad extends Model
 
     public function publisher()
     {
-        // هذا هو صاحب الإعلان الحقيقي
         return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 

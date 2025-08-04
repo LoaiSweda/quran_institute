@@ -63,14 +63,11 @@ class AttendanceController extends Controller
         );
 
 
-        // إذا وُجد للتوّ (الجلسة بدأت للتوّ)، زدّ session_count
         if ($persent->wasRecentlyCreated) {
-            // الرابط من schedule إلى class ثم التحديث
             $class = $schedule->educationClass;
             $class->increment('session_count');
         }
 
-        // 4. تحقق من عدم تسجيل الطالب مسبقاً في هذه الجلسة
         $already = UserPersent::where([
             'user_id'    => $student->user_id,
             'class_id'   => $schedule->class_id,
@@ -83,7 +80,6 @@ class AttendanceController extends Controller
             ], 200);
         }
 
-        // 5. سجل الحضور في users_persents
         UserPersent::create([
             'user_id'    => $student->user_id,
             'class_id'   => $schedule->class_id,
@@ -91,7 +87,6 @@ class AttendanceController extends Controller
             'status'     => 'present',
         ]);
 
-        // 6. حدّث تقدم الطالب
         $progress = StudentProgress::firstOrCreate(
             [
                 'student_id' => $student->id,
@@ -132,14 +127,12 @@ class AttendanceController extends Controller
 
         $schedule = SessionSchedule::findOrFail($request->session_schedule_id);
 
-        // التحقق مما إذا تم تسجيل الغياب مسبقاً
         if ($schedule->isAttendanceMarked()) {
             return response()->json([
                 'message' => 'لقد قمت بتسجيل الغياب لهذه الجلسة مسبقاً'
             ], 400);
         }
 
-        // التحقق من انتهاء وقت الحصة
         if (! $schedule->isSessionEnded()) {
             return response()->json([
                 'message' => 'لا يمكن تسجيل الغياب قبل نهاية الحصة'
@@ -149,7 +142,6 @@ class AttendanceController extends Controller
         $classId = $schedule->class_id;
         $today   = now()->toDateString();
 
-        // إنشاء أو استرجاع سجل Persent المخصَّص لهذه الجلسة واليوم
         $persent = Persent::firstOrCreate(
             [
                 'date'                 => $today,
@@ -160,20 +152,20 @@ class AttendanceController extends Controller
             ]
         );
 
-        // 1. جلب جميع الطلاب المسجلين في الحلقة
+        // 1. classStudents
         $classStudents = EducationClass::findOrFail($classId)
             ->enrolledStudents()
-            ->pluck('id')  // افترضنا أن enrolledStudents ترجع علاقة users
+            ->pluck('id')  
             ->toArray();
 
-        // 2. جلب الطلاب الذين سجلوا حضوراً لهذه الجلسة (من users_persents)
+        // 2. presentStudents
         $presentStudents = UserPersent::where('persent_id', $persent->id)
             ->pluck('user_id')
             ->toArray();
 
         $absentCount = 0;
 
-        // 3. وضع علامة "absent" لكل من لم يحضر
+        // 3. mark "absent" 
         foreach ($classStudents as $userId) {
             if (! in_array($userId, $presentStudents, true)) {
                 UserPersent::updateOrCreate(
@@ -188,7 +180,6 @@ class AttendanceController extends Controller
             }
         }
 
-        // 4. وضع علامة أن الغياب تم تسجيله (مثلاً: تحديث حقل في الجلسة)
         $schedule->markAttendanceCompleted();
 
         return response()->json([

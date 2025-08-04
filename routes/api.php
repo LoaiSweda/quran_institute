@@ -1,6 +1,5 @@
 <?php
 
-// routes/api.php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\StudentController;
@@ -11,11 +10,10 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])
      ->middleware('auth:sanctum');
 
-// مسارات الطلاب
+
 Route::middleware(['auth:sanctum','role:student'])
     ->prefix('student')
     ->group(function() {
-        //Route::get('announcements', [StudentController::class, 'announcements']);
         Route::get('institute-announcements', [StudentController::class, 'instituteAnnouncements']);
         Route::get('class-announcements/{class}', [StudentController::class, 'classAnnouncements']);
         Route::get('announcements/{ad}', [StudentController::class, 'announcementDetail']);
@@ -32,7 +30,6 @@ Route::middleware(['auth:sanctum','role:student'])
     
 /*
 
-// مسارات الأوصياء
 Route::middleware(['auth:sanctum','role:guardian'])
     ->prefix('guardian')
     ->group(function() {
