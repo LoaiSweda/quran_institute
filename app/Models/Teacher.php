@@ -32,7 +32,7 @@ class Teacher extends Model
     protected $table = 'teachers';
     protected $primaryKey = 'user_id';
     public $incrementing = false;
-    public $timestamps = false; // إذا لم تستخدم timestamps في teachers
+    public $timestamps = false;
 
 
 
@@ -54,10 +54,10 @@ class Teacher extends Model
         return $this->belongsToMany(
             Institute::class,
             'institute_user',
-            'user_id',      // اسم العمود في جدول pivot الذي يشير لـ هذا النموذج
-            'institute_id', // اسم العمود في جدول pivot الذي يشير للمعهد
-            'user_id',      // ***هذا هو عمود الـ localKey في this model***
-            'id'            // عمود المفتاح في جدول Institute (عادة id)
+            'user_id',
+            'institute_id',
+            'user_id',
+            'id'
         )
             ->withPivot('role_institute')
             ->wherePivot('role_institute','teacher')

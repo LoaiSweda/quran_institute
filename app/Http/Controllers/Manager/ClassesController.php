@@ -59,7 +59,7 @@ class ClassesController extends Controller
         $inst     = $this->currentInstitute();
         $subjects = Subject::where('institute_id', $inst->id)->get();
 
-        // جلب المدرسين (first_name & last_name) عبر pivot institute_user + جدول teachers
+
         $teachers = DB::table('institute_user')
             ->join('teachers', 'institute_user.user_id', '=', 'teachers.user_id')
             ->where('institute_user.institute_id', $inst->id)
@@ -71,7 +71,8 @@ class ClassesController extends Controller
             ])
             ->get();
 
-        // أيضاً جلب الحلقات المنشأة سابقاً لعرضها تحت الفورم
+
+
         $classes = EducationClass::whereHas('subject', function($q) use($inst) {
             $q->where('institute_id', $inst->id);
         })
@@ -94,9 +95,8 @@ class ClassesController extends Controller
         $data = $request->validate([
             'name'           => 'required|string|max:255',
             'subject_id'     => 'required|exists:subjects,id',
-            'user_id'        => 'required|exists:users,id',   // هذا هو الـ teacher
+            'user_id'        => 'required|exists:users,id',
             'students_count' => 'required|integer|min:1',
-            // إضافة التحقق للجداول
             'schedules'      => 'nullable|array',
             'schedules.*.day_of_week' => 'required_with:schedules|in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
             'schedules.*.start_time'  => 'required_with:schedules|date_format:H:i',
@@ -105,10 +105,8 @@ class ClassesController extends Controller
         ]);
         DB::transaction(function() use ($data, $inst, $request, &$cls) {
 
-            // 1) إنشاء الحلقة
             $cls = EducationClass::create($data);
 
-            // 2) تأكد أولًا أنّ المدرّس موجود كعضو في المعهد
             DB::table('institute_user')->updateOrInsert(
                 [
                     'institute_id' => $inst->id,
@@ -119,12 +117,10 @@ class ClassesController extends Controller
                 ]
             );
 
-            // 3) اربط المدرّس بالحلقة في pivot users_classes
-            //    استخدم attach أو syncWithoutDetaching لتجنّب خطأ التكرار
+
             $cls->users()->syncWithoutDetaching($data['user_id']);
 
-            // — بقية خطواتك (QR code مثلاً) …
-            // إنشاء جداول المواعيد إذا وجدت
+
             if (!empty($data['schedules'])) {
                 foreach ($data['schedules'] as $sch) {
                     $cls->sessionSchedules()->create($sch);
@@ -215,14 +211,13 @@ class ClassesController extends Controller
         $inst = $this->currentInstitute();
         abort_if($class->subject->institute_id !== $inst->id, 403);
 
-        // جلب العلاقة sessionSchedules حتى لا تكون null
+
+
         $class->load(['subject', 'teacher', 'sessionSchedules']);
 
-        // جلب المواد والمدرّسين كما قبل
         $subjects = Subject::where('institute_id', $inst->id)->get();
 
 
-        // نفس جلب الـ teachers كما في create()
         $teachers = DB::table('institute_user')
             ->join('teachers','institute_user.user_id','=','teachers.user_id')
             ->where('institute_user.institute_id',$inst->id)
@@ -255,25 +250,25 @@ class ClassesController extends Controller
         DB::transaction(function() use ($class, $data){
             $class->update($data);
 
-            // نجمع الـ IDs الموجودة لتحاشي حذفها
+
             $keep = [];
 
             if (!empty($data['schedules'])) {
                 foreach ($data['schedules'] as $sch) {
                     if (!empty($sch['id'])) {
-                        // تحديث الجدول الحالي
+
+
                         $schedule = $class->sessionSchedules()->findOrFail($sch['id']);
                         $schedule->update($sch);
                         $keep[] = $schedule->id;
                     } else {
-                        // إنشاء جديد
+
                         $new = $class->sessionSchedules()->create($sch);
                         $keep[] = $new->id;
                     }
                 }
             }
 
-            // حذف أي جداول لم تعد موجودة بالطلب
             $class->sessionSchedules()
                 ->whereNotIn('id', $keep)
                 ->delete();

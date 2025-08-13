@@ -34,11 +34,11 @@ class Student extends Model
     {
         return $this->belongsToMany(
             \App\Models\EducationClass::class,
-            'users_classes',   // اسم pivot table
-            'user_id',         // العمود في users_classes الذي يربط للموديل Student (student->user_id)
-            'class_id',        // العمود في users_classes الذي يربط للحلقة
-            'user_id',         // المفتاح المحلي في جدول students
-            'id'               // المفتاح في جدول classes
+            'users_classes',
+            'user_id',
+            'class_id',
+            'user_id',
+            'id'
         )->withTimestamps();
     }
 

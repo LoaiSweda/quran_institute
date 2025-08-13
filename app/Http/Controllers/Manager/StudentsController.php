@@ -21,12 +21,10 @@ class StudentsController extends Controller
      */
     public function index(Request $request)
     {
-        // خيارات الفلترة
         $subjects = Subject::all();
         $classes  = EducationClass::all();
         $levels   = Subject::pluck('level')->unique()->filter()->values();
 
-        // بناء الاستعلام مع الفلترات
         $query = Student::with(['user','guardian','classes.subject','exams','progress'])
             ->when($request->subject_id, function($q, $id) {
                 return $q->whereHas('classes.subject', function($q2) use ($id) {
@@ -69,13 +67,12 @@ class StudentsController extends Controller
      */
     public function create()
     {
-        // نستخلص رقم دور الوصي (6)
         $guardianRoleId = 6;
 
-        // نجيب فقط الوصاة المرتبطين بمستخدمين role_id = 6
         $guardians = Guardian::whereHas('user', function($q) use($guardianRoleId) {
             $q->where('role_id', $guardianRoleId);
         })->get();
+
         $students  = Student::with('user')->orderBy('created_at','desc')->paginate(10);
 
         return view('manager.students.create', compact('guardians','students'));
@@ -84,67 +81,9 @@ class StudentsController extends Controller
     /**
      * حفظ طالب جديد مع توليد QR تلقائي
      */
-//    public function store(Request $request)
-//    {
-//        // 1) Validation
-//        $data = $request->validate([
-//            'first_name'   => 'required|string|max:50',
-//            'last_name'    => 'required|string|max:50',
-//            'birthdate'    => 'nullable|date',
-//            'phone'        => 'nullable|string',
-//            'address'      => 'nullable|string',
-//            'father_name'  => 'nullable|string',
-//            'guardian_id'  => 'nullable|exists:guardians,id',
-//            'email'        => ['required','email','unique:users,email'],
-//            'password'     => 'required|string|min:6|confirmed',
-//        ]);
-//
-//        // 2) توليد QR فريد
-//        $qr = Str::upper(Str::random(8));
-//        while (Student::where('qr', $qr)->exists()) {
-//            $qr = Str::upper(Str::random(8));
-//        }
-//
-//        // 3) جلب role_id بطريقة آمنة
-//        // الخيار الأوّل (من ملف config/roles.php):
-//      //  $roleId = config('roles.student');
-//        // الخيار الثاني (من جدول roles مباشرةً):
-//         $roleId = Role::where('name','student')->value('id');
-//
-//        if (! $roleId) {
-//            abort(500, "Role 'student' not configured or not found.");
-//        }
-//
-//        // 4) إنشاء المستخدم
-//        $user = User::create([
-//            'name'     => "{$data['first_name']} {$data['last_name']}",
-//            'email'    => $data['email'],
-//            'password' => Hash::make($data['password']),
-//            'role_id'  => $roleId,
-//        ]);
-//
-//        // 5) إنشاء الطالب
-//        Student::create([
-//            'first_name'        => $data['first_name'],
-//            'last_name'         => $data['last_name'],
-//            'birthdate'         => $data['birthdate'],
-//            'phone'             => $data['phone'],
-//            'address'           => $data['address'],
-//            'father_name'       => $data['father_name'],
-//            'guardian_id'       => $data['guardian_id'],
-//            'qr'                => $qr,
-//            'user_id'           => $user->id,
-//            'points'            => 0,
-//            'present_percentage'=> 0,
-//        ]);
-//
-//        return redirect()
-//            ->route('manager.students.index')
-//            ->with('success','تم إضافة الطالب بنجاح.');
-//    }
+
     public function store(Request $request)
     {
-        // 1) Validation
         $data = $request->validate([
             'first_name'   => 'required|string|max:50',
             'last_name'    => 'required|string|max:50',
@@ -157,19 +96,16 @@ class StudentsController extends Controller
             'password'     => 'required|string|min:6|confirmed',
         ]);
 
-        // 2) توليد QR فريد
         $qr = Str::upper(Str::random(8));
         while (Student::where('qr', $qr)->exists()) {
             $qr = Str::upper(Str::random(8));
         }
 
-        // 3) جلب role_id
         $roleId = Role::where('name','student')->value('id');
         if (! $roleId) {
             abort(500, "Role 'student' not found.");
         }
 
-        // 4) إنشاء المستخدم
         $user = User::create([
             'name'     => "{$data['first_name']} {$data['last_name']}",
             'email'    => $data['email'],
@@ -177,7 +113,6 @@ class StudentsController extends Controller
             'role_id'  => $roleId,
         ]);
 
-        // 5) إنشاء الطالب
         $student = Student::create([
             'first_name'        => $data['first_name'],
             'last_name'         => $data['last_name'],
@@ -192,11 +127,9 @@ class StudentsController extends Controller
             'present_percentage'=> 0,
         ]);
 
-        // 6) جلب معهد المدير
         $institute = auth()->user()->institute;
 
         if ($institute) {
-            // 7) ربط الطالب (المستخدم) بالمعهد
             $institute->users()->attach($user->id, [
                 'role_institute' => 'student',
             ]);
@@ -215,8 +148,8 @@ class StudentsController extends Controller
         $student->load([
             'user',
             'guardian',
-            'classes.teacher',   // ← إحمِل هنا العلاقة
-            'classes.sessionSchedules',  // ← حمّل جداول المواعيد لكل حلقة
+            'classes.teacher',
+            'classes.sessionSchedules',
 
             'classes.subject',
             'exams',
@@ -244,7 +177,6 @@ class StudentsController extends Controller
      */
     public function update(Request $request, Student $student)
     {
-        // 1) تحقق من البيانات
         $data = $request->validate([
             'first_name'   => 'required|string|max:50',
             'last_name'    => 'required|string|max:50',
@@ -255,7 +187,6 @@ class StudentsController extends Controller
             'guardian_id'  => 'nullable|exists:guardians,id',
         ]);
 
-        // 2) حدّث الطالب
         $student->update($data);
 
         return redirect()
@@ -268,11 +199,7 @@ class StudentsController extends Controller
      */
     public function destroy(Student $student)
     {
-        // للحذف النهائي
         $student->forceDelete();
-        // أو إذا كنت تستخدم soft deletes:
-        // $student->delete();
-
         return redirect()
             ->route('manager.students.index')
             ->with('success','تم حذف الطالب.');

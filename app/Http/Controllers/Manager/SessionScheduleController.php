@@ -24,7 +24,6 @@ class SessionScheduleController extends Controller
         $class = EducationClass::with('subject')
             ->findOrFail($classId);
 
-        // تأكد أنّ الحلقة تخص المعهد التابع للمدير
         abort_if(
             $class->subject->institute_id !== auth()->user()->institute->id,
             403,
@@ -36,21 +35,22 @@ class SessionScheduleController extends Controller
     {
         $inst = $this->currentInstitute();
 
-        // 1) جلب الحلقات لفلتر الحلقة
         $classes = EducationClass::whereHas('subject', function($q) use ($inst) {
             $q->where('institute_id', $inst->id);
         })->get();
 
-        // 2) جلب المواد لفلتر المادة
+
+
         $subjects = Subject::where('institute_id', $inst->id)->get();
 
-        // 3) بناء الاستعلام الأساسي
+
         $query = SessionSchedule::with(['educationClass.subject','educationClass.teacher'])
             ->whereHas('educationClass.subject', function($q) use ($inst) {
                 $q->where('institute_id', $inst->id);
             });
 
-        // 4) تطبيق فلاتر المستخدم
+
+
         if ($request->filled('class_id')) {
             $query->where('class_id', $request->class_id);
         }
@@ -63,7 +63,8 @@ class SessionScheduleController extends Controller
             $query->where('day_of_week', $request->day_of_week);
         }
 
-        // 5) تطبيق الفرز
+
+
         $dir = $request->direction === 'desc' ? 'desc' : 'asc';
         if ($request->sort === 'day') {
             $query->orderBy('day_of_week', $dir);
@@ -76,14 +77,11 @@ class SessionScheduleController extends Controller
                 ->orderBy('teachers.first_name', $dir)
                 ->select('session_schedules.*');
         } else {
-            // ترتيب افتراضي
             $query->orderBy('day_of_week')->orderBy('start_time');
         }
 
-        // 6) Pagination
         $schedules = $query->paginate(20)->withQueryString();
 
-        // 7) عرض الصفحة وتمرير المتغيرات
         return view('manager.classes.schedules.index', [
             'classes'   => $classes,
             'subjects'  => $subjects,
@@ -96,7 +94,6 @@ class SessionScheduleController extends Controller
     {
         $class = $this->currentInstituteClass($classId);
 
-        // جهّز المواعيد الحالية لعرضها
         $class->load(['sessionSchedules' => function($q){
             $q->orderBy('day_of_week')->orderBy('start_time');
         }]);
@@ -115,11 +112,18 @@ class SessionScheduleController extends Controller
             'end_time'    => 'required|date_format:H:i|after:start_time',
         ]);
 
-        // أضف user_id من المستخدم الحالي
-        $data['user_id']  = auth()->id();
-        $data['class_id'] = $class->id;
+        // ابحث عن user_id للمعلّم من عمود class.user_id
+        $teacherUserId = $class->user_id; // أو optional($class->teacher)->user_id
 
-        SessionSchedule::create($data);
+        // سلامة: إذا لم يكن هناك معلّم، ارجع خطأ أو استخدم الـ manager كمحافظ
+        if (!$teacherUserId) {
+            return back()->withErrors(['teacher' => 'لم يتم تعيين معلّم لهذه الحلقة.']);
+        }
+
+        // نستخدم علاقة sessionSchedules لإنشاء السجل (تملأ class_id تلقائياً)
+        $class->sessionSchedules()->create(array_merge($data, [
+            'user_id' => $teacherUserId,
+        ]));
 
         return redirect()
             ->route('manager.classes.edit', $class->id)
@@ -127,18 +131,20 @@ class SessionScheduleController extends Controller
     }
 
 
+
     public function edit(int $classId, SessionSchedule $schedule)
     {
-        // 1) جلب الحلقة مع التحقق من الصلاحية
+
+
         $class = $this->currentInstituteClass($classId);
         abort_if($schedule->class_id !== $class->id, 403);
 
-        // 2) جلب المواعيد السابقة للعرض في الجدول
+
         $class->load(['sessionSchedules' => function($q) {
             $q->orderBy('day_of_week')->orderBy('start_time');
         }]);
 
-        // 3) عرض الصفحة مع المتغيرات المطلوبة
+
         return view('manager.classes.schedules.edit', [
             'class'    => $class,
             'schedule' => $schedule,
@@ -156,12 +162,19 @@ class SessionScheduleController extends Controller
             'end_time'    => 'required|date_format:H:i|after:start_time',
         ]);
 
+        // خيار: اجعل user_id يعكس معلّم الحلقة الحالي
+        $teacherUserId = $class->user_id;
+        if ($teacherUserId) {
+            $data['user_id'] = $teacherUserId;
+        }
+
         $schedule->update($data);
 
         return redirect()
             ->route('manager.classes.edit', $class->id)
             ->with('success', 'تم تحديث الموعد بنجاح');
     }
+
 
     public function destroy($classId, SessionSchedule $schedule)
     {

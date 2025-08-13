@@ -5,7 +5,6 @@
 
 @section('content')
     <div class="container-fluid">
-        {{-- Header + Add button --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 text-gray-800">إدارة المواد</h1>
             <a href="{{ route('manager.subjects.create') }}" class="btn btn-primary">
@@ -13,7 +12,6 @@
             </a>
         </div>
 
-        {{-- Search & Sort Card --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header py-3">
                 <form method="GET" action="{{ route('manager.subjects.index') }}" class="row g-2 align-items-center">
@@ -106,7 +104,9 @@
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
 
-                                    {{-- Toggle Active --}}
+
+
+
                                     <form action="{{ route('manager.subjects.toggle', $subject) }}"
                                           method="POST"
                                           class="d-inline"
@@ -133,7 +133,6 @@
                 </div>
             </div>
 
-            {{-- Pagination --}}
             @if($subjects->hasPages())
                 <div class="card-footer">
                     {{ $subjects->withQueryString()->links('pagination::bootstrap-5') }}

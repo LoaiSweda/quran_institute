@@ -10,7 +10,7 @@ class EducationClass extends Model
 
     protected $fillable = [
         'name',
-        'subject_id',         // ← أضفه هنا
+        'subject_id',
         'user_id',
         'students_count',
         'session_count',

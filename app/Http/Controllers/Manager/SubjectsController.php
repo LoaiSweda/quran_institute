@@ -14,16 +14,13 @@ class SubjectsController extends Controller
      */
     public function index(Request $request)
     {
-        // 1) Grab the institute of the logged-in user
         $institute = auth()->user()->institute;
         if (! $institute) {
             abort(403, 'لا يوجد معهد مرتبط بالمستخدم الحالي.');
         }
 
-        // 2) Build the query scoped to this institute
         $query = Subject::where('institute_id', $institute->id);
 
-        // 2a) Search by name or description
         if ($search = $request->input('search')) {
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -31,7 +28,6 @@ class SubjectsController extends Controller
             });
         }
 
-        // 2b) Sort if requested
         if ($sort = $request->input('sort')) {
             $direction = $request->input('direction', 'asc');
             $query->orderBy($sort, $direction);
@@ -39,10 +35,8 @@ class SubjectsController extends Controller
             $query->orderBy('name', 'asc');
         }
 
-        // 3) Paginate
         $subjects = $query->paginate(10)->withQueryString();
 
-        // 4) Return index view
         return view('manager.subjects.index', compact('subjects'));
     }
 
@@ -53,32 +47,28 @@ class SubjectsController extends Controller
 
     public function create(Request $request)
     {
-        // 1) جلب معهد المدير
         $institute = auth()->user()->institute;
         if (! $institute) {
             abort(403, 'لا يوجد معهد مرتبط بالمستخدم الحالي.');
         }
 
-        // 2) بناء استعلام المواد لمعرض الإنشاء
         $query = Subject::where('institute_id', $institute->id);
 
-        // (اختياري) قم بنفس بحث/فرز GET params إن أردت:
-        if ($search = $request->input('search')) {
-            $query->where(fn($q) =>
-            $q->where('name','like',"%{$search}%")
-                ->orWhere('description','like',"%{$search}%")
-            );
-        }
-        if ($sort = $request->input('sort')) {
-            $query->orderBy($sort, $request->input('direction','asc'));
-        } else {
-            $query->orderBy('created_at','desc');
-        }
+//        // (اختياري) قم بنفس بحث/فرز GET params إن أردت:
+//        if ($search = $request->input('search')) {
+//            $query->where(fn($q) =>
+//            $q->where('name','like',"%{$search}%")
+//                ->orWhere('description','like',"%{$search}%")
+//            );
+//        }
+//        if ($sort = $request->input('sort')) {
+//            $query->orderBy($sort, $request->input('direction','asc'));
+//        } else {
+//            $query->orderBy('created_at','desc');
+//        }
 
-        // 3) جلب صفحة أولى أو كلها إن أردت
         $subjects = $query->paginate(10)->withQueryString();
 
-        // 4) عرض الفورم + القائمة معاً
         return view('manager.subjects.create', compact('subjects'));
     }
 
@@ -94,7 +84,7 @@ class SubjectsController extends Controller
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'level'          => 'nullable|string|max:100',
             'degree'         => 'nullable|numeric|min:0',
-            'exams_count'    => 'nullable|integer|min:0',    // ← أضف هذا
+            'exams_count'    => 'nullable|integer|min:0',
 
             'total_sessions' => 'nullable|integer|min:0',
             'is_active'      => 'nullable|boolean',
@@ -143,7 +133,7 @@ class SubjectsController extends Controller
             'end_date'       => 'nullable|date|after_or_equal:start_date',
             'level'          => 'nullable|string|max:100',
             'degree'         => 'nullable|numeric|min:0',
-            'exams_count'    => 'nullable|integer|min:0',    // ← أضف هذا
+            'exams_count'    => 'nullable|integer|min:0',
 
             'total_sessions' => 'nullable|integer|min:0',
             'is_active'      => 'nullable|boolean',
@@ -168,7 +158,6 @@ class SubjectsController extends Controller
     }
     public function toggle(Subject $subject)
     {
-        // فقط لمواد هذا المعهد!
         if ($subject->institute_id !== auth()->user()->institute->id) {
             abort(403);
         }

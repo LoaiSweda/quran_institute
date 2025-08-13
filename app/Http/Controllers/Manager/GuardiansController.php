@@ -17,7 +17,7 @@ class GuardiansController extends Controller
     {
         $query = Guardian::with('students', 'user');
 
-        // بحث بالاسم أو الهاتف أو البريد
+
         if ($search = $request->input('search')) {
             $query->where(function($q) use ($search) {
                 $q->where('firstname', 'like', "%{$search}%")
@@ -29,7 +29,6 @@ class GuardiansController extends Controller
             });
         }
 
-        // فرز اختياري
         if ($sort = $request->input('sort')) {
             [$field, $dir] = explode('_', $sort);
             $query->orderBy($field, $dir);
@@ -47,7 +46,7 @@ class GuardiansController extends Controller
      */
     public function create()
     {
-        // جلب آخر أولياء الأمور لإنشاء القائمة في الأسفل
+
         $guardians = Guardian::with('user', 'students')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -69,14 +68,14 @@ class GuardiansController extends Controller
             'password'             => 'required|confirmed|min:6',
         ]);
 
-        // 1) ننشئ User جديد بدور وليّ أمر (role_id = 6)
+
         $user = User::create([
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
             'role_id'  => 6,
         ]);
 
-        // 2) ننشئ سجل Guardian مرتبط بهذه الـ user
+
         Guardian::create([
             'user_id'   => $user->id,
             'firstname' => $data['firstname'],
@@ -122,7 +121,6 @@ class GuardiansController extends Controller
             'password'             => 'nullable|confirmed|min:6',
         ]);
 
-        // 1) تحديث بيانات Guardian
         $guardian->update([
             'firstname' => $data['firstname'],
             'lastname'  => $data['lastname'],
@@ -130,7 +128,6 @@ class GuardiansController extends Controller
             'address'   => $data['address'] ?? null,
         ]);
 
-        // 2) تحديث بيانات User المرتبط
         $user = $guardian->user;
         $user->email = $data['email'];
         if (! empty($data['password'])) {
@@ -148,12 +145,10 @@ class GuardiansController extends Controller
      */
     public function destroy(Guardian $guardian)
     {
-        // إذا أردت حذف الحساب بالكامل:
+
         $user = $guardian->user;
         $guardian->delete();
         $user->delete();
-
-        // أو إذا فضّلت فقط تعطيل الحساب، يمكنك بدال الحذف استخدام SoftDeletes أو تحديث حقل فعال/غير فعال.
 
         return redirect()
             ->route('manager.guardians.index')

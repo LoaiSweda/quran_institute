@@ -22,9 +22,9 @@ class SessionSchedule extends Model
     {
         return $this->belongsToMany(
             User::class,
-            'session_users',         // اسم الجدول الوسيط
-            'session_schedule_id',   // FK في جدول pivot إلى session_schedules
-            'user_id'                // FK في جدول pivot إلى users
+            'session_users',
+            'session_schedule_id',
+            'user_id'
         )->withTimestamps();
     }
 }

@@ -31,15 +31,12 @@ class InstituteController extends Controller
 
     public function create()
     {
-        // إحضار أي مدير جديد تم إنشاؤه مؤخرًا
         $newManagerId = session('new_manager_id');
 
-        // جلب المستخدمين المرشحين كمدراء (admin أو institute manager)
         $managers = User::whereHas('role', fn($q) =>
         $q->whereIn('name', ['admin', 'institute manager'])
         )->get();
 
-        // جلب قائمة المعاهد الموجودة لعرضها أسفل النموذج
         $institutes = Institute::latest()
             ->paginate(10);
 
@@ -61,7 +58,6 @@ class InstituteController extends Controller
             $data['image'] = $f->store('institutes', 'public');
         }
 
-        // هنا نستخدم user_id المُرسل من الفورم مباشرة
         $institute = Institute::create($data);
 
         return redirect()
@@ -73,21 +69,16 @@ class InstituteController extends Controller
 
     public function show(Institute $institute)
     {
-        // عدد المواد
         $subjectsCount = $institute->subjects()->count();
 
-        // عدد الحلقات
         $classesCount  = $institute->classes()->count();
 
-        // جمع معرّفات الحلقات مع توضيح الجدول لتفادي ambiguity
         $classIds = $institute
             ->classes()
-            ->pluck('classes.id');   // <--- هام: classes.id
+            ->pluck('classes.id');
 
-        // عدد المشرفين الإضافيين
         $adminsCount   = $institute->admins()->count();
 
-        // عدد المعلمين الفعليين (distinct user_id من session_schedules)
         $teachersCount = \App\Models\SessionSchedule::whereIn('class_id', $classIds)
             ->distinct('user_id')
             ->count('user_id');
@@ -108,14 +99,12 @@ class InstituteController extends Controller
         $q->whereIn('name', ['admin', 'institute manager'])
         )->get();
 
-        // لجعل صفحة التعديل بسيطة نعيد فقط النموذج (يمكنك إضافة قائمة المعاهد نفسها إذا أردت)
         return view('super-admin.institutes.form', [
             'institute'     => $institute,
             'managers'      => $managers,
             'action'        => route('super-admin.institutes.update', $institute),
             'method'        => 'PUT',
             'newManagerId'  => null,
-            // إذا أردت أيضاً إظهار القائمة أسفل نموذج التعديل:
             'institutes'    => Institute::latest()->paginate(10),
         ]);
     }
@@ -142,13 +131,11 @@ class InstituteController extends Controller
     }
 
     // --------------------------------
-    // عرض نموذج إنشاء مدير جديد
     public function createManager()
     {
         return view('super-admin.institutes.manager-form');
     }
 
-    // تخزين مدير جديد ثم إعادة التوجيه إلى create institute
     public function storeManager(Request $request)
     {
         $data = $request->validate([

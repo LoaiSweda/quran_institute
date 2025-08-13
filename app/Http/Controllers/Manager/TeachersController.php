@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Teacher;
 use App\Models\Institute;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class TeachersController extends Controller
@@ -39,10 +40,9 @@ class TeachersController extends Controller
             'name'     => $data['name'],
             'email'    => $data['email'],
             'password' => bcrypt($data['password']),
-            'role_id'  => 4,           // <––– هنا نمرّر role_id للمدرّس
+            'role_id'  => 4,
         ]);
 
-        // لو تستخدم حزمة صلاحيات لا حاجة لـ assignRole مجدداً
 
         session()->flash('new_teacher_user_id', $user->id);
 
@@ -59,10 +59,8 @@ class TeachersController extends Controller
     {
         $institute = $this->institute();
 
-        // يبدأ الاستعلام من علاقة المعهد -> المدرّسون عبر pivot
         $query = $institute->teachers();
 
-        // بحث نصي باسم الأول أو الأخير
         if ($q = $request->input('search')) {
             $query->where(function ($sub) use ($q) {
                 $sub->where('first_name', 'like', "%{$q}%")
@@ -70,7 +68,6 @@ class TeachersController extends Controller
             });
         }
 
-        // فرز بحسب أي من الحقول المسموح بها
         if ($sort = $request->input('sort')) {
             $dir = $request->input('direction', 'asc') === 'desc' ? 'desc' : 'asc';
             if (in_array($sort, ['first_name','last_name','phone','birthdate'])) {
@@ -88,58 +85,64 @@ class TeachersController extends Controller
      */
     public function create()
     {
-        $inst     = $this->institute();
+        $inst = $this->institute();
 
-        // الحلقات لغرض اختيار الحلقة (إذا احتجت)
-        $classes  = $inst->classes()->get();
+        // (اختياري) جلب الحلقات التابعة للمعهد إن كنت تحتاجها في النموذج
+        $classes = $inst->classes()->get();
 
-        // جلب المعلمين المرتبطين بمعهد المدير
-        $teachers = DB::table('institute_user')
-            ->join('teachers', 'institute_user.user_id', '=', 'teachers.user_id')
-            ->join('users',    'teachers.user_id',       '=', 'users.id')
-            ->where('institute_user.institute_id', $inst->id)
-            ->where('institute_user.role_institute', 'teacher')
-            ->select([
-                'teachers.user_id as id',
-                'teachers.first_name',
-                'teachers.last_name',
-                'teachers.phone',
-                'users.email',
-            ])
-            ->get();
+        // جلب المدرّسين المرتبطين بالمعهد كـ Collection من موديل Teacher مع user مرفق
+        // هكذا تحصل على teacher->id (مهم للروت) و teacher->user->email و باقي البيانات بسهولة
+        $teachers = $inst->teachers()->with('user')->orderBy('first_name')->get();
 
-        return view('manager.teachers.create', compact('classes','teachers'));
+        return view('manager.teachers.create', compact('classes', 'teachers'));
     }
+
+
     public function store(Request $request)
     {
         $data = $request->validate([
-            'user_id'   => 'required|exists:users,id',
-            'first_name'=> 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            // بيانات Teacher
+            'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'image'     => 'nullable|image|max:2048',
-            'phone'     => 'nullable|string|max:20',
-            'address'   => 'nullable|string|max:255',
+            'image' => 'nullable|image|max:2048',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
             'birthdate' => 'nullable|date',
         ]);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('teachers', 'public');
-        }
+        DB::transaction(function () use ($data, &$teacher) {
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role_id' => 4, // دور المدرّس
+            ]);
 
-        // إنشاء المدرّس وتخزين الـ user_id
-        $teacher = Teacher::create($data);
+            if (isset($data['image'])) {
+                $data['image'] = request()->file('image')->store('teachers', 'public');
+            }
 
-        // ربطه بالمعهد عبر pivot (role_institute = 'teacher')
-        $teacher->institutes()->attach(
-            $this->institute()->id,
-            ['role_institute' => 'teacher']
-        );
+            $teacher = Teacher::create([
+                'user_id' => $user->id,
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'image' => $data['image'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'address' => $data['address'] ?? null,
+                'birthdate' => $data['birthdate'] ?? null,
+            ]);
 
+            $this->institute()
+                ->teachers()
+                ->attach($user->id, ['role_institute' => 'teacher']);
+        });
         return redirect()
             ->route('manager.teachers.index')
-            ->with('success', 'تم إضافة المدرّس بنجاح.');
+            ->with('success', 'تم إنشاء المدرّس وحسابه وربطه بالمعهد بنجاح.');
     }
-
     /**
      * 4.4.2.5 عرض تفاصيل مدرس محدد
      */
@@ -158,17 +161,27 @@ class TeachersController extends Controller
     /**
      * 4.4.2.2 عرض نموذج تعديل بيانات مدرس
      */
+    /**
+     * عرض نموذج تعديل بيانات مدرس (مع تمرير قائمة المدرّسين المرتبطين بالمعهد)
+     */
     public function edit($id)
     {
+        // نحصل على المدرّس للتأكد من أنه مرتبط بالمعهد
         $teacher = $this->institute()
             ->teachers()
             ->findOrFail($id);
 
-        return view('manager.teachers.edit', compact('teacher'));
+        // نجيب جميع المدرّسين المرتبطين بهذا المعهد ليُعرضوا أسفل صفحة التعديل
+        $teachers = $this->institute()
+            ->teachers()
+            ->with('user') // لجلب بيانات حساب المستخدم إن أردنا عرض الاسم/البريد
+            ->get();
+
+        return view('manager.teachers.edit', compact('teacher', 'teachers'));
     }
 
     /**
-     * 4.4.2.2 حفظ تعديلات مدرس
+     * حفظ تعديلات المدرّس ثم إعادة توجيه إلى صفحة التعديل (حتى يرى المستخدم القائمة أسفل الصفحة)
      */
     public function update(Request $request, $id)
     {
@@ -186,7 +199,6 @@ class TeachersController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            // حذف الصورة القديمة إن وجدت
             if ($teacher->image) {
                 Storage::disk('public')->delete($teacher->image);
             }
@@ -195,10 +207,12 @@ class TeachersController extends Controller
 
         $teacher->update($data);
 
+        // أرجع للموديل نفسه لصفحة التعديل حتى تظهر القائمة أسفل الصفحة
         return redirect()
-            ->route('manager.teachers.show', $teacher)
+            ->route('manager.teachers.edit', $teacher)
             ->with('success', 'تم تحديث بيانات المدرس بنجاح.');
     }
+
 
     /**
      * 4.4.2.3 فصل/تعطيل مدرس من المعهد
@@ -209,7 +223,6 @@ class TeachersController extends Controller
             ->teachers()
             ->findOrFail($id);
 
-        // نفصل الربط من الجدول المحوري فقط
         $teacher->institutes()->detach($this->institute()->id);
 
         return redirect()

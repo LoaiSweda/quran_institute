@@ -140,25 +140,15 @@ Route::middleware(['auth', 'role:institute manager'])
 
 
         // إدارة المدرّسين
-        Route::prefix('teachers')->name('teachers.')->group(function() {
-
-            // ** صفحة إنشاء مستخدم جديد (كيان User) **
-            Route::get('new-user', [TeachersController::class,'createUser'])->name('newUser');
-            Route::post('new-user',[TeachersController::class,'storeUser' ])->name('storeUser');
-            // 4.4.2.4 عرض جميع المدرّسين
-            Route::get('/', [TeachersController::class, 'index'])->name('index');
-            // 4.4.2.1 إضافة مدرس
-            Route::get('create', [TeachersController::class, 'create'])->name('create');
-            Route::post('/',    [TeachersController::class, 'store'])->name('store');
-            // 4.4.2.5 عرض مدرس محدد
-            Route::get('{teacher}',       [TeachersController::class, 'show'])->name('show');
-            // 4.4.2.2 تعديل بيانات مدرس
-            Route::get('{teacher}/edit',  [TeachersController::class, 'edit'])->name('edit');
-            Route::put('{teacher}',       [TeachersController::class, 'update'])->name('update');
-            // 4.4.2.3 حذف/تعطيل مدرس
-            Route::delete('{teacher}',    [TeachersController::class, 'destroy'])->name('destroy');
+        Route::prefix('teachers')->name('teachers.')->group(function(){
+            Route::get('/',            [TeachersController::class,'index'])->name('index');
+            Route::get('create',       [TeachersController::class,'create'])->name('create');
+            Route::post('/',           [TeachersController::class,'store'])->name('store');
+            Route::get('{teacher}',    [TeachersController::class,'show'])->name('show');
+            Route::get('{teacher}/edit',[TeachersController::class,'edit'])->name('edit');
+            Route::put('{teacher}',    [TeachersController::class,'update'])->name('update');
+            Route::delete('{teacher}', [TeachersController::class,'destroy'])->name('destroy');
         });
-
 
         // إدارة المواد
         Route::prefix('subjects')->name('subjects.')->group(function() {
