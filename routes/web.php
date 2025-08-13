@@ -98,6 +98,16 @@ Route::middleware(['auth', 'role:institute manager'])
                 });
         });
 
+// إدارة الـ Admins من قبل مدير المعهد
+        Route::prefix('admins')->name('admins.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Manager\AdminsController::class, 'index'])->name('index');
+            Route::get('create', [\App\Http\Controllers\Manager\AdminsController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Manager\AdminsController::class, 'store'])->name('store');
+            Route::get('{admin}', [\App\Http\Controllers\Manager\AdminsController::class, 'show'])->name('show');
+            Route::get('{admin}/edit', [\App\Http\Controllers\Manager\AdminsController::class, 'edit'])->name('edit');
+            Route::put('{admin}', [\App\Http\Controllers\Manager\AdminsController::class, 'update'])->name('update');
+            Route::delete('{admin}', [\App\Http\Controllers\Manager\AdminsController::class, 'destroy'])->name('destroy');
+        });
 
         // إدارة أولياء الأمور
         Route::prefix('guardians')->name('guardians.')->group(function () {
@@ -328,7 +338,7 @@ Route::middleware(['auth','role:super admin'])
         });
     });
 
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////
     Route::middleware(['auth','role:admin'])
           ->get('/attendance/scan', [AttendanceScanController::class, 'show'])
           ->name('attendance.scan');
@@ -350,6 +360,26 @@ Route::middleware(['auth','role:super admin'])
      Route::middleware(['auth','role:admin'])
           ->get('/attendance/session-status', [AttendanceController::class, 'sessionStatus'])
           ->name('attendance.session-status');
+
+
+
+
+use App\Http\Controllers\supervisor\SubjectsController as SupervisorSubjectsController;
+use App\Http\Controllers\supervisor\TeachersController as SupervisorTeachersController;
+
+Route::middleware(['auth','role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        // مواد المشرف
+        Route::get('subjects',              [SupervisorSubjectsController::class, 'index'])->name('subjects.index');
+        Route::get('subjects/{subject}',    [SupervisorSubjectsController::class, 'show'])->name('subjects.show');
+
+        // المدرّسون للمشرف
+        Route::get('teachers',              [SupervisorTeachersController::class, 'index'])->name('teachers.index');
+        Route::get('teachers/{teacher}',    [SupervisorTeachersController::class, 'show'])->name('teachers.show');
+    });
+
 
 
 

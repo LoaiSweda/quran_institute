@@ -110,4 +110,13 @@ function getInstituteIdAttribute(): ?int
     return $this->institute->id ?? null;
 }
 
+
+public function adminProfile()
+{
+    return $this->hasOne(Admin::class);
+}
+
+
+
+
 }

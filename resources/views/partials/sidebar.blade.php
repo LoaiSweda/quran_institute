@@ -17,10 +17,40 @@
                         @break
 
                     @case('admin')
-                        <li><a href="{{ url('/admin/dashboard') }}">الرئيسية</a></li>
-                        <li><a href="{{ url('/admin/dashboard') }}">لوحة المشرف</a></li>
-                        <li><a href="{{ url('/admin/reports') }}">التقارير</a></li>
-                        @break
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/dashboard')) active @endif"
+                           href="{{ url('/admin/dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> الرئيسية
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/dashboard')) active @endif"
+                           href="{{ url('/admin/dashboard') }}">
+                            <i class="bi bi-columns-gap"></i> لوحة المشرف
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/subjects*')) active @endif"
+                           href="{{ url('/admin/subjects') }}">
+                            <i class="bi bi-journal-bookmark"></i> المواد
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/teachers*')) active @endif"
+                           href="{{ url('/admin/teachers') }}">
+                            <i class="bi bi-people"></i> المدرّسون
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/reports')) active @endif"
+                           href="{{ url('/admin/reports') }}">
+                            <i class="bi bi-bar-chart"></i> التقارير
+                        </a>
+                    </li>
+                    @break
+
 
                     @case('institute manager')
                     <li class="nav-item">
@@ -29,7 +59,12 @@
                             <i class="bi bi-speedometer2"></i> الرئيسية
                         </a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/admins*')) active @endif"
+                           href="{{ url('/manager/admins') }}">
+                            <i class="bi bi-person-badge"></i> المشرفون
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/teachers*')) active @endif"
                            href="{{ url('/manager/teachers') }}">
