@@ -12,12 +12,11 @@ class Subject extends Model
         'start_date','end_date',
         'level','degree',
         'total_sessions','is_active',
-        'institute_id','exams_count',
+        'institute_id','exams_count','image',
     ];
 
-    // Add this:
     protected $casts = [
-        'start_date'     => 'date',   // now $subject->start_date is a Carbon instance
+        'start_date'     => 'date',  
         'end_date'       => 'date',
         'is_active'      => 'boolean',
     ];
@@ -34,10 +33,17 @@ class Subject extends Model
     {
         return $this->belongsToMany(
             EducationClass::class,
-            'users_classes', // أو pivot table المناسب
-            'user_id',       // أو student_id إذا استخدمت pivot مستقلّ
+            'users_classes', 
+            'user_id',       
             'class_id'
         )->withTimestamps();
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image
+            ? asset('storage/subjects/' . $this->image)
+            : null;
     }
 
 }

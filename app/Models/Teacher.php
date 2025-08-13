@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Log;
 class Teacher extends Model
 {
 
-    /**
-     * الحقول القابلة للملء جماعياً.
-     */
     protected $fillable = [
         'image',
         'first_name',
@@ -21,9 +18,7 @@ class Teacher extends Model
         'user_id',
     ];
 
-    /**
-     * عمل cast لحقل birthdate ليُرجع كائن Carbon.
-     */
+
     protected $casts = [
         'birthdate'   => 'date',
         'created_at'  => 'datetime',
@@ -35,20 +30,12 @@ class Teacher extends Model
     public $timestamps = false;
 
 
-
-    /**
-     * علاقة Teacher ⇄ User.
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * علاقة Teacher ⇄ Institute عبر pivot institute_user.
-     * user_id في pivot يربط إلى teacher.user_id
-     * institute_id يربط إلى المعهد.
-     */
+
     public function institutes()
     {
         return $this->belongsToMany(
@@ -64,15 +51,6 @@ class Teacher extends Model
             ->withTimestamps();
     }
 
-    /**
-     * (اختياري) إذا أردت في المستقبل عرض حلقات Teacher،
-     * أنشئ موديل TeachingAssignment واضبط الجدول،
-     * ثم فكّ تعليق هذا الكود:
-     */
-    // public function classes()
-    // {
-    //     return $this->hasMany(TeachingAssignment::class, 'teacher_id');
-    // }
     public function classes()
     {
         return $this->belongsToMany(
@@ -89,13 +67,4 @@ class Teacher extends Model
 
 
 
-    /**
-     * (اختياري) إذا أردت جدولاً أسبوعياً،
-     * أنشئ موديل WeeklySchedule واضبط الجدول،
-     * ثم فكّ تعليق هذا الكود:
-     */
-    // public function schedule()
-    // {
-    //     return $this->hasMany(WeeklySchedule::class, 'teacher_id');
-    // }
 }

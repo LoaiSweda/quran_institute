@@ -6,5 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Persent extends Model
 {
-    protected $fillable = ['date'];
+    protected $fillable = ['date', 'time', 'session_schedule_id'];
+    
+    protected $casts = [
+        'date' => 'date:Y-m-d',
+        'time' => 'datetime:H:i:s'
+    ];
+
+    public function userPersents()
+    {
+        return $this->hasMany(UserPersent::class);
+    }
 }

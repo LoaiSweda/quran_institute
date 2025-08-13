@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\LibraryController;
 use App\Http\Controllers\Manager\GuardiansController;
 use App\Http\Controllers\Manager\SessionScheduleController;
 use App\Http\Controllers\Manager\StudentsController;
@@ -12,6 +13,8 @@ use App\Http\Controllers\Teacher\ScheduleController;
 use App\Http\Controllers\Teacher\StudentController;
 use App\Http\Controllers\Teacher\ExamController;
 use App\Http\Controllers\Teacher\ClassController;
+use App\Http\Controllers\supervisor\AttendanceScanController;
+use App\Http\Controllers\Api\AttendanceController;
 use Illuminate\Support\Facades\Route;
 
 // عرض نموذج الدخول عند "/"
@@ -168,6 +171,18 @@ Route::middleware(['auth', 'role:institute manager'])
             Route::delete('{subject}', [SubjectsController::class, 'destroy'])->name('destroy');
 
         });
+        // Library Routes for Institute Manager
+        Route::prefix('library')->name('library.')->group(function()
+        {
+                Route::get('/', [LibraryController::class, 'index'])->name('index');
+                Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+                Route::get('create', [LibraryController::class, 'create'])->name('create');
+                Route::post('/', [LibraryController::class, 'store'])->name('store');
+                Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+                Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+                Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+                Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
+        });
     });
 
 Route::patch('manager/subjects/{subject}/toggle', [SubjectsController::class,'toggle'])
@@ -262,6 +277,17 @@ Route::middleware(['auth','role:teacher'])
 
      Route::get('classes/{class}/students', [ClassController::class, 'students'])
           ->name('classes.students');
+         // Library Routes for Institute Manager
+     Route::prefix('library')->name('library.')->group(function()
+     {
+             Route::get('/', [LibraryController::class, 'index'])->name('index');
+             Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+             Route::get('create', [LibraryController::class, 'create'])->name('create');
+             Route::post('/', [LibraryController::class, 'store'])->name('store');
+             Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+             Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+             Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+     });
 });
 
 
@@ -288,5 +314,50 @@ Route::middleware(['auth','role:super admin'])
         Route::get('{institute}/edit',   [InstituteController::class, 'edit'])->name('edit');
         Route::put('{institute}',  [InstituteController::class, 'update'])->name('update');
         Route::delete('{institute}', [InstituteController::class, 'destroy'])->name('destroy');
+
+
+        Route::prefix('library')->name('library.')->group(function()
+        {
+            Route::get('/', [LibraryController::class, 'index'])->name('index');
+            Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+            Route::get('create', [LibraryController::class, 'create'])->name('create');
+            Route::post('/', [LibraryController::class, 'store'])->name('store');
+            Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+            Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+            Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+        });
     });
 
+
+    Route::middleware(['auth','role:admin'])
+          ->get('/attendance/scan', [AttendanceScanController::class, 'show'])
+          ->name('attendance.scan');
+
+     Route::middleware(['auth','role:admin'])
+          ->post('/attendance/scan', [AttendanceController::class,'scan'])
+          ->name('attendance.scan.post');
+
+
+   // إضافة مسار جديد لتسجيل الغياب
+     Route::middleware(['auth','role:admin'])
+          ->post('/attendance/mark-absent', [AttendanceController::class, 'markAbsent'])
+          ->name('attendance.mark.absent');
+
+     Route::middleware(['auth','role:admin'])
+          ->get('/attendance/status', [AttendanceController::class, 'attendanceStatus'])
+          ->name('attendance.status');
+
+     Route::middleware(['auth','role:admin'])
+          ->get('/attendance/session-status', [AttendanceController::class, 'sessionStatus'])
+          ->name('attendance.session-status');
+
+
+
+
+          /*
+
+          كنت عم اشتغل بقصة ال session_count بس ما تخزنت بس بتعرض لازم اخرنها
+          والطالب بس يسجل بمحاضرة معينة
+          ويرجع يسجل الاسبوع الجايي بنفس اليوم ما بيرضى
+
+          */

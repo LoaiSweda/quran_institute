@@ -30,15 +30,14 @@ class Student extends Model
     {
         return $this->hasMany(\App\Models\Exam::class, 'student_id');
     }
+
     public function classes()
     {
         return $this->belongsToMany(
-            \App\Models\EducationClass::class,
+            EducationClass::class,
             'users_classes',
             'user_id',
-            'class_id',
-            'user_id',
-            'id'
+            'class_id'
         )->withTimestamps();
     }
 

@@ -17,15 +17,13 @@ class EducationClass extends Model
         'qr',
         'present_percentage',
     ];
-//    public function teacher()
-//    {
-//        return $this->belongsTo(User::class, 'user_id');
-//    }
+
+
     public function teacher()
     {
         return $this->belongsTo(Teacher::class,
-            'user_id',   // FK في جدول classes
-            'user_id'    // PK في جدول teachers
+            'user_id',   // FK in classes
+            'user_id'    // PK in teachers
         );
 
     }
@@ -54,4 +52,27 @@ class EducationClass extends Model
     {
         return $this->hasMany(SessionSchedule::class, 'class_id');
     }
+
+    public function students()
+    {
+        return $this->belongsToMany(Student::class, 'users_classes', 'class_id', 'user_id')
+            ->withPivot('created_at', 'updated_at');
+    }
+
+    public function enrolledUsers()
+{
+    return $this->belongsToMany(
+        User::class,
+        'users_classes',
+        'class_id',
+        'user_id'
+    );
+}
+
+public function enrolledStudents()
+{
+    return $this->enrolledUsers()
+        ->whereHas('student')
+        ->with('student');
+}
 }

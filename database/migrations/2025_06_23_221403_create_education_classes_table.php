@@ -1,34 +1,31 @@
-    <?php
+<?php
 
-    use Illuminate\Database\Migrations\Migration;
-    use Illuminate\Database\Schema\Blueprint;
-    use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-    return new class extends Migration
+return new class extends Migration
+{
+    public function up(): void
     {
-        /**
-         * Run the migrations.
-         */
-        public function up()
-        {
-            Schema::create('classes', function (Blueprint $table) {
-                $table->id();
-                $table->string('name');
-                $table->integer('students_count')->default(0);
-                //$table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-                $table->integer('session_count')->default(0);
-                $table->string('qr')->nullable();
-                $table->float('present_percentage')->default(0);
-                $table->timestamps();
-            });
-        }
+        Schema::create('classes', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
 
+            // نحضّر الأعمدة فقط بدون FK
+            $table->unsignedBigInteger('subject_id');
+            $table->unsignedBigInteger('user_id');
 
-        /**
-         * Reverse the migrations.
-         */
-        public function down(): void
-        {
-            Schema::dropIfExists('education_classes');
-        }
-    };
+            $table->integer('students_count')->default(0);
+            $table->integer('session_count')->default(0);
+            $table->string('qr')->nullable();
+            $table->float('present_percentage')->default(0);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('classes');
+    }
+};

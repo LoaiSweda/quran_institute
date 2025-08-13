@@ -46,7 +46,7 @@ class Institute extends Model
 //            ->withPivot('role_institute')
 //            ->withTimestamps();
 //    }
-// app/Models/Institute.php
+
     public function users()
     {
         return $this->belongsToMany(
