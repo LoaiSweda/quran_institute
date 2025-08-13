@@ -16,7 +16,7 @@ class Subject extends Model
     ];
 
     protected $casts = [
-        'start_date'     => 'date',  
+        'start_date'     => 'date',
         'end_date'       => 'date',
         'is_active'      => 'boolean',
     ];
@@ -29,14 +29,10 @@ class Subject extends Model
     {
         return $this->hasMany(EducationClass::class, 'subject_id');
     }
+
     public function classes()
     {
-        return $this->belongsToMany(
-            EducationClass::class,
-            'users_classes', 
-            'user_id',       
-            'class_id'
-        )->withTimestamps();
+        return $this->hasMany(\App\Models\EducationClass::class, 'subject_id');
     }
 
     public function getImageUrlAttribute(): ?string

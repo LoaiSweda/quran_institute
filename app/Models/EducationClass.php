@@ -53,11 +53,6 @@ class EducationClass extends Model
         return $this->hasMany(SessionSchedule::class, 'class_id');
     }
 
-    public function students()
-    {
-        return $this->belongsToMany(Student::class, 'users_classes', 'class_id', 'user_id')
-            ->withPivot('created_at', 'updated_at');
-    }
 
     public function enrolledUsers()
 {

@@ -26,6 +26,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Teacher::class);
     }
+
     public function admin()
     {
         return $this->hasOne(Admin::class);
@@ -63,7 +64,7 @@ class User extends Authenticatable
 
     public function institute()
     {
-        return $this->hasOne(Institute::class,'user_id');
+        return $this->hasOne(Institute::class, 'user_id');
     }
 
     public function studentProfile()
@@ -77,32 +78,36 @@ class User extends Authenticatable
             return false;
         }
 
-        if (is_array($roles)) {
-            return in_array($this->role->name, $roles);
-        }
+if (is_array($roles)) {
+    return in_array($this->role->name, $roles);
+}
 
-        return $this->role->name === $roles;
+return $this->role->name === $roles;
+}
+
+public
+function hasAnyRole(array $roles): bool
+{
+    return $this->hasRole($roles);
+}
+
+// You might also want to add direct accessors for role names if frequently used
+public
+function getRoleNameAttribute(): ?string
+{
+    return $this->role->name ?? null;
+}
+
+public
+function getInstituteIdAttribute(): ?int
+{
+    // Eager load the 'institute' relationship if it's not already loaded
+    // This prevents N+1 query problem if you access institute_id multiple times
+    if (!$this->relationLoaded('institute')) {
+        $this->load('institute');
     }
 
-    public function hasAnyRole(array $roles): bool
-    {
-        return $this->hasRole($roles);
-    }
-
-    // You might also want to add direct accessors for role names if frequently used
-    public function getRoleNameAttribute(): ?string
-    {
-        return $this->role->name ?? null;
-    }
-    public function getInstituteIdAttribute(): ?int
-    {
-        // Eager load the 'institute' relationship if it's not already loaded
-        // This prevents N+1 query problem if you access institute_id multiple times
-        if (!$this->relationLoaded('institute')) {
-            $this->load('institute');
-        }
-
-        return $this->institute->id ?? null;
-    }
+    return $this->institute->id ?? null;
+}
 
 }

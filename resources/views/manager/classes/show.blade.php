@@ -130,9 +130,10 @@
             </div>
         </div>
     @php
-        // نصفي المستخدمين لاستثناء role_id = 4
-        $students = $class->users->where('role_id', '<>', 4);
+        // لو عرّفت enrolledStudents() كما في (أ):
+        $students = $class->enrolledStudents->pluck('student');
     @endphp
+
 
     {{-- جدول طلاب الحلقة --}}
     <div class="card shadow-sm mb-4">
@@ -155,6 +156,7 @@
                 <tbody>
                 @forelse($students as $stu)
                     @php
+                        // progress يحمل student_id من جدول الطلاب، فابحث باستخدام $stu->id (وليس user_id)
                         $prog = $class->progress->firstWhere('student_id', $stu->id);
                     @endphp
                     <tr>
@@ -165,6 +167,7 @@
                         <td>{{ $prog->number_sessions_attended ?? '—' }}</td>
                         <td>{{ $prog->total_points_subject ?? '—' }}</td>
                         <td class="text-center">
+                            {{-- انتبه: مرّر Student للراوت، وليس User --}}
                             <a href="{{ route('manager.students.show', $stu) }}"
                                class="btn btn-sm btn-outline-info" title="عرض طالب">
                                 <i class="bi bi-eye-fill"></i>
@@ -176,6 +179,7 @@
                         <td colspan="7" class="text-center text-muted py-3">لا توجد طلاب</td>
                     </tr>
                 @endforelse
+
                 </tbody>
             </table>
         </div>

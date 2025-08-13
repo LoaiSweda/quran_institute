@@ -133,73 +133,28 @@ class ClassesController extends Controller
             ->with('success', 'تم إنشاء الحلقة وتحديد جداول المواعيد بنجاح');
     }
 
-
-//    public function store(Request $request)
-//    {
-//        $inst = $this->currentInstitute();
-//
-//        $data = $request->validate([
-//            'name'           => 'required|string|max:255',
-//            'subject_id'     => 'required|exists:subjects,id',
-//            'user_id'        => 'required|exists:users,id',
-//            'students_count' => 'required|integer|min:1',
-//        ]);
-//
-//        // 1) إنشاء الحلقة
-//        $cls = EducationClass::create($data);
-//
-////        // 2) رابط صفحة تفاصيل الحلقة
-////        $url = route('manager.classes.show', $cls->id);
-////
-////        // 3) توليد QR بصيغة SVG (pure PHP)
-////        $renderer = new ImageRenderer(
-////            new RendererStyle(200),
-////            new SvgImageBackEnd()
-////        );
-////        $writer  = new Writer($renderer);
-////        $svg     = $writer->writeString($url);
-////
-////        // 4) حفظ ملف الـ SVG في storage
-////        Storage::put("public/qrcodes/class-{$cls->id}.svg", $svg);
-////
-////        // 5) تحديث مسار الـ QR في السجل
-////        $cls->update([
-////            'qr' => "qrcodes/class-{$cls->id}.svg",
-////        ]);
-//
-//        return redirect()
-//            ->route('manager.classes.index', $cls->id)
-//            ->with('success', 'تم إنشاء الحلقة بنجاح');
-//    }
-
-    /**
-     * عرض تفاصيل حلقة واحدة مع إحصائيات
-     */
-    public function show(EducationClass $class)
+    public function show(\App\Models\EducationClass $class)
     {
-        $inst = $this->currentInstitute();
-        abort_if($class->subject->institute_id !== $inst->id, 403);
-        $class->load(['teacher', 'subject', 'users', 'sessions', 'exams', 'progress', 'sessionSchedules']);
+        $class->load([
+            'subject',
+            'teacher',
+            'sessions',
+            'exams.student',
+            'progress',
+            'enrolledStudents.student', // مهم
+        ]);
 
+        // مصفوفة Students جاهزة للاستخدام في العرض
+        $students = $class->enrolledStudents->pluck('student');
 
-        $studentsCount = $class->users()
-            ->where('users.role_id', '<>', 4)
-            ->count();        $presentPercentage = $class->present_percentage;
-        $sessionsHeld      = $class->sessions->where('start_time', '<=', now())->count();
-        $totalPoints       = $class->exams->sum('points');
-        $students = DB::table('users')
-            ->join('users_classes','users.id','=','users_classes.user_id')
-            ->join('students','students.user_id','=','users.id')
-            ->where('users_classes.class_id', $class->id)
-            ->select('users.id','students.first_name','students.last_name')
-            ->get();
+        // مثال على الإحصائيات
+        $studentsCount      = $students->count();
+        $presentPercentage  = $class->present_percentage ?? 0;
+        $sessionsHeld       = $class->sessions->count();
+        $totalPoints        = $class->exams->sum('points');
+
         return view('manager.classes.show', compact(
-            'class',
-            'studentsCount',
-            'presentPercentage',
-            'sessionsHeld',
-            'totalPoints',
-            'students'
+            'class','students','studentsCount','presentPercentage','sessionsHeld','totalPoints'
         ));
     }
 
