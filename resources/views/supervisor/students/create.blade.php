@@ -1,4 +1,4 @@
-{{-- resources/views/manager/students/create.blade.php --}}
+{{-- resources/views/admin/students/create.blade.php --}}
 @extends('layouts.app')
 @section('title','إضافة طالب جديد')
 
@@ -14,8 +14,13 @@
 
         {{-- Form Card --}}
         <div class="card shadow-sm mb-4 p-4">
-            <form action="{{ route('manager.students.store') }}" method="POST" class="row g-3">
+            <form action="{{ route('admin.students.store') }}" method="POST" class="row g-3">
                 @csrf
+
+                {{-- تمرير المعهد الحالي عند الحاجة --}}
+                @isset($inst)
+                    <input type="hidden" name="institute_id" value="{{ $inst->id }}">
+                @endisset
 
                 {{-- البريد الإلكتروني --}}
                 <div class="col-md-4">
@@ -97,7 +102,7 @@
                         </option>
                         @foreach($guardians as $g)
                             <option value="{{ $g->id }}" {{ old('guardian_id') == $g->id ? 'selected' : '' }}>
-                                {{ $g->name }} {{-- accessor من الموديل --}}
+                                {{ $g->name }} {{-- accessor --}}
                                 @if($g->user?->email) — {{ $g->user->email }} @endif
                             </option>
                         @endforeach
@@ -117,8 +122,11 @@
 
         {{-- Existing Students List --}}
         <div class="card shadow-sm">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">الطلاب المنشأون حديثًا</h5>
+                @isset($inst)
+                    <small class="text-muted">المعهد: {{ $inst->name }}</small>
+                @endisset
             </div>
             <div class="card-body p-0">
                 @if($students->count())
@@ -138,33 +146,26 @@
                             <tbody>
                             @foreach($students as $student)
                                 <tr>
-                                    <td>{{ $loop->iteration
-                                        + ($students->currentPage()-1)*$students->perPage() }}</td>
-                                    <td>
-                                        {{ $student->first_name }} {{ $student->last_name }}
-                                    </td>
+                                    <td>{{ $loop->iteration + ($students->currentPage()-1)*$students->perPage() }}</td>
+                                    <td>{{ $student->first_name }} {{ $student->last_name }}</td>
                                     <td>{{ $student->user->email }}</td>
                                     <td>{{ $student->qr }}</td>
                                     <td>
-                                        <span class="badge bg-{{ $student->present_percentage >= 75
-                                            ? 'success'
-                                            : ($student->present_percentage >= 50 ? 'warning' : 'secondary') }}">
+                                        <span class="badge bg-{{ $student->present_percentage >= 75 ? 'success' : ($student->present_percentage >= 50 ? 'warning' : 'secondary') }}">
                                             حضور {{ $student->present_percentage }}%
                                         </span>
                                     </td>
                                     <td>{{ $student->created_at->format('Y-m-d') }}</td>
                                     <td class="text-center">
-                                        <a href="{{ route('manager.students.edit', $student) }}"
+                                        <a href="{{ route('admin.students.edit', $student) }}"
                                            class="btn btn-sm btn-outline-warning" title="تعديل">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
-                                        <form action="{{ route('manager.students.destroy', $student) }}"
+                                        <form action="{{ route('admin.students.destroy', $student) }}"
                                               method="POST" class="d-inline"
                                               onsubmit="return confirm('هل تريد حذف الطالب؟');">
                                             @csrf @method('DELETE')
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    title="حذف">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="حذف">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>

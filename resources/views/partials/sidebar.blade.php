@@ -43,6 +43,13 @@
                             <i class="bi bi-people"></i> المدرّسون
                         </a>
                     </li>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/students*')) active @endif"
+                           href="{{ url('/admin/students') }}">
+                            <i class="bi bi-people"></i> الطلاب
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('admin/reports')) active @endif"
                            href="{{ url('/admin/reports') }}">
@@ -65,6 +72,7 @@
                             <i class="bi bi-person-badge"></i> المشرفون
                         </a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/teachers*')) active @endif"
                            href="{{ url('/manager/teachers') }}">

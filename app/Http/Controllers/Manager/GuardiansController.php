@@ -60,22 +60,22 @@ class GuardiansController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'firstname'            => 'required|string|max:255',
-            'lastname'             => 'required|string|max:255',
-            'phone'                => 'required|string|max:20',
-            'address'              => 'nullable|string|max:500',
-            'email'                => 'required|email|unique:users,email',
-            'password'             => 'required|confirmed|min:6',
+            'firstname' => 'required|string|max:255',
+            'lastname'  => 'required|string|max:255',
+            'phone'     => 'required|string|max:20',
+            'address'   => 'nullable|string|max:500',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|confirmed|min:6',
         ]);
 
-
+        // إنشاء حساب المستخدم
         $user = User::create([
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
-            'role_id'  => 6,
+            'role_id'  => 6, // guardian
         ]);
 
-
+        // إنشاء الوصي
         Guardian::create([
             'user_id'   => $user->id,
             'firstname' => $data['firstname'],
@@ -84,9 +84,17 @@ class GuardiansController extends Controller
             'address'   => $data['address'] ?? null,
         ]);
 
+        // ربط الوصي بالمعهد الحالي
+        $institute = auth()->user()->institute;
+        if ($institute) {
+            $institute->users()->attach($user->id, [
+                'role_institute' => 'guardian',
+            ]);
+        }
+
         return redirect()
             ->route('manager.guardians.index')
-            ->with('success', 'تم إنشاء حساب وليّ الأمر بنجاح.');
+            ->with('success', 'تم إنشاء حساب وليّ الأمر وربطه بالمعهد بنجاح.');
     }
 
     /**

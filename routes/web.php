@@ -366,6 +366,7 @@ Route::middleware(['auth','role:super admin'])
 
 use App\Http\Controllers\supervisor\SubjectsController as SupervisorSubjectsController;
 use App\Http\Controllers\supervisor\TeachersController as SupervisorTeachersController;
+use App\Http\Controllers\supervisor\StudentsController as AdminStudentsController;
 
 Route::middleware(['auth','role:admin'])
     ->prefix('admin')
@@ -378,6 +379,17 @@ Route::middleware(['auth','role:admin'])
         // المدرّسون للمشرف
         Route::get('teachers',              [SupervisorTeachersController::class, 'index'])->name('teachers.index');
         Route::get('teachers/{teacher}',    [SupervisorTeachersController::class, 'show'])->name('teachers.show');
+
+        // إدارة الطلاب (نفس عمليات المدير)
+        Route::prefix('students')->name('students.')->group(function () {
+            Route::get('/',                [AdminStudentsController::class, 'index'])->name('index');
+            Route::get('create',           [AdminStudentsController::class, 'create'])->name('create');
+            Route::post('/',               [AdminStudentsController::class, 'store'])->name('store');
+            Route::get('{student}',        [AdminStudentsController::class, 'show'])->name('show');
+            Route::get('{student}/edit',   [AdminStudentsController::class, 'edit'])->name('edit');
+            Route::put('{student}',        [AdminStudentsController::class, 'update'])->name('update');
+            Route::delete('{student}',     [AdminStudentsController::class, 'destroy'])->name('destroy');
+        });
     });
 
 
