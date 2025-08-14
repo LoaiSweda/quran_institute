@@ -364,9 +364,10 @@ Route::middleware(['auth','role:super admin'])
 
 
 
+use App\Http\Controllers\supervisor\GuardiansController as SupervisorGuardiansController;
 use App\Http\Controllers\supervisor\SubjectsController as SupervisorSubjectsController;
 use App\Http\Controllers\supervisor\TeachersController as SupervisorTeachersController;
-use App\Http\Controllers\supervisor\StudentsController as AdminStudentsController;
+use App\Http\Controllers\supervisor\StudentsController as supervisorStudentsController;
 
 Route::middleware(['auth','role:admin'])
     ->prefix('admin')
@@ -382,13 +383,26 @@ Route::middleware(['auth','role:admin'])
 
         // إدارة الطلاب (نفس عمليات المدير)
         Route::prefix('students')->name('students.')->group(function () {
-            Route::get('/',                [AdminStudentsController::class, 'index'])->name('index');
-            Route::get('create',           [AdminStudentsController::class, 'create'])->name('create');
-            Route::post('/',               [AdminStudentsController::class, 'store'])->name('store');
-            Route::get('{student}',        [AdminStudentsController::class, 'show'])->name('show');
-            Route::get('{student}/edit',   [AdminStudentsController::class, 'edit'])->name('edit');
-            Route::put('{student}',        [AdminStudentsController::class, 'update'])->name('update');
-            Route::delete('{student}',     [AdminStudentsController::class, 'destroy'])->name('destroy');
+            Route::get('/',                [supervisorStudentsController::class, 'index'])->name('index');
+            Route::get('create',           [supervisorStudentsController::class, 'create'])->name('create');
+            Route::post('/',               [supervisorStudentsController::class, 'store'])->name('store');
+            Route::get('{student}',        [supervisorStudentsController::class, 'show'])->name('show');
+            Route::get('{student}/edit',   [supervisorStudentsController::class, 'edit'])->name('edit');
+            Route::put('{student}',        [supervisorStudentsController::class, 'update'])->name('update');
+            Route::delete('{student}',     [supervisorStudentsController::class, 'destroy'])->name('destroy');
+
+        });
+
+
+        // إدارة أولياء الأمور (CRUD)
+        Route::prefix('guardians')->name('guardians.')->group(function () {
+            Route::get('/',              [SupervisorGuardiansController::class, 'index'])->name('index');
+            Route::get('create',         [SupervisorGuardiansController::class, 'create'])->name('create');
+            Route::post('/',             [SupervisorGuardiansController::class, 'store'])->name('store');
+            Route::get('{guardian}',     [SupervisorGuardiansController::class, 'show'])->name('show');
+            Route::get('{guardian}/edit',[SupervisorGuardiansController::class, 'edit'])->name('edit');
+            Route::put('{guardian}',     [SupervisorGuardiansController::class, 'update'])->name('update');
+            Route::delete('{guardian}',  [SupervisorGuardiansController::class, 'destroy'])->name('destroy');
         });
     });
 

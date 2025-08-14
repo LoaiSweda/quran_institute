@@ -122,18 +122,27 @@ class StudentsController extends Controller
      */
     public function create(Request $request)
     {
-        $inst = $this->currentInstitute($request); // كما كتبناها سابقًا (تحدد معهد المشرف)
+        // معهد المشرف الحالي (منطقك الموجود)
+        $inst = $this->currentInstitute($request);
 
+        // id دور الوصي
         $guardianRoleId = \App\Models\Role::where('name', 'guardian')->value('id');
 
+        // الأوصياء ضمن هذا المعهد فقط + فلترة على role_id في users
         $guardians = \App\Models\Guardian::with('user:id,email')
             ->when($guardianRoleId, function ($q) use ($guardianRoleId) {
-                $q->whereHas('user', fn($uq) => $uq->where('role_id', $guardianRoleId));
+                $q->whereHas('user', function ($uq) use ($guardianRoleId) {
+                    $uq->where('role_id', $guardianRoleId);  // <-- بدلاً من user.roles
+                });
             })
-            ->whereHas('user.institutes', fn($iq) => $iq->where('institute_id', $inst->id))
-            ->orderByRaw("COALESCE(first_name, firstname, '')")
+            ->whereHas('user.institutes', function ($iq) use ($inst) {
+                $iq->where('institute_id', $inst->id);
+            })
+            ->orderBy('firstname')   // <-- أعمدة guardians الفعلية
+            ->orderBy('lastname')
             ->get();
 
+        // آخر الطلاب في نفس المعهد
         $students  = \App\Models\Student::with('user')
             ->whereHas('user.institutes', fn($q) => $q->where('institute_id', $inst->id))
             ->orderBy('created_at','desc')
