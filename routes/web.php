@@ -16,6 +16,8 @@ use App\Http\Controllers\Teacher\ClassController;
 use App\Http\Controllers\supervisor\AttendanceScanController;
 use App\Http\Controllers\Api\AttendanceController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Manager\AnnouncementController as ManagerAnnouncementController;
+use App\Http\Controllers\Manager\AnnouncementInboxController as ManagerAnnouncementInboxController;
 
 // عرض نموذج الدخول عند "/"
 Route::get('/', [LoginController::class, 'showLoginForm'])
@@ -195,7 +197,27 @@ Route::middleware(['auth', 'role:institute manager'])
                 Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
                 Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
         });
+        Route::get('announcements/inbox',      [ManagerAnnouncementInboxController::class, 'index'])->name('announcements.inbox');
+        Route::get('announcements/inbox/{ad}', [ManagerAnnouncementInboxController::class, 'show'])->name('announcements.inbox.show');
+
+
+        Route::prefix('announcements')->name('announcements.')->group(function () {
+            Route::get('/',                 [ManagerAnnouncementController::class,'index'])->name('index');
+            Route::post('/',                [ManagerAnnouncementController::class,'store'])->name('store');
+            Route::get('{ad}',              [ManagerAnnouncementController::class,'show'])
+                ->whereNumber('ad')->name('show');
+            Route::get('{ad}/edit',         [ManagerAnnouncementController::class,'edit'])
+                ->whereNumber('ad')->name('edit');
+            Route::put('{ad}',              [ManagerAnnouncementController::class,'update'])
+                ->whereNumber('ad')->name('update');
+            Route::delete('{ad}',           [ManagerAnnouncementController::class,'destroy'])
+                ->whereNumber('ad')->name('destroy');
+        });
+
+
     });
+
+
 
 Route::patch('manager/subjects/{subject}/toggle', [SubjectsController::class,'toggle'])
     ->name('manager.subjects.toggle')
@@ -220,6 +242,8 @@ Route::get('manager/schedules', [SessionScheduleController::class,'index'])
 
 
 //////////////////////////////////////////////////////////////////
+use App\Http\Controllers\Teacher\AnnouncementInboxController;
+use App\Http\Controllers\Teacher\ProfileController as TeacherProfileController;
 
 Route::middleware(['auth','role:teacher'])
      ->prefix('teacher')
@@ -228,6 +252,11 @@ Route::middleware(['auth','role:teacher'])
      // لوحة المعلم
      Route::view('dashboard','dashboards.teacher')->name('dashboard');
 
+         Route::get('profile', [TeacherProfileController::class, 'show'])->name('profile.show');
+
+
+         Route::get('announcements/inbox',       [AnnouncementInboxController::class, 'index'])->name('announcements.inbox');
+         Route::get('announcements/inbox/{ad}',  [AnnouncementInboxController::class, 'show'])->name('announcements.inbox.show');
      Route::get('announcements', [AnnouncementController::class,'index'])
           ->name('announcements.index');
 
@@ -367,6 +396,7 @@ Route::middleware(['auth','role:super admin'])
 
 
 
+use App\Http\Controllers\supervisor\AnnouncementInboxController as AdminAnnouncementInboxController;
 
 use App\Http\Controllers\supervisor\GuardiansController as SupervisorGuardiansController;
 use App\Http\Controllers\supervisor\SubjectsController as SupervisorSubjectsController;
@@ -375,6 +405,7 @@ use App\Http\Controllers\supervisor\StudentsController as supervisorStudentsCont
 use App\Http\Controllers\supervisor\ClassSchedulesController as SupervisorClassSchedulesController;
 use App\Http\Controllers\supervisor\SchedulesController as SupervisorSchedulesController;
 use App\Http\Controllers\supervisor\ClasStudentsController as AdminClasStudentsController;
+use App\Http\Controllers\supervisor\AnnouncementController as AdminAnnouncementController;
 
 Route::middleware(['auth','role:admin'])
     ->prefix('admin')
@@ -441,6 +472,20 @@ Route::middleware(['auth','role:admin'])
                 Route::put('{schedule}',        [SupervisorClassSchedulesController::class, 'update'])->name('update');
                 Route::delete('{schedule}',     [SupervisorClassSchedulesController::class, 'destroy'])->name('destroy');
             });
+
+
+        Route::get('announcements/inbox',      [AdminAnnouncementInboxController::class, 'index'])->name('announcements.inbox');
+        Route::get('announcements/inbox/{ad}', [AdminAnnouncementInboxController::class, 'show'])->name('announcements.inbox.show');
+
+        Route::prefix('announcements')->name('announcements.')->group(function () {
+            Route::get('/',                 [AdminAnnouncementController::class,'index'])->name('index');
+            Route::post('/',                [AdminAnnouncementController::class,'store'])->name('store');
+            Route::get('{ad}',              [AdminAnnouncementController::class,'show'])->name('show');
+            Route::get('{ad}/edit',         [AdminAnnouncementController::class,'edit'])->name('edit');
+            Route::put('{ad}',              [AdminAnnouncementController::class,'update'])->name('update');
+            Route::delete('{ad}',           [AdminAnnouncementController::class,'destroy'])->name('destroy');
+        });
+
         Route::get('schedules', [SupervisorSchedulesController::class,'index'])
             ->name('schedules.index');
     });

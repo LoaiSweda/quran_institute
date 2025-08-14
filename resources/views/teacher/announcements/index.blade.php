@@ -68,6 +68,8 @@
                     <label><input type="checkbox" name="watches_roles[]" value="student" {{ (is_array(old('watches_roles')) && in_array('student', old('watches_roles'))) ? 'checked' : '' }}> طالب</label>
                     <label><input type="checkbox" name="watches_roles[]" value="guardian" {{ (is_array(old('watches_roles')) && in_array('guardian', old('watches_roles'))) ? 'checked' : '' }}> وصي</label>
                     <label><input type="checkbox" name="watches_roles[]" value="teacher" {{ (is_array(old('watches_roles')) && in_array('teacher', old('watches_roles'))) ? 'checked' : '' }}> معلم</label>
+                    <label><input type="checkbox" name="watches_roles[]" value="admin" {{ (is_array(old('watches_roles')) && in_array('admin', old('watches_roles'))) ? 'checked' : '' }}> مشرف</label>
+                    <label><input type="checkbox" name="watches_roles[]" value="manager" {{ (is_array(old('watches_roles')) && in_array('manager', old('watches_roles'))) ? 'checked' : '' }}> مدير</label>
                 </div>
                 @error('watches_roles') <div class="error">{{ $message }}</div> @enderror
             </div>

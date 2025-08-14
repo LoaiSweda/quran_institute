@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Teacher;
+namespace App\Http\Controllers\supervisor;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
@@ -15,14 +15,15 @@ class AnnouncementController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['auth','role:teacher']);
+        $this->middleware(['auth','role:admin']);
     }
 
-    /** تحديد المعهد الحالي للمعلم (من قائمة معاهده) */
+    /** معهد المشرف الحالي (من قائمة معاهده) */
     protected function currentInstitute(Request $request): Institute
     {
         $user = $request->user();
-        $ids  = $user->institutes()->pluck('institutes.id');
+
+        $ids = $user->institutes()->pluck('institutes.id'); // معاهد المشرف عبر pivot
         abort_if($ids->isEmpty(), 403, 'لا تملك صلاحية على أي معهد.');
 
         $picked = (int) $request->query('institute_id', (int) $ids->first());
@@ -31,15 +32,15 @@ class AnnouncementController extends Controller
         return Institute::findOrFail($picked);
     }
 
-    /** تحقق النطاق: الإعلان يجب أن يخص المعهد الحالي ونفس الناشر */
+    /** تحقق الملكية + النطاق (المعهد) */
     protected function ensureScope(Request $request, Ad $ad): void
     {
         $inst = $this->currentInstitute($request);
-        abort_if($ad->user_id !== Auth::id(), 403);
-        abort_if((int)$ad->institute_id !== (int)$inst->id, 403);
+        abort_if($ad->user_id !== Auth::id(), 403, 'ليس لديك صلاحية على هذا الإعلان.');
+        abort_if((int)$ad->institute_id !== (int)$inst->id, 403, 'هذا الإعلان خارج نطاق المعهد الحالي.');
     }
 
-    /** قائمة إعلانات المعلم (هو الناشر) داخل المعهد الحالي */
+    /** قائمة إعلانات المشرف داخل المعهد الحالي */
     public function index(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -53,9 +54,10 @@ class AnnouncementController extends Controller
 
         $types = AdsType::all();
 
-        return view('teacher.announcements.index', compact('ads','types'));
+        return view('supervisor.announcements.index', compact('ads','types'));
     }
 
+    /** إنشاء إعلان داخل المعهد الحالي */
     public function store(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -69,15 +71,16 @@ class AnnouncementController extends Controller
             'status'          => 'required|in:active,inactive',
             'watches_roles'   => 'required|array',
             'watches_roles.*' => 'in:student,guardian,teacher,admin,manager',
+
             'image'           => 'nullable|image|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('ads','public');
+            $data['image'] = $request->file('image')->store('ads', 'public');
         }
 
         $data['user_id']      = Auth::id();
-        $data['institute_id'] = $inst->id; // مهم: لا نتركه NULL
+        $data['institute_id'] = $inst->id; // مهم: ربط الإعلان بالمعهد الحالي
 
         $ad = Ad::create($data);
 
@@ -89,21 +92,22 @@ class AnnouncementController extends Controller
             ]);
         }
 
-        return redirect()->route('teacher.announcements.index', ['institute_id'=>$inst->id])
+        return redirect()
+            ->route('admin.announcements.index', ['institute_id' => $inst->id])
             ->with('success','تم إضافة الإعلان بنجاح');
     }
 
     public function show(Request $request, Ad $ad)
     {
         $this->ensureScope($request, $ad);
-        return view('teacher.announcements.show', compact('ad'));
+        return view('supervisor.announcements.show', compact('ad'));
     }
 
     public function edit(Request $request, Ad $ad)
     {
         $this->ensureScope($request, $ad);
         $types = AdsType::all();
-        return view('teacher.announcements.edit', compact('ad','types'));
+        return view('supervisor.announcements.edit', compact('ad','types'));
     }
 
     public function update(Request $request, Ad $ad)
@@ -127,7 +131,7 @@ class AnnouncementController extends Controller
             if ($ad->image) {
                 Storage::disk('public')->delete($ad->image);
             }
-            $data['image'] = $request->file('image')->store('ads','public');
+            $data['image'] = $request->file('image')->store('ads', 'public');
         }
 
         // لا نسمح بتغيير institute_id/user_id من هنا
@@ -145,7 +149,8 @@ class AnnouncementController extends Controller
         }
 
         $inst = $this->currentInstitute($request);
-        return redirect()->route('teacher.announcements.index', ['institute_id'=>$inst->id])
+        return redirect()
+            ->route('admin.announcements.index', ['institute_id' => $inst->id])
             ->with('success','تم تحديث الإعلان بنجاح');
     }
 
@@ -160,7 +165,8 @@ class AnnouncementController extends Controller
         $ad->delete();
 
         $inst = $this->currentInstitute($request);
-        return redirect()->route('teacher.announcements.index', ['institute_id'=>$inst->id])
+        return redirect()
+            ->route('admin.announcements.index', ['institute_id' => $inst->id])
             ->with('success','تم حذف الإعلان بنجاح');
     }
 }

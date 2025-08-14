@@ -1,6 +1,6 @@
 <?php
 namespace App\Models;
-use Illuminate\Support\Carbon; 
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Ad extends Model
@@ -8,8 +8,14 @@ class Ad extends Model
     protected $table = 'ads';
 
     protected $fillable = [
-        'title','description','link','end_date','user_id','type_id','status','image'
+        'user_id','institute_id',
+        'title','type_id','description','link','end_date','status','image',
     ];
+    public function institute()
+    {
+        return $this->belongsTo(\App\Models\Institute::class);
+    }
+
 
     public function type()
     {
@@ -21,7 +27,7 @@ class Ad extends Model
         if (Carbon::parse($this->end_date)->isPast()) {
             return 'expired';
         }
-        return $this->status; 
+        return $this->status;
     }
 
 

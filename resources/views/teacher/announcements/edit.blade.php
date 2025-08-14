@@ -90,7 +90,7 @@
               @php
                 $selected = old('watches_roles', $ad->userAds->pluck('watches_role')->toArray());
               @endphp
-              @foreach(['student'=>'طالب','guardian'=>'وصي','teacher'=>'معلم'] as $roleKey=>$roleLabel)
+              @foreach(['student'=>'طالب','guardian'=>'وصي','teacher'=>'معلم','admin'=>'مشرف','manager'=>'مدير'] as $roleKey=>$roleLabel)
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="checkbox"
                          id="chk_{{ $roleKey }}"
@@ -113,7 +113,7 @@
                 <img src="{{ asset('storage/'.$ad->image) }}" alt="صورة حالية" class="img-thumbnail" style="max-width:150px;">
             </div>
             @endif
-            <input type="file" 
+            <input type="file"
                 class="form-control @error('image') is-invalid @enderror"
                 id="image" name="image" accept="image/*">
             @error('image')<div class="invalid-feedback">{{ $message }}</div>@enderror

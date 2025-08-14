@@ -24,7 +24,17 @@
                             <i class="bi bi-person-circle"></i> بروفايلي
                         </a>
                     </li>
-
+                    <li class="{{ request()->is('admin/announcements*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.announcements.index') }}">
+                            <i class="bi bi-megaphone-fill"></i>
+                            إعلاناتي
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.announcements.inbox') }}" class="nav-link">
+                            <i class="bi bi-inbox"></i> إعلانات موجهة لي
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('admin/dashboard')) active @endif"
                            href="{{ url('/admin/dashboard') }}">
@@ -92,6 +102,17 @@
                             <i class="bi bi-person-circle"></i> بروفايلي
                         </a>
                     </li>
+                    <li class="{{ request()->is('manager/announcements*') ? 'active' : '' }}">
+                        <a href="{{ route('manager.announcements.index') }}">
+                            <i class="bi bi-megaphone-fill"></i>
+                            إعلاناتي
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('manager.announcements.inbox') }}" class="nav-link">
+                            <i class="bi bi-inbox"></i> إعلانات موجهة لي
+                        </a>
+                    </li>
 
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/dashboard')) active @endif"
@@ -157,6 +178,14 @@
 
 
                     @case('teacher')
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('teacher/profile') ? 'active' : '' }}"
+                           href="{{ route('teacher.profile.show', request()->has('institute_id') ? ['institute_id'=>request('institute_id')] : []) }}">
+                            <i class="bi bi-person-circle"></i> بروفايلي
+                        </a>
+                    </li>
+
                        <li class="{{ request()->is('teacher/dashboard') ? 'active' : '' }}">
                             <a href="{{ url('teacher/dashboard') }}">
                                 <i class="bi bi-house-door-fill"></i>
@@ -170,7 +199,13 @@
                                 إعلاناتي
                             </a>
                         </li>
-                        <li class="nav-item">
+                    <li class="nav-item">
+                        <a href="{{ route('teacher.announcements.inbox') }}" class="nav-link">
+                            <i class="bi bi-inbox"></i> إعلانات موجهة لي
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                             <a href="{{ route('teacher.schedule.index') }}" class="nav-link">
                                 <i class="bi bi-calendar-week"></i>
                                 الجدول الأسبوعي
