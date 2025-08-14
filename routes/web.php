@@ -62,6 +62,8 @@ Route::middleware(['auth', 'role:institute manager'])
         // لوحة التحكم
         Route::view('dashboard', 'dashboards.manager')->name('dashboard');
 
+        Route::get('profile', [\App\Http\Controllers\Manager\ProfileController::class, 'show'])
+            ->name('profile.show');
         // إدارة الحلقات (Classes = الحلقات)
         Route::prefix('classes')->name('classes.')->group(function(){
 
@@ -310,6 +312,8 @@ Route::middleware(['auth','role:super admin'])
     ->prefix('super-admin/institutes')
     ->name('super-admin.institutes.')
     ->group(function() {
+
+
         // عرض نموذج إنشاء مدير معهد منفصل
         Route::get('manager/create',      [InstituteController::class, 'createManager'])
             ->name('manager.create');
@@ -376,6 +380,9 @@ Route::middleware(['auth','role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get('profile', [\App\Http\Controllers\supervisor\ProfileController::class, 'show'])
+            ->name('profile.show');
+
         // مواد المشرف
         Route::get('subjects',              [SupervisorSubjectsController::class, 'index'])->name('subjects.index');
         Route::get('subjects/{subject}',    [SupervisorSubjectsController::class, 'show'])->name('subjects.show');
@@ -437,8 +444,6 @@ Route::middleware(['auth','role:admin'])
         Route::get('schedules', [SupervisorSchedulesController::class,'index'])
             ->name('schedules.index');
     });
-
-
 
 
 

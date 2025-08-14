@@ -17,6 +17,14 @@
                         @break
 
                     @case('admin')
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('admin/profile') ? 'active' : '' }}"
+                           href="{{ route('admin.profile.show', request()->has('institute_id') ? ['institute_id'=>request('institute_id')] : []) }}">
+                            <i class="bi bi-person-circle"></i> بروفايلي
+                        </a>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('admin/dashboard')) active @endif"
                            href="{{ url('/admin/dashboard') }}">
@@ -78,6 +86,13 @@
 
 
                     @case('institute manager')
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('manager/profile') ? 'active' : '' }}"
+                           href="{{ route('manager.profile.show') }}">
+                            <i class="bi bi-person-circle"></i> بروفايلي
+                        </a>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/dashboard')) active @endif"
                            href="{{ route('manager.dashboard') }}">
