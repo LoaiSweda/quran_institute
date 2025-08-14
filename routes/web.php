@@ -368,6 +368,9 @@ use App\Http\Controllers\supervisor\GuardiansController as SupervisorGuardiansCo
 use App\Http\Controllers\supervisor\SubjectsController as SupervisorSubjectsController;
 use App\Http\Controllers\supervisor\TeachersController as SupervisorTeachersController;
 use App\Http\Controllers\supervisor\StudentsController as supervisorStudentsController;
+use App\Http\Controllers\supervisor\ClassSchedulesController as SupervisorClassSchedulesController;
+use App\Http\Controllers\supervisor\SchedulesController as SupervisorSchedulesController;
+use App\Http\Controllers\supervisor\ClasStudentsController as AdminClasStudentsController;
 
 Route::middleware(['auth','role:admin'])
     ->prefix('admin')
@@ -404,6 +407,35 @@ Route::middleware(['auth','role:admin'])
             Route::put('{guardian}',     [SupervisorGuardiansController::class, 'update'])->name('update');
             Route::delete('{guardian}',  [SupervisorGuardiansController::class, 'destroy'])->name('destroy');
         });
+        // إدارة الحلقات (Classes = الحلقات) للمشرف
+        Route::prefix('classes')->name('classes.')->group(function () {
+            Route::get('/',            [\App\Http\Controllers\supervisor\ClassesController::class, 'index'])->name('index');
+            Route::get('create',       [\App\Http\Controllers\supervisor\ClassesController::class, 'create'])->name('create');
+            Route::post('/',           [\App\Http\Controllers\supervisor\ClassesController::class, 'store'])->name('store');
+            Route::get('{class}',      [\App\Http\Controllers\supervisor\ClassesController::class, 'show'])->name('show');
+
+            Route::get('{class}/students',            [AdminClasStudentsController::class,'index'])  ->name('students.index');
+            Route::get('{class}/students/create',     [AdminClasStudentsController::class,'create']) ->name('students.create');
+            Route::post('{class}/students',           [AdminClasStudentsController::class,'store'])  ->name('students.store');
+            Route::delete('{class}/students/{user}',  [AdminClasStudentsController::class,'destroy'])->name('students.destroy');
+
+
+            Route::get('{class}/edit', [\App\Http\Controllers\supervisor\ClassesController::class, 'edit'])->name('edit');
+            Route::put('{class}',      [\App\Http\Controllers\supervisor\ClassesController::class, 'update'])->name('update');
+            Route::delete('{class}',   [\App\Http\Controllers\supervisor\ClassesController::class, 'destroy'])->name('destroy');
+        });
+        // إدارة جداول مواعيد الحلقة (Schedules) للمشرف
+        Route::prefix('classes/{class}/schedules')
+            ->name('classes.schedules.')
+            ->group(function () {
+                Route::get('create',            [SupervisorClassSchedulesController::class, 'create'])->name('create');
+                Route::post('/',                [SupervisorClassSchedulesController::class, 'store'])->name('store');
+                Route::get('{schedule}/edit',   [SupervisorClassSchedulesController::class, 'edit'])->name('edit');
+                Route::put('{schedule}',        [SupervisorClassSchedulesController::class, 'update'])->name('update');
+                Route::delete('{schedule}',     [SupervisorClassSchedulesController::class, 'destroy'])->name('destroy');
+            });
+        Route::get('schedules', [SupervisorSchedulesController::class,'index'])
+            ->name('schedules.index');
     });
 
 

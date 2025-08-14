@@ -47,10 +47,15 @@
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('admin/students*')) active @endif"
                            href="{{ url('/admin/students') }}">
-                            <i class="bi bi-people"></i> الطلاب
+                            <i class="bi bi-person-lines-fill"></i> الطلاب
                         </a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/classes*')) active @endif"
+                           href="{{ url('/admin/classes') }}">
+                            <i class="bi bi-easel2"></i>الحلقات
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('admin/reports')) active @endif"
                            href="{{ url('/admin/reports') }}">
@@ -61,6 +66,12 @@
                         <a class="nav-link @if(request()->is('admin/guardians*')) active @endif"
                            href="{{ url('/admin/guardians') }}">
                             <i class="bi bi-people"></i> أولياء الأمور
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('admin/schedules*')) active @endif"
+                           href="{{ route('admin.schedules.index') }}">
+                            <i class="bi bi-calendar3"></i> جداول المواعيد
                         </a>
                     </li>
                     @break
