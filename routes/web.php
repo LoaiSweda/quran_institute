@@ -15,6 +15,13 @@ use App\Http\Controllers\Teacher\ExamController;
 use App\Http\Controllers\Teacher\ClassController;
 use App\Http\Controllers\supervisor\AttendanceScanController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Manager\ClassesController;
+use App\Http\Controllers\Manager\ClasStudentsController;
+use App\Http\Controllers\Manager\SubjectsController;
+use App\Http\Controllers\SuperAdmin\InstituteController;
+use App\Http\Controllers\SuperAdmin\InstituteManagerController;
+
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Manager\AnnouncementController as ManagerAnnouncementController;
 use App\Http\Controllers\Manager\AnnouncementInboxController as ManagerAnnouncementInboxController;
@@ -52,10 +59,7 @@ Route::middleware(['auth','role:admin'])
      ->prefix('admin')
      ->group(fn() => Route::view('dashboard','dashboards.admin'));
 
-// routes/web.php
-use App\Http\Controllers\Manager\ClassesController;
-use App\Http\Controllers\Manager\ClasStudentsController;
-use App\Http\Controllers\Manager\SubjectsController;
+
 
 Route::middleware(['auth', 'role:institute manager'])
     ->prefix('manager')
@@ -333,16 +337,28 @@ Route::middleware(['auth','role:teacher'])
 
 
 
-// routes/web.php
 
-use App\Http\Controllers\SuperAdmin\InstituteController;
+Route::middleware(['auth','role:super admin'])
+    ->prefix('super-admin/managers')
+    ->name('super-admin.managers.')
+    ->group(function() {
+        Route::get('/',            [InstituteManagerController::class, 'index'])->name('index');
+        Route::get('create',       [InstituteManagerController::class, 'create'])->name('create');
+        Route::post('/',           [InstituteManagerController::class, 'store'])->name('store');
+        Route::get('{user}',      [InstituteManagerController::class, 'show'])->name('show');
+        Route::get('{user}/edit',  [InstituteManagerController::class, 'edit'])->name('edit');
+        Route::put('{user}',       [InstituteManagerController::class, 'update'])->name('update');
+        Route::delete('{user}',    [InstituteManagerController::class, 'destroy'])->name('destroy');
+        Route::post('{user}/unassign-institute', [InstituteManagerController::class, 'unassignInstitute'])->name('unassign-institute');
+
+     });
+
+    
 
 Route::middleware(['auth','role:super admin'])
     ->prefix('super-admin/institutes')
     ->name('super-admin.institutes.')
     ->group(function() {
-
-
         // عرض نموذج إنشاء مدير معهد منفصل
         Route::get('manager/create',      [InstituteController::class, 'createManager'])
             ->name('manager.create');

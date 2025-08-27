@@ -131,11 +131,13 @@ class InstituteController extends Controller
     }
 
     // --------------------------------
+    // عرض نموذج إنشاء مدير جديد
     public function createManager()
     {
         return view('super-admin.institutes.manager-form');
     }
 
+    // تخزين مدير جديد ثم إعادة التوجيه إلى create institute
     public function storeManager(Request $request)
     {
         $data = $request->validate([

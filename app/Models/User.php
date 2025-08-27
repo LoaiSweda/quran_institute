@@ -119,4 +119,10 @@ public function adminProfile()
 
 
 
+
+    public function scopeInstituteManagers($query)
+    {
+        return $query->whereHas('role', fn($q) => $q->where('name', 'institute manager'));
+    }
+
 }

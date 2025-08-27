@@ -26,7 +26,7 @@ class GuardianSeeder extends Seeder
                 'lastname'  => 'طلي',
                 'phone'     => '0550000001',
                 'address'   => 'الرياض',
-                'email'     => 'salma.guardian@quran-institute.local',
+                'email'     => 'guardian1@gmail.com',
                 'password'  => '123123123',
             ],
             [
@@ -34,7 +34,7 @@ class GuardianSeeder extends Seeder
                 'lastname'  => 'طلي',
                 'phone'     => '0550000002',
                 'address'   => 'جدة',
-                'email'     => 'moh.guardian@quran-institute.local',
+                'email'     => 'guardian2@gmail.com',
                 'password'  => '123123123',
             ],
         ];

@@ -26,7 +26,7 @@ class AdminSeeder extends Seeder
             // إنشاء مستخدم لكل دور بكلمة مرور افتراضية
             $emailSlug = Str::slug($role->name, '_');   // يحول "super admin" إلى "super_admin"
             $user = User::create([
-                'email'    => "{$emailSlug}@quran-institute.local",
+                'email'    => "{$emailSlug}@gmail.com",
                 'password' => Hash::make('123123123'),
                 'role_id'  => $role->id,
             ]);

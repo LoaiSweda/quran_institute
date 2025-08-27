@@ -15,6 +15,10 @@ class Admin extends Model
         'updated_at'  => 'datetime',
     ];
 
+     protected $casts = [
+        'birthdate' => 'date', // يجعل القيمة ترجع كـ Carbon instance
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

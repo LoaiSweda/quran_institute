@@ -11,7 +11,7 @@
                     @case('super admin')
                         <li><a href="{{ url('/super-admin/dashboard') }}">الرئيسية</a></li>
                         <li><a href="{{ url('/super-admin/dashboard') }}">لوحة المالك</a></li>
-                        <li><a href="{{ url('/super-admin/users') }}">إدارة المستخدمين</a></li>
+                        <li><a href="{{ url('/super-admin/managers') }}">إدارة مدراء المعاهد</a></li>
                         <li><a href="{{ url('/super-admin/settings') }}">إعدادات النظام</a></li>
                         <li><a href="{{ url('/super-admin/institutes') }}">إعدادات المعاهد</a></li>
                         @break

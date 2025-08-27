@@ -39,10 +39,10 @@ class StudentSeeder extends Seeder
         }
 
         // 4) إنشاء 10 طلاب
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 2; $i++) {
             // أ) انشاء المستخدم
             $user = User::create([
-                'email'    => "student{$i}@quran-institute.local",
+                'email'    => "student{$i}@gmail.com",
                 'password' => Hash::make('123123123'),
                 'role_id'  => $studentRole->id,
             ]);
