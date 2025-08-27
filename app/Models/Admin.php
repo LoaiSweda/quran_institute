@@ -3,26 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Admin extends Model
 {
     protected $fillable = [
         'image','first_name','last_name','phone','address','birthdate','user_id'
     ];
+
     protected $casts = [
-        'birthdate'   => 'date',
-        'created_at'  => 'datetime',
-        'updated_at'  => 'datetime',
+        'birthdate' => 'date', // سترجع كـ Carbon تلقائيًا
+        // ملاحظة: created_at و updated_at تُحوَّلان لـ Carbon تلقائيًا، ولا حاجة لتعريفهما هنا.
     ];
 
-     protected $casts = [
-        'birthdate' => 'date', // يجعل القيمة ترجع كـ Carbon instance
-    ];
-
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 }
-
-
