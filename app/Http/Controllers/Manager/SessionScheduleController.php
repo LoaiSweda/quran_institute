@@ -83,6 +83,7 @@ class SessionScheduleController extends Controller
         $schedules = $query->paginate(20)->withQueryString();
 
         return view('manager.classes.schedules.index', [
+            'inst'      => $inst,
             'classes'   => $classes,
             'subjects'  => $subjects,
             'schedules' => $schedules,

@@ -18,37 +18,55 @@ class InstituteController extends Controller
     public function index(Request $request)
     {
         $query = Institute::query();
+
         if ($s = $request->get('search')) {
             $query->where('name', 'like', "%{$s}%");
         }
+
         if ($sort = $request->get('sort')) {
             $dir = $request->get('direction', 'asc');
             $query->orderBy($sort, $dir);
         }
-        $institutes = $query->paginate(10)->withQueryString();
+
+        $institutes = \App\Models\Institute::query()
+            ->with(['manager.admin'])   // مهم: يحل N+1 ويخلّي العلاقات جاهزة
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+
         return view('super-admin.institutes.index', compact('institutes'));
     }
 
-    public function create()
-    {
-        $newManagerId = session('new_manager_id');
 
-        $managers = User::whereHas('role', fn($q) =>
-        $q->whereIn('name', ['admin', 'institute manager'])
-        )->get();
+   public function create()
+{
+    $newManagerId = session('new_manager_id');
 
-        $institutes = Institute::latest()
-            ->paginate(10);
+    $managers = \App\Models\User::query()
+        ->instituteManagers()              // scope عندك
+        ->whereHas('admin')                // لازم يكون له بطاقة Admin
+        ->whereDoesntHave('institute')     // غير مخصص كمدير لأي معهد
+        ->with(['admin:id,user_id,first_name,last_name'])
+        ->orderBy('id','desc')
+        ->get();
 
-        return view('super-admin.institutes.form', [
-            'institute'     => new Institute,
-            'managers'      => $managers,
-            'institutes'    => $institutes,
-            'action'        => route('super-admin.institutes.store'),
-            'method'        => 'POST',
-            'newManagerId'  => $newManagerId,
-        ]);
-    }
+    $institutes = \App\Models\Institute::query()
+        ->with(['manager.admin'])   // مهم: يحل N+1 ويخلّي العلاقات جاهزة
+        ->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+
+    return view('super-admin.institutes.form', [
+        'institute'     => new \App\Models\Institute,
+        'managers'      => $managers,
+        'institutes'    => $institutes,
+        'action'        => route('super-admin.institutes.store'),
+        'method'        => 'POST',
+        'newManagerId'  => $newManagerId,
+    ]);
+}
 
     public function store(StoreInstituteRequest $request)
     {
@@ -93,21 +111,28 @@ class InstituteController extends Controller
     }
 
 
-    public function edit(Institute $institute)
-    {
-        $managers = User::whereHas('role', fn($q) =>
-        $q->whereIn('name', ['admin', 'institute manager'])
-        )->get();
+public function edit(\App\Models\Institute $institute)
+{
+    $managers = \App\Models\User::query()
+        ->instituteManagers()
+        ->whereHas('admin')
+        ->where(function ($q) use ($institute) {
+            $q->whereDoesntHave('institute')                              // غير معيّن
+              ->orWhereHas('institute', fn($iq) => $iq->where('id', $institute->id)); // المدير الحالي
+        })
+        ->with(['admin:id,user_id,first_name,last_name'])
+        ->orderBy('id','desc')
+        ->get();
 
-        return view('super-admin.institutes.form', [
-            'institute'     => $institute,
-            'managers'      => $managers,
-            'action'        => route('super-admin.institutes.update', $institute),
-            'method'        => 'PUT',
-            'newManagerId'  => null,
-            'institutes'    => Institute::latest()->paginate(10),
-        ]);
-    }
+    return view('super-admin.institutes.form', [
+        'institute'     => $institute,
+        'managers'      => $managers,
+        'action'        => route('super-admin.institutes.update', $institute),
+        'method'        => 'PUT',
+        'newManagerId'  => null,
+        'institutes'    => \App\Models\Institute::with(['manager.admin'])->latest()->paginate(10),
+    ]);
+}
 
     public function update(UpdateInstituteRequest $request, Institute $institute)
     {

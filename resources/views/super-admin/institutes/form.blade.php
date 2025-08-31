@@ -48,19 +48,15 @@
                     @endphp
                     <div class="col-md-6">
                         <label for="user_id" class="form-label">مدير المعهد <span class="text-danger">*</span></label>
-                        <select
-                            id="user_id"
-                            name="user_id"
-                            class="form-select form-select-sm @error('user_id') is-invalid @enderror"
-                            required
-                        >
+                        <select id="user_id" name="user_id" class="form-select form-select-sm @error('user_id') is-invalid @enderror" required>
                             <option value="">-- اختر المدير --</option>
                             @foreach($managers as $m)
                                 <option value="{{ $m->id }}" {{ $selected == $m->id ? 'selected' : '' }}>
-                                    {{ $m->email }}
+                                    {{ $m->admin->first_name }} {{ $m->admin->last_name }}
                                 </option>
                             @endforeach
                         </select>
+
                         @error('user_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -149,7 +145,15 @@
                                         {{ $inst->name }}
                                     </a>
                                 </td>
-                                <td>{{ $inst->manager->email }}</td>
+                                 <td>
+                                    @if($inst->manager?->admin)
+                                        {{ $inst->manager?->admin?->first_name }}
+                                        {{ $inst->manager?->admin?->last_name }}
+                                    @else
+                                        <span class="text-muted">غير معيّن</span>
+                                    @endif
+                                </td>
+
                                 <td>
                                     @if($inst->deleted_at)
                                         <span class="badge bg-secondary">معطل</span>

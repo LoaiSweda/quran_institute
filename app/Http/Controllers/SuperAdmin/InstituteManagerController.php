@@ -32,7 +32,11 @@ class InstituteManagerController extends Controller
             $query->latest();
         }
 
-        $managers = $query->paginate(15)->withQueryString();
+        $managers = \App\Models\User::query()
+            ->instituteManagers()        
+            ->whereHas('admin')          
+            ->with(['admin:id,first_name,last_name,phone,user_id'])
+            ->paginate(10);
 
         return view('super-admin.managers.index', compact('managers'));
     }

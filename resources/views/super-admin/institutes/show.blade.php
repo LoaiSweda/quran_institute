@@ -43,6 +43,10 @@
                             {{ $institute->address ?: '—' }}
                         </p>
                         <p><strong>المدير الرئيسي:</strong>
+                            {{ optional($institute->manager->admin)->first_name }}
+                            {{ optional($institute->manager->admin)->last_name }}
+                        </p>
+                        <p><strong>حساب المدير :</strong>
                             {{ $institute->manager->email }}
                         </p>
                         <p><strong>تاريخ الإنشاء:</strong>

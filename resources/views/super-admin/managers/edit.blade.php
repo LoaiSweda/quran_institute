@@ -169,21 +169,6 @@
                         </div>
                     @endif
 
-                    {{-- تعيين معهد --}}
-                    <div class="col-md-6">
-                        <label for="institute_id" class="form-label">تعيين معهد</label>
-                        <select name="institute_id" id="institute_id"
-                                class="form-select form-select-sm @error('institute_id') is-invalid @enderror">
-                            <option value="">-- غير معين --</option>
-                            @foreach($institutes as $inst)
-                                <option value="{{ $inst->id }}"
-                                    @if(old('institute_id', $user->institute?->id) == $inst->id) selected @endif>
-                                    {{ $inst->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('institute_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
 
                     {{-- زر الحفظ --}}
                     <div class="col-12 text-center">

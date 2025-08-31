@@ -66,7 +66,15 @@
                                         {{ $inst->name }}
                                     </a>
                                 </td>
-                                <td>{{ $inst->manager->email }}</td>
+                                <td>
+                                    @if($inst->manager?->admin)
+                                        {{ $inst->manager?->admin?->first_name }}
+                                        {{ $inst->manager?->admin?->last_name }}
+                                    @else
+                                        <span class="text-muted">غير معيّن</span>
+                                    @endif
+                                </td>
+
                                 <td>
                                     @if($inst->deleted_at)
                                         <span class="badge bg-secondary">معطل</span>
