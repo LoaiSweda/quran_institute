@@ -157,12 +157,13 @@
       <option value="">-- اختر جدول الحصة --</option>
       @foreach($schedules as $sch)
         <option value="{{ $sch->id }}">
-          الصف: {{ $sch->educationClass->name }} | 
-          {{ \Carbon\Carbon::parse($sch->start_time)->format('H:i') }} - 
-          {{ \Carbon\Carbon::parse($sch->end_time)->format('H:i') }}
+          الصف: {{ $sch->educationClass->name }} |
+          {{ $sch->start_time->format('H:i') }} -
+          {{ $sch->end_time->format('H:i') }}
         </option>
       @endforeach
     </select>
+
 
     <video id="preview" autoplay muted playsinline></video>
     <div id="status">وجّه الكاميرا إلى باركود الطالب…</div>

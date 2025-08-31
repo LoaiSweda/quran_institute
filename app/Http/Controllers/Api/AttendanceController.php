@@ -20,6 +20,7 @@ class AttendanceController extends Controller
      /**
      * Scan a student's QR and register attendance.
      */
+  
     public function scan(Request $req)
     {
         $req->validate([
@@ -27,41 +28,30 @@ class AttendanceController extends Controller
             'session_schedule_id' => 'required|exists:session_schedules,id',
         ]);
 
-        // Find the student by QR
-        $student = Student::where('qr', $req->qr)->firstOrFail();
-
-        // Find the schedule
+        $student  = Student::where('qr', $req->qr)->firstOrFail();
         $schedule = SessionSchedule::findOrFail($req->session_schedule_id);
 
-        // 1. تأكد أن اليوم صحيح
-        $today = Carbon::now('Asia/Damascus')->dayOfWeek;  // 0=الأحد … 6=السبت
-        if ($schedule->day_of_week != $today) {
-            return response()->json(['message' => 'ليست هذه الحصة اليوم'], 403);
+        // 👈 مهم: اسم اليوم نصياً ليتطابق مع عمود day_of_week
+        $today = Carbon::now('Asia/Damascus')->format('l'); // "Sunday"… "Saturday"
+
+        if ($schedule->day_of_week !== $today) {
+            return response()->json(['message' => 'ليست هذه الحصة اليوم'], 403, [], JSON_UNESCAPED_UNICODE);
         }
 
-        // 2. تأكد أن الوقت ضمن وقت الحصة
+        // باقي الدالة كما هو...
         $now = Carbon::now('Asia/Damascus')->format('H:i');
         if ($now < $schedule->start_time->format('H:i')
             || $now > $schedule->end_time->format('H:i')) {
-            return response()->json(
-                ['message' => 'ليست ضمن وقت الحصة'],
-                403,
-                [],
-                JSON_UNESCAPED_UNICODE
-            );
+            return response()->json(['message' => 'ليست ضمن وقت الحصة'], 403, [], JSON_UNESCAPED_UNICODE);
         }
 
-        // 3. أنشئ أو احصل على سجل حضور خاص بهذه الجلسة والموعد
         $persent = Persent::firstOrCreate(
             [
                 'date'                 => now()->toDateString(),
                 'session_schedule_id'  => $schedule->id,
             ],
-            [
-                'time' => now()->toTimeString(),
-            ]
+            ['time' => now()->toTimeString()]
         );
-
 
         if ($persent->wasRecentlyCreated) {
             $class = $schedule->educationClass;
@@ -75,9 +65,7 @@ class AttendanceController extends Controller
         ])->exists();
 
         if ($already) {
-            return response()->json([
-                'message' => 'هذا الطالب قد سجّل حضوره مسبقاً في هذه الجلسة'
-            ], 200);
+            return response()->json(['message' => 'هذا الطالب قد سجّل حضوره مسبقاً في هذه الجلسة'], 200, [], JSON_UNESCAPED_UNICODE);
         }
 
         UserPersent::create([
@@ -88,36 +76,20 @@ class AttendanceController extends Controller
         ]);
 
         $progress = StudentProgress::firstOrCreate(
-            [
-                'student_id' => $student->id,
-                'class_id'   => $schedule->class_id,
-            ],
-            [
-                'number_sessions_attended' => 0,
-                'eohservation_rate'        => 0,
-                'degree_avg'               => 0,
-                'total_points_subject'     => 0,
-            ]
+            ['student_id' => $student->id, 'class_id' => $schedule->class_id],
+            ['number_sessions_attended' => 0, 'eohservation_rate' => 0, 'degree_avg' => 0, 'total_points_subject' => 0]
         );
 
-        $totalSessions = $schedule
-            ->educationClass
-            ->subject
-            ->total_sessions;
-
+        $totalSessions = $schedule->educationClass->subject->total_sessions;
         $progress->increment('number_sessions_attended');
         $progress->update([
-            'eohservation_rate' => round(
-                $progress->number_sessions_attended
-                / $totalSessions
-                * 100
-            ),
+            'eohservation_rate' => round($progress->number_sessions_attended / $totalSessions * 100),
         ]);
 
-        return response()->json([
-            'message' => 'تمّ تسجيل حضور الطالب بنجاح'
-        ], 200);
+        return response()->json(['message' => 'تمّ تسجيل حضور الطالب بنجاح'], 200, [], JSON_UNESCAPED_UNICODE);
     }
+
+    
 
     public function markAbsent(Request $request)
     {

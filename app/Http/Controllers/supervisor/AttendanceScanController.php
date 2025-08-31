@@ -15,26 +15,26 @@ class AttendanceScanController extends Controller
     {
         $supervisor = Auth::user();
 
-        // instIds
-        $instIds = $supervisor
-            ->institutes()
-            ->wherePivot('role_institute','supervisor')
-            ->pluck('institutes.id')
-            ->toArray();
+        // خُذ كل المعاهد المرتبط بها المستخدم (بدون تقييد الدور حتى لا تصفّر)
+        $instIds = $supervisor->institutes()->pluck('institutes.id')->toArray();
 
-        
-        $today = Carbon::now('Asia/Damascus')->dayOfWeek;
+        // إن لم يكن مرتبطًا بأي معهد، أوقف برسالة واضحة
+        if (empty($instIds)) {
+            abort(403, 'حسابك غير مرتبط بأي معهد.');
+        }
 
-        $schedules = SessionSchedule::with('educationClass')
-            ->whereIn('class_id', function($q) use($instIds) {
-                $q->select('classes.id')
-                ->from('classes')
-                ->join('subjects','classes.subject_id','=','subjects.id')
-                ->whereIn('subjects.institute_id',$instIds);
+        // اسم اليوم بالإنجليزية مثل Sunday
+        $today = Carbon::now('Asia/Damascus')->format('l');
+
+        // الاستعلام: طابق اليوم بلا حساسية حالة الأحرف/المسافات، وفلترة بالـ relations
+        $schedules = SessionSchedule::query()
+            ->with(['educationClass' => function ($q) {
+                $q->select('id','name','subject_id');
+            }])
+            ->whereRaw('LOWER(TRIM(day_of_week)) = ?', [strtolower($today)])
+            ->whereHas('educationClass.subject', function ($q) use ($instIds) {
+                $q->whereIn('institute_id', $instIds);
             })
-            ->where('day_of_week', $today)
-            ->whereNotNull('start_time')
-            ->whereNotNull('end_time')
             ->orderBy('start_time')
             ->get();
 
