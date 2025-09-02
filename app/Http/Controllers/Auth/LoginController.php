@@ -34,15 +34,15 @@ class LoginController extends Controller
                 case 'super admin':
                     return redirect()->intended('/super-admin/dashboard');
                 case 'admin':
-                    return redirect()->intended('/admin/dashboard');
+                    return redirect()->intended('/admin/profile');
                 case 'institute manager':
-                    return redirect()->intended('/manager/dashboard');
+                    return redirect()->intended('/manager/profile');
                 case 'teacher':
-                    return redirect()->intended('/teacher/dashboard');
+                    return redirect()->intended('/teacher/profile');
                 case 'student':
-                    return redirect()->intended('/student/dashboard');
+                    return redirect()->intended('/student/profile');
                 case 'guardian':
-                    return redirect()->intended('/guardian/dashboard');
+                    return redirect()->intended('/guardian/profile');
                 default:
                     return redirect()->intended('/');
             }

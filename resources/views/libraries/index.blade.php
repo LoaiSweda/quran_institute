@@ -8,9 +8,12 @@
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
             <h1 class="display-6 fw-bold mb-3 mb-md-0">إدارة المكتبة الإلكترونية</h1>
 
-            @if(Auth::user()->hasAnyRole(['super admin', 'institute manager', 'teacher']))
-                <a href="{{ route(Auth::user()->hasRole('super admin') ? 'super-admin.library.create' : (Auth::user()->hasRole('institute manager') ? 'manager.library.create' : 'teacher.library.create')) }}"
-                   class="btn btn-primary">
+            @if(Auth::user()->hasAnyRole(['super admin','institute manager','admin','teacher']))
+                <a href="{{ route(
+                    Auth::user()->hasRole('super admin') ? 'super-admin.library.create' :
+                    (Auth::user()->hasRole('institute manager') ? 'manager.library.create' :
+                    (Auth::user()->hasRole('admin') ? 'admin.library.create' : 'teacher.library.create'))
+                ) }}" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i> إضافة مورد جديد
                 </a>
             @endif
@@ -151,6 +154,8 @@
                     return "{{ route('super-admin.institutes.library.api.index') }}";
                 @elseif(Auth::user()->hasRole('institute manager'))
                     return "{{ route('manager.library.api.index') }}";
+                @elseif(Auth::user()->hasRole('admin'))
+                    return "{{ route('admin.library.api.index') }}";
                 @elseif(Auth::user()->hasRole('teacher'))
                     return "{{ route('teacher.library.api.index') }}";
                 @else

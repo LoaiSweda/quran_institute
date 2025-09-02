@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Teacher;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SessionSchedule;
-use Carbon\Carbon;
 
 class ScheduleController extends Controller
 {
@@ -14,32 +13,50 @@ class ScheduleController extends Controller
      */
     public function index()
     {
-        // جلب جميع الجلسات الخاصة بالأستاذ المصادق عليه مع بيانات الصف
-        $sessions = auth()->user()
-                         ->sessionSchedules()
-                         ->with('educationClass')
-                         ->get();
+        $userId = auth()->id();
 
-        // تجميع الجلسات حسب رقم اليوم (0=السبت … 6=الجمعة)
-        $sessionsByDay = $sessions->groupBy('day_of_week');
+        // 1) اجلب الجلسات المعيّنة لهذا المعلّم عبر العمود user_id
+        $sessions = SessionSchedule::query()
+            ->where('user_id', $userId)
+            ->with('educationClass')         // لإظهار اسم الصف
+            ->orderBy('day_of_week')
+            ->orderBy('start_time')
+            ->get();
 
-        // استخراج ساعتي البداية والنهاية لأقصى وأدنى وقت
-        $hours = $sessions
-            ->pluck('start_time')
-            ->merge($sessions->pluck('end_time'))
-            ->map(function ($t) {
-                // نحول "HH:MM:SS" إلى رقم الساعة
-                return (int) substr($t, 0, 2);
+        // لو فاضية، أعِد جدولًا افتراضيًا
+        if ($sessions->isEmpty()) {
+            $sessionsByDay = collect();
+            $timeSlots = collect(range(8, 22))->map(fn($h) => sprintf('%02d:00', $h));
+        } else {
+            // 2) حوّل day_of_week النصي إلى رقم 0..6 ليتطابق مع مفاتيح الأعمدة
+            $map = [
+                'Sunday'    => 0,
+                'Monday'    => 1,
+                'Tuesday'   => 2,
+                'Wednesday' => 3,
+                'Thursday'  => 4,
+                'Friday'    => 5,
+                'Saturday'  => 6,
+            ];
+
+            $sessionsByDay = $sessions->groupBy(function ($s) use ($map) {
+                return $map[$s->day_of_week] ?? null; // ستكون المفاتيح 0..6
             });
 
-        $minHour = $hours->min() ?: 8;  // افتراضياً من 8 صباحاً
-        $maxHour = $hours->max() ?: 22; // افتراضياً إلى 5 مساءً
+            // 3) حدّد مدى الساعات من أصغر ساعة بداية لأكبر ساعة نهاية
+            $minHour = (int) $sessions->min(fn($s) => (int) $s->start_time->format('H'));
+            $maxHour = (int) $sessions->max(fn($s) => (int) $s->end_time->format('H'));
 
-        // إنشاء مصفوفة أوقات كل ساعة بين الحدين
-        $timeSlots = collect(range($minHour, $maxHour))
-            ->map(fn($h) => sprintf('%02d:00', $h));
+            // احتياط
+            if ($minHour === 0 && $maxHour === 0) {
+                $minHour = 8; $maxHour = 22;
+            }
 
-        // أسماء الأيام بالعربي
+            $timeSlots = collect(range($minHour, $maxHour))
+                ->map(fn($h) => sprintf('%02d:00', $h));
+        }
+
+        // أسماء الأيام بالعربي وفق 0..6 (0 = الأحد)
         $days = [
             0 => 'الأحد',
             1 => 'الإثنين',
@@ -50,7 +67,6 @@ class ScheduleController extends Controller
             6 => 'السبت',
         ];
 
-        // تمرير البيانات إلى صفحة العرض
         return view('teacher.schedule.index', compact(
             'sessionsByDay',
             'days',

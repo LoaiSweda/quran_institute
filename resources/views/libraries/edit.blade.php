@@ -7,10 +7,14 @@
             <h1 class="display-6 fw-bold mb-3 mb-md-0">
                 <i class="fas fa-edit text-primary me-2"></i> تعديل مورد المكتبة: {{ $library->name }}
             </h1>
-            <a href="{{ route(Auth::user()->hasRole('super admin') ? 'super-admin.library.index' : (Auth::user()->hasRole('institute manager') ? 'manager.library.index' : 'teacher.library.index')) }}"
-               class="btn btn-secondary">
+            <a href="{{ route(
+                Auth::user()->hasRole('super admin') ? 'super-admin.library.index' :
+                (Auth::user()->hasRole('institute manager') ? 'manager.library.index' :
+                (Auth::user()->hasRole('admin') ? 'admin.library.index' : 'teacher.library.index'))
+            ) }}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i> العودة إلى المكتبة
             </a>
+
         </div>
 
         {{-- Error messages display --}}
@@ -34,7 +38,13 @@
         {{-- Edit Form --}}
         <div class="card shadow-sm">
             <div class="card-body">
-                <form action="{{ route(Auth::user()->hasRole('super admin') ? 'super-admin.library.update' : (Auth::user()->hasRole('institute manager') ? 'manager.library.update' : 'teacher.library.update'), $library->id) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route(
+                    Auth::user()->hasRole('super admin') ? 'super-admin.library.update' :
+                    (Auth::user()->hasRole('institute manager') ? 'manager.library.update' :
+                    (Auth::user()->hasRole('admin') ? 'admin.library.update' : 'teacher.library.update')),
+                    $library->id
+                ) }}" method="POST" enctype="multipart/form-data">
+
                     @csrf
                     @method('PUT')
 
@@ -122,7 +132,7 @@
                     </div>
 
                     {{-- Visibility checkbox for Super Admin and Institute Manager --}}
-                    @if(Auth::user()->hasAnyRole(['super admin', 'institute manager']))
+                    @if(Auth::user()->hasAnyRole(['super admin','institute manager','admin']))
                         <div class="form-check form-switch mb-4">
                             <input class="form-check-input" type="checkbox" role="switch"
                                    name="is_visible" id="is_visible"

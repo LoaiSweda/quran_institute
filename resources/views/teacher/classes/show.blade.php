@@ -75,7 +75,20 @@
                         <tbody>
                             @foreach($class->sessions as $sess)
                                 <tr>
-                                    <td>{{ ['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'][$sess->day_of_week] }}</td>
+                                    @php
+                                        $dayMapEnToAr = [
+                                            'Saturday'  => 'السبت',
+                                            'Sunday'    => 'الأحد',
+                                            'Monday'    => 'الاثنين',
+                                            'Tuesday'   => 'الثلاثاء',
+                                            'Wednesday' => 'الأربعاء',
+                                            'Thursday'  => 'الخميس',
+                                            'Friday'    => 'الجمعة',
+                                        ];
+                                    @endphp
+
+                                    <td>{{ $dayMapEnToAr[$sess->day_of_week] ?? $sess->day_of_week }}</td>
+
                                     <td>{{ \Carbon\Carbon::parse($sess->start_time)->format('H:i') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($sess->end_time)->format('H:i') }}</td>
                                 </tr>

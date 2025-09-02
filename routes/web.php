@@ -253,6 +253,7 @@ Route::middleware(['auth','role:teacher'])
      ->prefix('teacher')
      ->name('teacher.')
      ->group(function () {
+        
      // لوحة المعلم
      Route::view('dashboard','dashboards.teacher')->name('dashboard');
 
@@ -427,6 +428,20 @@ Route::middleware(['auth','role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+
+
+         Route::prefix('library')->name('library.')->group(function()
+        {
+                Route::get('/', [LibraryController::class, 'index'])->name('index');
+                Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+                Route::get('create', [LibraryController::class, 'create'])->name('create');
+                Route::post('/', [LibraryController::class, 'store'])->name('store');
+                Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+                Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+                Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+                Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
+        });
+        
         Route::get('profile', [\App\Http\Controllers\supervisor\ProfileController::class, 'show'])
             ->name('profile.show');
 

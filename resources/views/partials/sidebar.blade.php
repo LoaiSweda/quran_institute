@@ -9,10 +9,7 @@
             <ul>
                 @switch($role)
                     @case('super admin')
-                        <li><a href="{{ url('/super-admin/dashboard') }}">الرئيسية</a></li>
-                        <li><a href="{{ url('/super-admin/dashboard') }}">لوحة المالك</a></li>
                         <li><a href="{{ url('/super-admin/managers') }}">إدارة مدراء المعاهد</a></li>
-                        <li><a href="{{ url('/super-admin/settings') }}">إعدادات النظام</a></li>
                         <li><a href="{{ url('/super-admin/institutes') }}">إعدادات المعاهد</a></li>
                         @break
 
@@ -33,19 +30,6 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.announcements.inbox') }}" class="nav-link">
                             <i class="bi bi-inbox"></i> إعلانات موجهة لي
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @if(request()->is('admin/dashboard')) active @endif"
-                           href="{{ url('/admin/dashboard') }}">
-                            <i class="bi bi-speedometer2"></i> الرئيسية
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link @if(request()->is('admin/dashboard')) active @endif"
-                           href="{{ url('/admin/dashboard') }}">
-                            <i class="bi bi-columns-gap"></i> لوحة المشرف
                         </a>
                     </li>
 
@@ -92,6 +76,13 @@
                             <i class="bi bi-calendar3"></i> جداول المواعيد
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/library*')) active @endif"
+                           href="{{ route('admin.library.index') }}">
+                            <i class="bi bi-book"></i> المكتبة الإلكترونية
+                        </a>
+                    </li>
                     @break
 
 
@@ -114,12 +105,6 @@
                         </a>
                     </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link @if(request()->is('manager/dashboard')) active @endif"
-                           href="{{ route('manager.dashboard') }}">
-                            <i class="bi bi-speedometer2"></i> الرئيسية
-                        </a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('manager/admins*')) active @endif"
                            href="{{ url('/manager/admins') }}">
@@ -186,19 +171,14 @@
                         </a>
                     </li>
 
-                       <li class="{{ request()->is('teacher/dashboard') ? 'active' : '' }}">
-                            <a href="{{ url('teacher/dashboard') }}">
-                                <i class="bi bi-house-door-fill"></i>
-                                الرئيسية
-                            </a>
-                        </li>
 
-                        <li class="{{ request()->is('teacher/announcements*') ? 'active' : '' }}">
-                            <a href="{{ route('teacher.announcements.index') }}">
-                                <i class="bi bi-megaphone-fill"></i>
-                                إعلاناتي
-                            </a>
-                        </li>
+                    <li class="{{ request()->is('teacher/announcements*') ? 'active' : '' }}">
+                        <a href="{{ route('teacher.announcements.index') }}">
+                            <i class="bi bi-megaphone-fill"></i>
+                            إعلاناتي
+                        </a>
+                    </li>
+
                     <li class="nav-item">
                         <a href="{{ route('teacher.announcements.inbox') }}" class="nav-link">
                             <i class="bi bi-inbox"></i> إعلانات موجهة لي
@@ -232,8 +212,6 @@
                             </a>
                         </li>
 
-                        <li><a href="{{ url('/teacher/dashboard') }}">لوحة المعلم</a></li>
-                        <li><a href="{{ url('/teacher/assignments') }}">الواجبات</a></li>
                         @break
 
                     @default

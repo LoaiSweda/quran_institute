@@ -25,6 +25,18 @@ class LibraryController extends Controller
         return view('libraries.index', compact('categories'));
     }
 
+
+
+    private function roleRoutePrefix(): string
+    {
+        $u = Auth::user();
+        return $u->hasRole('super admin') ? 'super-admin'
+            : ($u->hasRole('institute manager') ? 'manager'
+            : ($u->hasRole('admin') ? 'admin'
+            : 'teacher'));
+    }
+
+
     /**
      * API endpoint for filtered library resources.
      *
@@ -64,23 +76,28 @@ class LibraryController extends Controller
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return void
      */
+    
     protected function applyRoleFilters(Builder $query): void
     {
-        if (Auth::user()->hasRole('institute manager')) {
-            $instituteId = Auth::user()->institute_id;
+        $user = Auth::user();
+
+        // admin مثل institute manager تمامًا
+        if ($user->hasAnyRole(['institute manager', 'admin'])) {
+            $instituteId = $user->institute_id;
             $query->where(function ($q) use ($instituteId) {
                 $q->where('institute_id', $instituteId)
-                    ->orWhereNull('institute_id'); // Global resources
+                ->orWhereNull('institute_id'); // موارد عامة
             });
+            return;
         }
 
-        if (Auth::user()->hasRole('teacher')) {
-            $instituteId = Auth::user()->institute_id;
-            $userId = Auth::id();
+        if ($user->hasRole('teacher')) {
+            $instituteId = $user->institute_id;
+            $userId = $user->id;
             $query->where(function ($q) use ($instituteId, $userId) {
                 $q->where('institute_id', $instituteId)
-                    ->orWhereNull('institute_id') // Global resources
-                    ->orWhere('user_id', $userId);
+                ->orWhereNull('institute_id')
+                ->orWhere('user_id', $userId);
             });
         }
     }
@@ -139,14 +156,16 @@ class LibraryController extends Controller
         ]);
 
         $file = $request->file('file');
-        $path = $file->store('public/library_files');
 
-        $uploadedFile = File::create([
-            'original_name' => $file->getClientOriginalName(),
-            'path' => $path,
-            'mime_type' => $file->getMimeType(),
+        $path = $file->store('public/library_files'); 
+
+        $uploadedFile = \App\Models\File::create([
+            'name' => $file->getClientOriginalName(),                 
+            'path' => $path,                                          
+            'mime' => $file->getMimeType(),
             'size' => $file->getSize(),
         ]);
+
 
         Library::create([
             'name' => $request->name,
@@ -160,7 +179,9 @@ class LibraryController extends Controller
             'institute_id' => Auth::user()->institute_id ?? null,
         ]);
 
-        return redirect()->route(Auth::user()->hasRole('super admin') ? 'super-admin.library.index' : (Auth::user()->hasRole('institute manager') ? 'manager.library.index' : 'teacher.library.index'))->with('success', 'Library item created successfully.');
+        return redirect()
+            ->route($this->roleRoutePrefix().'.library.index')
+            ->with('success', 'تم رفع الملف بنجاح');
     }
 
     /**
@@ -172,7 +193,7 @@ class LibraryController extends Controller
     public function edit(Library $library)
     {
         if (Auth::user()->hasRole('super admin')) {
-        } elseif (Auth::user()->hasRole('institute manager')) {
+        } elseif (Auth::user()->hasRole(['institute manager', 'admin'])) {
             if ($library->institute_id !== Auth::user()->institute_id && $library->institute_id !== null) {
                 abort(403, 'Unauthorized action.');
             }
@@ -199,7 +220,7 @@ class LibraryController extends Controller
     {
         if (Auth::user()->hasRole('super admin')) {
             // No additional check needed for super admin
-        } elseif (Auth::user()->hasRole('institute manager')) {
+        } elseif (Auth::user()->hasRole(['institute manager', 'admin'])) {
             if ($library->institute_id !== Auth::user()->institute_id && $library->institute_id !== null) {
                 abort(403, 'Unauthorized action.');
             }
@@ -222,21 +243,23 @@ class LibraryController extends Controller
 
         if ($request->hasFile('file')) {
             if ($library->file) {
-                Storage::delete($library->file->path);
+                \Storage::delete($library->file->path);
                 $library->file->delete();
             }
 
             $file = $request->file('file');
             $path = $file->store('public/library_files');
 
-            $uploadedFile = File::create([
-                'original_name' => $file->getClientOriginalName(),
+            $uploadedFile = \App\Models\File::create([
+                'name' => $file->getClientOriginalName(),
                 'path' => $path,
-                'mime_type' => $file->getMimeType(),
+                'mime' => $file->getMimeType(),
                 'size' => $file->getSize(),
             ]);
-            $library->file_id = $uploadedFile->id;
+
+            $library->file_id = $uploadedFile->id; // ثم أكمل update كما لديك
         }
+
 
         $library->update([
             'name' => $request->name,
@@ -247,7 +270,9 @@ class LibraryController extends Controller
             'is_visible' => $request->has('is_visible'),
         ]);
 
-        return redirect()->route(Auth::user()->hasRole('super admin') ? 'super-admin.library.index' : (Auth::user()->hasRole('institute manager') ? 'manager.library.index' : 'teacher.library.index'))->with('success', 'Library item updated successfully.');
+        return redirect()
+            ->route($this->roleRoutePrefix().'.library.index')
+            ->with('success', 'تم تحديث الملف بنجاح');
     }
 
     /**
@@ -259,7 +284,7 @@ class LibraryController extends Controller
     public function destroy(Library $library)
     {
         if (Auth::user()->hasRole('super admin')) {
-        } elseif (Auth::user()->hasRole('institute manager')) {
+        } elseif (Auth::user()->hasRole(['institute manager', 'admin'])) {
             if ($library->institute_id !== Auth::user()->institute_id && $library->institute_id !== null) {
                 abort(403, 'Unauthorized action.');
             }
@@ -277,7 +302,10 @@ class LibraryController extends Controller
         }
         $library->delete();
 
-        return redirect()->route(Auth::user()->hasRole('super admin') ? 'super-admin.library.index' : (Auth::user()->hasRole('institute manager') ? 'manager.library.index' : 'teacher.library.index'))->with('success', 'Library item deleted successfully.');
+        return redirect()
+            ->route($this->roleRoutePrefix().'.library.index')
+            ->with('success', 'تم حذف الملف بنجاح');
+
     }
 
     /**
@@ -289,11 +317,11 @@ class LibraryController extends Controller
      */
     public function toggleVisibility(Library $library)
     {
-        if (!Auth::user()->hasAnyRole(['super admin', 'institute manager'])) {
+        if (!Auth::user()->hasAnyRole(['super admin', 'institute manager', 'admin'])) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (Auth::user()->hasRole('institute manager') && $library->institute_id !== Auth::user()->institute_id && $library->institute_id !== null) {
+        if (Auth::user()->hasRole(['institute manager', 'admin']) && $library->institute_id !== Auth::user()->institute_id && $library->institute_id !== null) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -304,6 +332,6 @@ class LibraryController extends Controller
             return response()->json(['success' => true, 'is_visible' => $library->is_visible]);
         }
 
-        return back()->with('success', 'Visibility updated successfully.');
+        return back()->with('success', 'تم تحديث الحالة بنجاح');
     }
 }
