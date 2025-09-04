@@ -8,6 +8,7 @@ use App\Http\Controllers\Manager\GuardiansController;
 use App\Http\Controllers\Manager\SessionScheduleController;
 use App\Http\Controllers\Manager\StudentsController;
 use App\Http\Controllers\Manager\TeachersController;
+use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\Teacher\AnnouncementController;
 use App\Http\Controllers\Teacher\ScheduleController;
 use App\Http\Controllers\Teacher\StudentController;
@@ -52,10 +53,35 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 // مسارات الأدوار
 Route::middleware(['auth','role:super admin'])
-     ->prefix('super-admin')
-     ->group(fn() => Route::view('dashboard','dashboards.super_admin'));
+    ->prefix('super-admin')
+    ->group(function () {
+        Route::get('dashboard', [App\Http\Controllers\SuperAdminController::class, 'showInstitutes'])
+            ->name('super-admin.institutes');
+        Route::get('dashboard/{institute}', [SuperAdminController::class, 'showInstituteDetails'])
+            ->name('super-admin.institutes.Details'); // غير show إلى Details
 
-Route::middleware(['auth','role:admin'])
+        // مسارات الصفحات التفصيلية
+        Route::get('dashboard/{institute}/students', [SuperAdminController::class, 'showInstituteStudents'])
+            ->name('super-admin.institutes.students');
+        Route::get('dashboard/{institute}/teachers', [SuperAdminController::class, 'showInstituteTeachers'])
+            ->name('super-admin.institutes.teachers');
+        Route::get('dashboard/{institute}/classes', [SuperAdminController::class, 'showInstituteClasses'])
+            ->name('super-admin.institutes.classes');
+        Route::get('dashboard/{institute}/subjects', [SuperAdminController::class, 'showInstituteSubjects'])
+            ->name('super-admin.institutes.subjects');
+        Route::get('dashboard/{institute}/exams', [SuperAdminController::class, 'showInstituteExams'])
+            ->name('super-admin.institutes.exams');
+        Route::get('dashboard/{institute}/guardians', [SuperAdminController::class, 'showInstituteGuardians'])
+            ->name('super-admin.institutes.guardians');
+        Route::get('dashboard/{institute}/schedules', [SuperAdminController::class, 'showInstituteSchedules'])
+            ->name('super-admin.institutes.schedules');
+        Route::get('dashboard/{institute}/memorizations', [SuperAdminController::class, 'showInstituteMemorizations'])
+            ->name('super-admin.institutes.memorizations');
+    });Route::middleware(['auth','role:admin'])
+
+
+
+
      ->prefix('admin')
      ->group(fn() => Route::view('dashboard','dashboards.admin'));
 
@@ -253,7 +279,7 @@ Route::middleware(['auth','role:teacher'])
      ->prefix('teacher')
      ->name('teacher.')
      ->group(function () {
-        
+
      // لوحة المعلم
      Route::view('dashboard','dashboards.teacher')->name('dashboard');
 
@@ -354,7 +380,7 @@ Route::middleware(['auth','role:super admin'])
 
      });
 
-    
+
 
 Route::middleware(['auth','role:super admin'])
     ->prefix('super-admin/institutes')
@@ -441,7 +467,7 @@ Route::middleware(['auth','role:admin'])
                 Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
                 Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
         });
-        
+
         Route::get('profile', [\App\Http\Controllers\supervisor\ProfileController::class, 'show'])
             ->name('profile.show');
 

@@ -28,6 +28,29 @@ class Institute extends Model
         return $this->hasManyThrough(EducationClass::class, Subject::class);
     }
 
+    // علاقة مباشرة مع الطلاب من خلال الجدول الوسيط institute_user
+    public function students()
+    {
+        return $this->belongsToMany(
+            Student::class,
+            'institute_user',
+            'institute_id',
+            'user_id',
+            'id',
+            'user_id'
+        )->wherePivot('role_institute', 'student');
+    }
+
+    // علاقة مع مستخدمين الطلاب
+    public function studentUsers()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'institute_user',
+            'institute_id',
+            'user_id'
+        )->wherePivot('role_institute', 'student');
+    }
 
     public function admins()
     {
@@ -40,12 +63,6 @@ class Institute extends Model
             ->withPivot('role_institute')
             ->withTimestamps();
     }
-//    public function users()
-//    {
-//        return $this->belongsToMany(User::class, 'institute_user')
-//            ->withPivot('role_institute')
-//            ->withTimestamps();
-//    }
 
     public function users()
     {
@@ -68,10 +85,22 @@ class Institute extends Model
             'user_id'
         )
             ->withPivot('role_institute')
-            ->wherePivot('role_institute','teacher')
+            ->wherePivot('role_institute', 'teacher')
             ->withTimestamps();
     }
+    public function classesCount()
+    {
+        return $this->hasManyThrough(EducationClass::class, Subject::class)->count();
+    }
 
+    public function getClassesCountAttribute()
+    {
+        if (!$this->relationLoaded('subjects')) {
+            $this->load('subjects');
+        }
+
+        return $this->subjects->sum(function($subject) {
+            return $subject->educationClasses->count();
+        });
+    }
 }
-
-
