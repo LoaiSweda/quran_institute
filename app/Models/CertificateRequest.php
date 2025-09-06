@@ -59,4 +59,8 @@ class CertificateRequest extends Model
     {
         return $query->whereHas('subject', fn($q) => $q->where('institute_id', $instituteId));
     }
+
+    public function scopePending($q)  { return $q->where('status', self::STATUS_PENDING); }
+    public function scopeApproved($q) { return $q->where('status', self::STATUS_APPROVED); }
+    public function scopeRefused($q)  { return $q->where('status', self::STATUS_REFUSED); }
 }

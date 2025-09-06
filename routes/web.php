@@ -8,6 +8,7 @@ use App\Http\Controllers\Manager\GuardiansController;
 use App\Http\Controllers\Manager\SessionScheduleController;
 use App\Http\Controllers\Manager\StudentsController;
 use App\Http\Controllers\Manager\TeachersController;
+use App\Http\Controllers\SuperAdmin\CertificateReviewController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\Teacher\AnnouncementController;
 use App\Http\Controllers\Teacher\ScheduleController;
@@ -78,7 +79,14 @@ Route::middleware(['auth','role:super admin'])
             ->name('super-admin.institutes.schedules');
         Route::get('dashboard/{institute}/memorizations', [SuperAdminController::class, 'showInstituteMemorizations'])
             ->name('super-admin.institutes.memorizations');
-    });Route::middleware(['auth','role:admin'])
+
+        //certificates routes
+        Route::get('/certificates', [CertificateReviewController::class, 'index'])->name('super-admin.certificates.index');
+        Route::post('/certificates/{certificateRequest}/approve', [CertificateReviewController::class, 'approve'])->name('super-admin.certificates.approve');
+        Route::post('/certificates/{certificateRequest}/refuse', [CertificateReviewController::class, 'refuse'])->name('super-admin.certificates.refuse');
+
+    });
+Route::middleware(['auth','role:admin'])
 
 
 
