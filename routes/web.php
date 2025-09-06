@@ -22,6 +22,7 @@ use App\Http\Controllers\Manager\ClasStudentsController;
 use App\Http\Controllers\Manager\SubjectsController;
 use App\Http\Controllers\SuperAdmin\InstituteController;
 use App\Http\Controllers\SuperAdmin\InstituteManagerController;
+use App\Http\Controllers\Manager\CertificateRequestController as ManagerCertificateRequestController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -249,7 +250,7 @@ Route::middleware(['auth','role:teacher'])
      ->prefix('teacher')
      ->name('teacher.')
      ->group(function () {
-        
+
      // لوحة المعلم
      Route::view('dashboard','dashboards.teacher')->name('dashboard');
 
