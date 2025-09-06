@@ -75,8 +75,14 @@ class InstituteController extends Controller
         if ($f = $request->file('image')) {
             $data['image'] = $f->store('institutes', 'public');
         }
+        if ($f = $request->file('institute_stamp')) {
+            $data['institute_stamp_path'] = $f->store('institutes/stamps', 'public');
+        }
+        if ($f = $request->file('director_signature')) {
+            $data['director_signature_path'] = $f->store('institutes/signatures', 'public');
+        }
 
-        $institute = Institute::create($data);
+        $institute = \App\Models\Institute::create($data);
 
         return redirect()
             ->route('super-admin.institutes.create')
@@ -134,20 +140,32 @@ public function edit(\App\Models\Institute $institute)
     ]);
 }
 
-    public function update(UpdateInstituteRequest $request, Institute $institute)
+    public function update(UpdateInstituteRequest $request, \App\Models\Institute $institute)
     {
         $data = $request->validated();
+
         if ($f = $request->file('image')) {
-            if ($institute->image) {
-                Storage::disk('public')->delete($institute->image);
-            }
+            if ($institute->image) \Storage::disk('public')->delete($institute->image);
             $data['image'] = $f->store('institutes', 'public');
         }
+
+        if ($f = $request->file('institute_stamp')) {
+            if ($institute->institute_stamp_path) \Storage::disk('public')->delete($institute->institute_stamp_path);
+            $data['institute_stamp_path'] = $f->store('institutes/stamps', 'public');
+        }
+
+        if ($f = $request->file('director_signature')) {
+            if ($institute->director_signature_path) \Storage::disk('public')->delete($institute->director_signature_path);
+            $data['director_signature_path'] = $f->store('institutes/signatures', 'public');
+        }
+
         $institute->update($data);
+
         return redirect()
             ->route('super-admin.institutes.create')
             ->with('success','تم تحديث بيانات المعهد');
     }
+
 
     public function destroy(Institute $institute)
     {

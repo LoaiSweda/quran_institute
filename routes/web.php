@@ -8,6 +8,8 @@ use App\Http\Controllers\Manager\GuardiansController;
 use App\Http\Controllers\Manager\SessionScheduleController;
 use App\Http\Controllers\Manager\StudentsController;
 use App\Http\Controllers\Manager\TeachersController;
+use App\Http\Controllers\SuperAdmin\CertificateReviewController;
+use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\Teacher\AnnouncementController;
 use App\Http\Controllers\Teacher\ScheduleController;
 use App\Http\Controllers\Teacher\StudentController;
@@ -20,18 +22,6 @@ use App\Http\Controllers\Manager\ClasStudentsController;
 use App\Http\Controllers\Manager\SubjectsController;
 use App\Http\Controllers\SuperAdmin\InstituteController;
 use App\Http\Controllers\SuperAdmin\InstituteManagerController;
-use App\Http\Controllers\Teacher\AnnouncementInboxController;
-use App\Http\Controllers\Teacher\ProfileController as TeacherProfileController;
-use App\Http\Controllers\supervisor\AnnouncementInboxController as AdminAnnouncementInboxController;
-
-use App\Http\Controllers\supervisor\GuardiansController as SupervisorGuardiansController;
-use App\Http\Controllers\supervisor\SubjectsController as SupervisorSubjectsController;
-use App\Http\Controllers\supervisor\TeachersController as SupervisorTeachersController;
-use App\Http\Controllers\supervisor\StudentsController as supervisorStudentsController;
-use App\Http\Controllers\supervisor\ClassSchedulesController as SupervisorClassSchedulesController;
-use App\Http\Controllers\supervisor\SchedulesController as SupervisorSchedulesController;
-use App\Http\Controllers\supervisor\ClasStudentsController as AdminClasStudentsController;
-use App\Http\Controllers\supervisor\AnnouncementController as AdminAnnouncementController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -59,10 +49,42 @@ Route::middleware('guest')->group(function () {
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth','role:super admin'])
-     ->prefix('super-admin')
-     ->group(fn() => Route::view('dashboard','dashboards.super_admin'));
+    ->prefix('super-admin')
+    ->group(function () {
+        Route::get('dashboard', [App\Http\Controllers\SuperAdminController::class, 'showInstitutes'])
+            ->name('super-admin.institutes');
+        Route::get('dashboard/{institute}', [SuperAdminController::class, 'showInstituteDetails'])
+            ->name('super-admin.institutes.Details'); // غير show إلى Details
 
+        // مسارات الصفحات التفصيلية
+        Route::get('dashboard/{institute}/students', [SuperAdminController::class, 'showInstituteStudents'])
+            ->name('super-admin.institutes.students');
+        Route::get('dashboard/{institute}/teachers', [SuperAdminController::class, 'showInstituteTeachers'])
+            ->name('super-admin.institutes.teachers');
+        Route::get('dashboard/{institute}/classes', [SuperAdminController::class, 'showInstituteClasses'])
+            ->name('super-admin.institutes.classes');
+        Route::get('dashboard/{institute}/subjects', [SuperAdminController::class, 'showInstituteSubjects'])
+            ->name('super-admin.institutes.subjects');
+        Route::get('dashboard/{institute}/exams', [SuperAdminController::class, 'showInstituteExams'])
+            ->name('super-admin.institutes.exams');
+        Route::get('dashboard/{institute}/guardians', [SuperAdminController::class, 'showInstituteGuardians'])
+            ->name('super-admin.institutes.guardians');
+        Route::get('dashboard/{institute}/schedules', [SuperAdminController::class, 'showInstituteSchedules'])
+            ->name('super-admin.institutes.schedules');
+        Route::get('dashboard/{institute}/memorizations', [SuperAdminController::class, 'showInstituteMemorizations'])
+            ->name('super-admin.institutes.memorizations');
+
+        //certificates routes
+        Route::get('/certificates', [CertificateReviewController::class, 'index'])->name('super-admin.certificates.index');
+        Route::post('/certificates/{certificateRequest}/approve', [CertificateReviewController::class, 'approve'])->name('super-admin.certificates.approve');
+        Route::post('/certificates/{certificateRequest}/refuse', [CertificateReviewController::class, 'refuse'])->name('super-admin.certificates.refuse');
+
+    });
 Route::middleware(['auth','role:admin'])
+
+
+
+
      ->prefix('admin')
      ->group(fn() => Route::view('dashboard','dashboards.admin'));
 
@@ -197,6 +219,15 @@ Route::middleware(['auth', 'role:institute manager'])
                 ->whereNumber('ad')->name('destroy');
         });
 
+        Route::prefix('certificates')->name('certificates.')->group(function () {
+            // List + request form
+            Route::get('/', [ManagerCertificateRequestController::class, 'index'])->name('index');
+            // Create a new request (subject must be finished)
+            Route::post('/', [ManagerCertificateRequestController::class, 'store'])->name('store');
+            // Export (enabled only when approved)
+            Route::get('{certificateRequest}/export', [ManagerCertificateRequestController::class, 'export'])
+                ->name('export');
+        });
 
     });
 
@@ -219,7 +250,8 @@ Route::middleware(['auth','role:teacher'])
      ->name('teacher.')
      ->group(function () {
         
-        Route::view('dashboard','dashboards.teacher')->name('dashboard');
+     // لوحة المعلم
+     Route::view('dashboard','dashboards.teacher')->name('dashboard');
 
         Route::get('profile', [TeacherProfileController::class, 'show'])->name('profile.show');
 
@@ -308,7 +340,7 @@ Route::middleware(['auth','role:super admin'])
 
      });
 
-    
+
 
 Route::middleware(['auth','role:super admin'])
     ->prefix('super-admin/institutes')
@@ -381,7 +413,7 @@ Route::middleware(['auth','role:admin'])
                 Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
                 Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
         });
-        
+
         Route::get('profile', [\App\Http\Controllers\supervisor\ProfileController::class, 'show'])
             ->name('profile.show');
 

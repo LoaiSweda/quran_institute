@@ -8,10 +8,20 @@
         <div class="sidebar">
             <ul>
                 @switch($role)
+
+
                     @case('super admin')
+                        <li><a href="{{ url('/super-admin/dashboard') }}">الرئيسية</a></li>
                         <li><a href="{{ url('/super-admin/managers') }}">إدارة مدراء المعاهد</a></li>
                         <li><a href="{{ url('/super-admin/institutes') }}">إعدادات المعاهد</a></li>
-                        @break
+                        <li class="nav-item">
+                            <a class="nav-link @if(request()->is('super-admin/certificates*')) active @endif"
+                               href="{{ route('super-admin.certificates.index') }}">
+                                <i class="bi bi-award"></i> طلبات الشهادات
+                            </a>
+                        </li>
+
+                    @break
 
                     @case('admin')
 
@@ -44,7 +54,6 @@
                            href="{{ url('/admin/teachers') }}">
                             <i class="bi bi-people"></i> المدرّسون
                         </a>
-                    </li>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('admin/students*')) active @endif"
@@ -151,6 +160,13 @@
                         <a class="nav-link @if(request()->is('manager/library*')) active @endif"
                            href="{{ route('manager.library.index') }}">
                             <i class="bi bi-book"></i> المكتبة الإلكترونية
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link @if(request()->is('manager/certificates*')) active @endif"
+                           href="{{ route('manager.certificates.index') }}">
+                            <i class="bi bi-award"></i> الشهادات
                         </a>
                     </li>
 

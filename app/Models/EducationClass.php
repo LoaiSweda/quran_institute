@@ -70,4 +70,16 @@ public function enrolledStudents()
         ->whereHas('student')
         ->with('student');
 }
+// في App\Models\EducationClass
+    public function students()
+    {
+        return $this->belongsToMany(
+            Student::class,
+            'users_classes',
+            'class_id',
+            'user_id',
+            'id',
+            'user_id'
+        );
+    }
 }

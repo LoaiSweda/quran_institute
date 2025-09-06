@@ -1,3 +1,4 @@
+@php use Carbon\Carbon; @endphp
 @extends('layouts.app')
 @section('title','إدارة الطلاب')
 
@@ -111,8 +112,32 @@
                                 <td>
                                     {{ $student->first_name }} {{ $student->last_name }}
                                 </td>
+                                @php
+
+                                    // أول حلقة للطالب + مادتها
+                                    $firstClass   = $student->classes->first();
+                                    $rowSubject   = $firstClass?->subject;          // null إذا ما في مادة
+                                    $rowSubjectId = $rowSubject?->id;
+
+                                    // قاعدة الانتهاء: end_date ماضية أو is_active = false
+                                    $isFinished = false;
+                                    if ($rowSubject) {
+                                        if ($rowSubject->end_date) {
+                                            try { $isFinished = Carbon::parse($rowSubject->end_date)->isPast(); } catch (\Throwable $e) {}
+                                        }
+                                        if (! $isFinished && isset($rowSubject->is_active)) {
+                                            $isFinished = ! (bool) $rowSubject->is_active;
+                                        }
+                                    }
+                                @endphp
+
                                 <td>
-                                    {{ optional($student->classes->first()?->subject)->name ?? '—' }}
+                                    @if($rowSubject)
+                                        {{ $rowSubject->name }}
+                                        <span class="text-muted">(#{{ $rowSubjectId }})</span>
+                                    @else
+                                        —
+                                    @endif
                                 </td>
                                 <td>
                                     {{ optional($student->classes->first())->name ?? '—' }}
@@ -144,6 +169,22 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    {{-- طلب شهادة: يستخدم subject_id من نفس السطر فقط --}}
+                                    @if($rowSubjectId && $isFinished)
+                                        <form method="POST" action="{{ route('manager.certificates.store') }}" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="subject_id" value="{{ $rowSubjectId }}">
+                                            <input type="hidden" name="student_id" value="{{ $student->id }}">
+                                            <button class="btn btn-primary btn-sm" type="submit" title="طلب شهادة">
+                                                <i class="bi bi-send"></i> طلب شهادة
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button class="btn btn-outline-secondary btn-sm" disabled
+                                                title="لا يمكن طلب الشهادة إلا بعد اختيار مادة منتهية">
+                                            <i class="bi bi-send"></i> طلب شهادة
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

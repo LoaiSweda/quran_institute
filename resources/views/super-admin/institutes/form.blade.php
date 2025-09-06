@@ -126,6 +126,61 @@
                         </div>
                     @endif
 
+                    {{-- البريد الإلكتروني --}}
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">البريد الإلكتروني</label>
+                        <input type="email" id="email" name="email"
+                               value="{{ old('email', $institute->email) }}"
+                               class="form-control form-control-sm @error('email') is-invalid @enderror"
+                               placeholder="example@domain.com">
+                        @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    {{-- الهاتف --}}
+                    <div class="col-md-6">
+                        <label for="phone" class="form-label">الهاتف</label>
+                        <input type="text" id="phone" name="phone"
+                               value="{{ old('phone', $institute->phone) }}"
+                               class="form-control form-control-sm @error('phone') is-invalid @enderror"
+                               placeholder="00966XXXXXXXX">
+                        @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+
+                    {{-- ختم المعهد --}}
+                    <div class="col-md-6">
+                        <label for="institute_stamp" class="form-label">ختم المعهد</label>
+                        <input type="file" id="institute_stamp" name="institute_stamp"
+                               class="form-control form-control-sm @error('institute_stamp') is-invalid @enderror"
+                               accept="image/*">
+                        @error('institute_stamp') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    @if($institute->institute_stamp_path)
+                        <div class="col-md-6 d-flex align-items-center">
+                            <div>
+                                <div class="text-muted mb-1">الختم الحالي:</div>
+                                <img src="{{ asset('storage/'.$institute->institute_stamp_path) }}" alt="ختم المعهد" class="rounded" style="max-height:60px;">
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- توقيع مدير المعهد --}}
+                    <div class="col-md-6">
+                        <label for="director_signature" class="form-label">توقيع مدير المعهد</label>
+                        <input type="file" id="director_signature" name="director_signature"
+                               class="form-control form-control-sm @error('director_signature') is-invalid @enderror"
+                               accept="image/*">
+                        @error('director_signature') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                    </div>
+                    @if($institute->director_signature_path)
+                        <div class="col-md-6 d-flex align-items-center">
+                            <div>
+                                <div class="text-muted mb-1">التوقيع الحالي:</div>
+                                <img src="{{ asset('storage/'.$institute->director_signature_path) }}" alt="توقيع المدير" class="rounded" style="max-height:60px;">
+                            </div>
+                        </div>
+                    @endif
+
+
                     {{-- زر الحفظ --}}
                     <div class="col-12 text-center mt-4">
                         <button type="submit" class="btn btn-success px-4">
