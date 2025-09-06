@@ -21,6 +21,7 @@ use App\Http\Controllers\Manager\ClasStudentsController;
 use App\Http\Controllers\Manager\SubjectsController;
 use App\Http\Controllers\SuperAdmin\InstituteController;
 use App\Http\Controllers\SuperAdmin\InstituteManagerController;
+use App\Http\Controllers\Manager\CertificateRequestController as ManagerCertificateRequestController;
 
 
 use Illuminate\Support\Facades\Route;
@@ -244,6 +245,15 @@ Route::middleware(['auth', 'role:institute manager'])
                 ->whereNumber('ad')->name('destroy');
         });
 
+        Route::prefix('certificates')->name('certificates.')->group(function () {
+            // List + request form
+            Route::get('/', [ManagerCertificateRequestController::class, 'index'])->name('index');
+            // Create a new request (subject must be finished)
+            Route::post('/', [ManagerCertificateRequestController::class, 'store'])->name('store');
+            // Export (enabled only when approved)
+            Route::get('{certificateRequest}/export', [ManagerCertificateRequestController::class, 'export'])
+                ->name('export');
+        });
 
     });
 

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Manager\StoreCertificateRequestRequest;
+use App\Http\Requests\Manager\UpdateCertificateRequestRequest;
 use App\Models\CertificateRequest;
-use App\Http\Requests\StoreCertificateRequestRequest;
-use App\Http\Requests\UpdateCertificateRequestRequest;
 
 class CertificateRequestController extends Controller
 {
