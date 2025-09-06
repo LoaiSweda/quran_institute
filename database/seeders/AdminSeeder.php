@@ -14,7 +14,6 @@ class AdminSeeder extends Seeder
 {
     public function run()
     {
-        // نضم دور المعلم 'teacher' إلى القائمة
         $roles = Role::whereIn('name', [
             'super admin',
             'admin',
@@ -23,15 +22,13 @@ class AdminSeeder extends Seeder
         ])->get();
 
         foreach ($roles as $role) {
-            // إنشاء مستخدم لكل دور بكلمة مرور افتراضية
-            $emailSlug = Str::slug($role->name, '_');   // يحول "super admin" إلى "super_admin"
+            $emailSlug = Str::slug($role->name, '_'); 
             $user = User::create([
                 'email'    => "{$emailSlug}@gmail.com",
                 'password' => Hash::make('123123123'),
                 'role_id'  => $role->id,
             ]);
 
-            // إذا كان الدور من نوع super admin أو admin أو institute manager
             if (in_array($role->name, ['super admin', 'admin', 'institute manager'])) {
                 Admin::create([
                     'user_id'    => $user->id,
@@ -44,11 +41,10 @@ class AdminSeeder extends Seeder
                 ]);
             }
 
-            // إذا كان الدور معلم
             if ($role->name === 'teacher') {
                 Teacher::create([
                     'user_id'    => $user->id,
-                    'first_name' => 'أحمد',       // غيّرها حسب المطلوب أو استخدم Faker
+                    'first_name' => 'أحمد',      
                     'last_name'  => 'القرآن',
                     'phone'      => '0111111111',
                     'address'    => 'عنوان المعلم',

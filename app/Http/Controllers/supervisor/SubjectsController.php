@@ -9,9 +9,7 @@ use Illuminate\Http\Request;
 
 class SubjectsController extends Controller
 {
-    /**
-     * معاهد المستخدم (المشرف) من pivot
-     */
+
     protected function supervisorInstituteIds(): array
     {
         return auth()->user()
@@ -27,12 +25,10 @@ class SubjectsController extends Controller
         $query = Subject::query();
 
         if ($roleName === 'super admin') {
-            // سوبر أدمن: كل المواد، مع فلترة اختيارية
             if ($iid = (int) $request->input('institute_id')) {
                 $query->where('institute_id', $iid);
             }
         } elseif ($roleName === 'admin') {
-            // مشرف: مقيّد بمعاهده فقط
             $instIds = $this->supervisorInstituteIds();
             abort_if(empty($instIds), 403, 'لا تملك صلاحية على أي معهد.');
             $query->whereIn('institute_id', $instIds);
@@ -40,7 +36,6 @@ class SubjectsController extends Controller
             abort(403, 'غير مصرّح');
         }
 
-        // بحث
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -48,7 +43,6 @@ class SubjectsController extends Controller
             });
         }
 
-        // فرز
         if ($sort = $request->input('sort')) {
             $direction = $request->input('direction', 'asc');
             $query->orderBy($sort, $direction);
@@ -58,7 +52,6 @@ class SubjectsController extends Controller
 
         $subjects = $query->paginate(10)->withQueryString();
 
-        // للقائمة المنسدلة (يُعرض للسوبر أدمن فقط)
         $institutes = ($roleName === 'super admin')
             ? Institute::orderBy('name')->get(['id','name'])
             : collect();
@@ -72,9 +65,7 @@ class SubjectsController extends Controller
         $roleName = $user->role->name ?? null;
 
         if ($roleName === 'super admin') {
-            // مسموح بأي مادة
         } elseif ($roleName === 'admin') {
-            // تأكد أن المادة ضمن معاهد المشرف
             $instIds = $this->supervisorInstituteIds();
             abort_if(empty($instIds), 403, 'لا تملك صلاحية على أي معهد.');
             abort_if(!in_array($subject->institute_id, $instIds, true), 403, 'لا تملك صلاحية على هذه المادة.');

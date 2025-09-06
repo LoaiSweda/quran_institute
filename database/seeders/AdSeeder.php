@@ -15,17 +15,14 @@ class AdSeeder extends Seeder
      */
     public function run(): void
     {
-        // نبحث عن أول مستخدم له دور teacher
         $teacher = User::whereHas('role', fn($q) => $q->where('name', 'teacher'))->first();
         if (! $teacher) {
             $this->command->error("لم يُعثر على مستخدم teacher لإنشاء الإعلانات.");
             return;
         }
 
-        // نجلب قائمة الأنواع مع الـ id
         $types = AdsType::pluck('id', 'name')->toArray();
 
-        // بيانات إعلانات تجريبية
         $adsData = [
             [
                 'title'       => 'إعلان بانر رمضان',

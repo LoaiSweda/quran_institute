@@ -17,13 +17,11 @@ use Illuminate\Support\Str;
 
 class StudentsController extends Controller
 {
-    /** معهد المدير الحالي */
     protected function currentInstitute(): Institute
     {
         return Institute::where('user_id', auth()->id())->firstOrFail();
     }
 
-    /** استعلام مقيّد بطلاب المعهد الحالي عبر pivot */
     protected function studentsQueryForCurrentInstitute()
     {
         $inst = $this->currentInstitute();
@@ -34,14 +32,11 @@ class StudentsController extends Controller
             });
     }
 
-    /**
-     * 1) قائمة الطلاب (مُقيّدة بمعهد المدير)
-     */
+    
     public function index(Request $request)
     {
         $inst = $this->currentInstitute();
 
-        // مصادر الفلاتر داخل نفس المعهد فقط
         $subjects = Subject::where('institute_id', $inst->id)->get();
         $classes  = EducationClass::whereHas('subject', fn($q)=>$q->where('institute_id',$inst->id))->get();
         $levels   = Subject::where('institute_id', $inst->id)->pluck('level')->unique()->filter()->values();
@@ -71,9 +66,6 @@ class StudentsController extends Controller
         return view('manager.students.index', compact('students','subjects','classes','levels'));
     }
 
-    /**
-     * 2) نموذج إنشاء طالب (يُظهر الأوصياء والطلاب داخل المعهد الحالي فقط)
-     */
     public function create()
     {
         $inst = $this->currentInstitute();
@@ -88,9 +80,6 @@ class StudentsController extends Controller
         return view('manager.students.create', compact('guardians','students'));
     }
 
-    /**
-     * 3) حفظ طالب جديد: users + students + ربط بمعهد المدير فقط
-     */
     public function store(Request $request)
     {
         $inst = $this->currentInstitute();
@@ -107,7 +96,6 @@ class StudentsController extends Controller
             'password'     => 'required|string|min:6|confirmed',
         ]);
 
-        // توليد QR فريد
         $qr = Str::upper(Str::random(8));
         while (Student::where('qr', $qr)->exists()) {
             $qr = Str::upper(Str::random(8));
@@ -118,7 +106,6 @@ class StudentsController extends Controller
 
         DB::transaction(function () use ($data, $qr, $roleId, $inst) {
 
-            // users
             $user = User::create([
                 'name'     => "{$data['first_name']} {$data['last_name']}",
                 'email'    => $data['email'],
@@ -126,7 +113,6 @@ class StudentsController extends Controller
                 'role_id'  => $roleId,
             ]);
 
-            // students
             $student = Student::create([
                 'first_name'         => $data['first_name'],
                 'last_name'          => $data['last_name'],
@@ -141,23 +127,17 @@ class StudentsController extends Controller
                 'present_percentage' => 0,
             ]);
 
-            // ربط بمعهد المدير فقط (sync يحذف أي روابط أخرى)
             $user->institutes()->sync([
                 $inst->id => ['role_institute' => 'student']
             ]);
-            // تأكد أن علاقة institutes() في User فيها ->withTimestamps()
         });
 
         return redirect()->route('manager.students.index')
             ->with('success','تم إضافة الطالب وربطه بالمعهد الحالي فقط.');
     }
 
-    /**
-     * 4) عرض طالب (مع تحقق الانتماء للمعهد الحالي)
-     */
     public function show(Student $student)
     {
-        // منع الوصول لطلاب معاهد أخرى
         $allowed = $this->studentsQueryForCurrentInstitute()
             ->where('students.id', $student->id)->exists();
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
@@ -171,9 +151,6 @@ class StudentsController extends Controller
         return view('manager.students.show', compact('student'));
     }
 
-    /**
-     * 5) نموذج تعديل (مع تحقق الانتماء)
-     */
     public function edit(Student $student)
     {
         $inst = $this->currentInstitute();
@@ -188,9 +165,6 @@ class StudentsController extends Controller
         return view('manager.students.edit', compact('student','guardians'));
     }
 
-    /**
-     * 6) حفظ التعديلات
-     */
     public function update(Request $request, Student $student)
     {
         $allowed = $this->studentsQueryForCurrentInstitute()
@@ -213,9 +187,6 @@ class StudentsController extends Controller
             ->with('success','تم تحديث بيانات الطالب.');
     }
 
-    /**
-     * 7) حذف الطالب (مع فك الربط من هذا المعهد فقط)
-     */
     public function destroy(Student $student)
     {
         $inst = $this->currentInstitute();
@@ -225,10 +196,8 @@ class StudentsController extends Controller
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
 
         DB::transaction(function () use ($student, $inst) {
-            // فك الربط من هذا المعهد فقط
             $student->user->institutes()->detach($inst->id);
 
-            // حذف الطالب (اترك user حسب رغبتك)
             $student->forceDelete();
         });
 

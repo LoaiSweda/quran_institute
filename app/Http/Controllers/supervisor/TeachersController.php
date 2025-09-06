@@ -30,14 +30,12 @@ class TeachersController extends Controller
             ->withCount('teachingClasses');
 
         if ($roleName === 'super admin') {
-            // سوبر أدمن: يمكن فلترة بمعهد معيّن، وإلا الكل
             if ($instId = (int) $request->input('institute_id')) {
                 $query->whereHas('institutes', function ($iq) use ($instId) {
                     $iq->where('institutes.id', $instId);
                 });
             }
         } elseif ($roleName === 'admin') {
-            // مشرف: قيود بمعاهده فقط
             $instIds = $this->supervisorInstituteIds();
             abort_if(empty($instIds), 403, 'لا تملك صلاحية على أي معهد.');
             $query->whereHas('institutes', function ($iq) use ($instIds) {
@@ -47,7 +45,6 @@ class TeachersController extends Controller
             abort(403, 'غير مصرّح');
         }
 
-        // بحث
         if ($search = trim((string)$request->input('search'))) {
             $query->where(function ($q) use ($search) {
                 $q->where('teachers.first_name', 'like', "%{$search}%")
@@ -59,15 +56,13 @@ class TeachersController extends Controller
             });
         }
 
-        // فلترة حلقة (مع ضمان انتمائها لمعاهد مسموحة)
         if ($classId = (int) $request->input('class_id')) {
             $query->whereHas('teachingClasses', function ($cq) use ($classId) {
                 $cq->where('classes.id', $classId);
             });
         }
 
-        // فرز
-        $sort = $request->input('sort'); // name | classes_count | created_at
+        $sort = $request->input('sort'); 
         $dir  = $request->input('direction', 'asc');
 
         if ($sort === 'name') {
@@ -83,7 +78,6 @@ class TeachersController extends Controller
 
         $teachers = $query->paginate(10)->withQueryString();
 
-        // خيارات الفلاتر (مقيّدة حسب الدور)
         if ($roleName === 'super admin') {
             $institutes = Institute::orderBy('name')->get(['id','name']);
             $classes    = EducationClass::orderBy('name')->get(['id','name']);
@@ -104,9 +98,7 @@ class TeachersController extends Controller
         $roleName = $user->role->name ?? null;
 
         if ($roleName === 'super admin') {
-            // مسموح
         } elseif ($roleName === 'admin') {
-            // تأكد أن المدرس مرتبط بأحد معاهد المشرف
             $instIds = $this->supervisorInstituteIds();
             abort_if(empty($instIds), 403, 'لا تملك صلاحية على أي معهد.');
             $belongs = $teacher->institutes()->whereIn('institutes.id', $instIds)->exists();

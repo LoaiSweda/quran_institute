@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
             UserClassSeeder::class,
             InstituteUserSeeder::class,
 
-            // الـ Seeders الجديدة
            // PersentSeeder::class,
             ExamSeeder::class,
             UserPersentSeeder::class,

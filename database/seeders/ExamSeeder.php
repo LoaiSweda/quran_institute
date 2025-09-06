@@ -11,7 +11,6 @@ class ExamSeeder extends Seeder
 {
     public function run(): void
     {
-        // لكل طالب، ولكل حلقة يشارك فيها، أنشئ 2 امتحان افتراضي
         Student::all()->each(function (Student $student) {
             $student->classes()->each(function (EducationClass $class) use ($student) {
                 Exam::create([

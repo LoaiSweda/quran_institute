@@ -34,14 +34,10 @@ class AdminsController extends Controller
             });
     }
 
-    /**
-     * فهرس المشرفين (بحث + فرز + صفحات)
-     */
     public function index(Request $request)
     {
         $query = $this->adminsQueryForCurrentInstitute();
 
-        // بحث بالاسم أو البريد
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('first_name', 'like', "%{$search}%")
@@ -52,7 +48,6 @@ class AdminsController extends Controller
             });
         }
 
-        // فرز
         $allowedSorts = ['first_name', 'last_name', 'birthdate'];
         $sort = $request->get('sort');
         $direction = strtolower($request->get('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
@@ -67,9 +62,6 @@ class AdminsController extends Controller
         return view('manager.admins.index', compact('admins'));
     }
 
-    /**
-     * عرض نموذج الإنشاء + قائمة مشرفي المعهد أسفل الصفحة
-     */
     public function create()
     {
         $admins = $this->adminsQueryForCurrentInstitute()
@@ -78,10 +70,7 @@ class AdminsController extends Controller
         return view('manager.admins.create', compact('admins'));
     }
 
-    /**
-     * حفظ مشرف جديد:
-     * users + admins + institute_user(role_institute, timestamps)
-     */
+    
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -98,21 +87,18 @@ class AdminsController extends Controller
         $inst = $this->currentInstitute();
 
         DB::transaction(function () use ($data, $request, $inst) {
-            // إنشاء المستخدم
             $user = User::create([
                 'name'     => $data['first_name'].' '.$data['last_name'],
                 'email'    => $data['email'],
                 'password' => Hash::make($data['password']),
-                'role_id'  => 2, // admin
+                'role_id'  => 2, 
             ]);
 
-            // رفع الصورة إن وجدت
             $imagePath = null;
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store('admins', 'public');
             }
 
-            // إنشاء سجل admins
             $admin = Admin::create([
                 'first_name' => $data['first_name'],
                 'last_name'  => $data['last_name'],
@@ -123,13 +109,10 @@ class AdminsController extends Controller
                 'image'      => $imagePath,
             ]);
 
-            // ربطه بالمعهد في institute_user مع role_institute + timestamps
             if (!$user->institutes()->where('institute_id', $inst->id)->exists()) {
                 $user->institutes()->attach($inst->id, [
                     'role_institute' => 'admin',
                 ]);
-                // لأن علاقة institutes() تحتوي withTimestamps()
-                // فسيتم تعبئة created_at/updated_at تلقائيًا.
             }
         });
 
@@ -137,23 +120,16 @@ class AdminsController extends Controller
             ->with('success', 'تم إضافة المشرف بنجاح.');
     }
 
-    /**
-     * عرض تفاصيل مشرف
-     */
     public function show(Admin $admin)
     {
-        // تأكيد الانتماء للمعهد الحالي
         $this->adminsQueryForCurrentInstitute()->findOrFail($admin->id);
 
         return view('manager.admins.show', compact('admin'));
     }
 
-    /**
-     * نموذج تعديل + قائمة مشرفي المعهد أسفل الصفحة
-     */
+    
     public function edit(Admin $admin)
     {
-        // تأكيد الانتماء للمعهد الحالي
         $this->adminsQueryForCurrentInstitute()->findOrFail($admin->id);
 
         $admins = $this->adminsQueryForCurrentInstitute()
@@ -162,12 +138,8 @@ class AdminsController extends Controller
         return view('manager.admins.edit', compact('admin', 'admins'));
     }
 
-    /**
-     * تحديث بيانات المشرف
-     */
     public function update(Request $request, Admin $admin)
     {
-        // تأكيد الانتماء للمعهد الحالي
         $this->adminsQueryForCurrentInstitute()->findOrFail($admin->id);
 
         $data = $request->validate([
@@ -182,7 +154,6 @@ class AdminsController extends Controller
         ]);
 
         DB::transaction(function () use ($data, $admin, $request) {
-            // تحديث المستخدم
             $admin->user->update([
                 'name'     => $data['first_name'].' '.$data['last_name'],
                 'email'    => $data['email'],
@@ -191,7 +162,6 @@ class AdminsController extends Controller
                     : $admin->user->password,
             ]);
 
-            // تبديل الصورة إن وُجدت ملف جديد
             $imagePath = $admin->image;
             if ($request->hasFile('image')) {
                 if ($imagePath && Storage::disk('public')->exists($imagePath)) {
@@ -200,7 +170,6 @@ class AdminsController extends Controller
                 $imagePath = $request->file('image')->store('admins', 'public');
             }
 
-            // تحديث admin
             $admin->update([
                 'first_name' => $data['first_name'],
                 'last_name'  => $data['last_name'],
@@ -215,25 +184,18 @@ class AdminsController extends Controller
             ->with('success', 'تم تعديل المشرف بنجاح.');
     }
 
-    /**
-     * حذف مشرف (يشمل حذف الصورة والربط بالمعهد الحالي فقط)
-     */
     public function destroy(Admin $admin)
     {
-        // تأكيد الانتماء للمعهد الحالي
         $inst = $this->currentInstitute();
         $this->adminsQueryForCurrentInstitute()->findOrFail($admin->id);
 
         DB::transaction(function () use ($admin, $inst) {
-            // حذف الصورة إن وُجدت
             if ($admin->image && Storage::disk('public')->exists($admin->image)) {
                 Storage::disk('public')->delete($admin->image);
             }
 
-            // فك الربط من هذا المعهد فقط (احتياطًا)
             $admin->user->institutes()->detach($inst->id);
 
-            // حذف المستخدم ثم سجل admin
             $admin->user->delete();
             $admin->delete();
         });

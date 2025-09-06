@@ -9,7 +9,7 @@ class EducationClassSeeder extends Seeder
 {
     public function run(): void
     {
-        $subjectId = 1; // عدّل هذا حسب الـ subject الفعلي الذي تريد ربط الصف به
+        $subjectId = 1; 
 
         EducationClass::create([
             'name'               => 'الصف الأول',
@@ -21,7 +21,6 @@ class EducationClassSeeder extends Seeder
             'present_percentage' => 80,
         ]);
 
-        // وهكذا لبقية الصفوف:
         EducationClass::create([
             'name'               => 'الصف الثاني',
             'subject_id'         => $subjectId,
@@ -32,6 +31,5 @@ class EducationClassSeeder extends Seeder
             'present_percentage' => 75,
         ]);
 
-        // ... أكمل لباقي الصفوف بنفس الطريقة
     }
 }

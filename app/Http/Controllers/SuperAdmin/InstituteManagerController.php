@@ -70,7 +70,6 @@ class InstituteManagerController extends Controller
             'role_id' => $role->id,
         ]);
 
-        // أنشئ ملف الـ Admin المرتبط
         $adminData = [
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -85,7 +84,6 @@ class InstituteManagerController extends Controller
 
         $user->admin()->create($adminData);
 
-        // تعيين المعهد إذا وُجد
         if ($request->filled('institute_id')) {
             $institute = Institute::find($request->institute_id);
             $institute->user_id = $user->id;
@@ -125,7 +123,6 @@ class InstituteManagerController extends Controller
         }
         $user->save();
 
-        // تحديث أو إنشاء Admin profile
         $adminData = [
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -137,7 +134,6 @@ class InstituteManagerController extends Controller
         $admin = $user->admin;
 
         if ($request->hasFile('image')) {
-            // حذف الصورة القديمة إذا أحببت (اختياري)
             if ($admin && $admin->image) {
                 \Storage::disk('public')->delete($admin->image);
             }
@@ -150,7 +146,6 @@ class InstituteManagerController extends Controller
             $user->admin()->create($adminData);
         }
 
-        // تحديث تعيين المعهد
         if ($request->filled('institute_id')) {
             $institute = Institute::find($request->institute_id);
             $institute->user_id = $user->id;
@@ -164,12 +159,10 @@ class InstituteManagerController extends Controller
 
     public function destroy(User $user)
     {
-        // فك الربط عن المعهد إذا كان مرتبطاً بهذا المدير
         if ($institute = $user->institute) {
             $institute->update(['user_id' => null]);
         }
 
-        // حذف المدير (أو soft delete إذا مفعل)
         $user->delete();
 
         return back()->with('success', 'تم حذف مدير المعهد.');

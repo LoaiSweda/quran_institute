@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('name');
 
-            // نحضّر الأعمدة فقط بدون FK
             $table->unsignedBigInteger('subject_id');
             $table->unsignedBigInteger('user_id');
 

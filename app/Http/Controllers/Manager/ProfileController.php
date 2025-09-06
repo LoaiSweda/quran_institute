@@ -12,7 +12,6 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        // معهد المدير (مالك المعهد)
         $inst = Institute::where('user_id', $user->id)->firstOrFail();
 
         return view('manager.profile.show', [

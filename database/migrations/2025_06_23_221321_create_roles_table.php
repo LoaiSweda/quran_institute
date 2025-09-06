@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('roles', function (Blueprint $table) {
-            $table->id(); // هذا يضيف unsignedBigInteger افتراضياً
+            $table->id(); 
             $table->string('name');
             $table->timestamps();
         });

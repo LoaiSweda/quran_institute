@@ -68,14 +68,12 @@ class GuardiansController extends Controller
             'password'  => 'required|confirmed|min:6',
         ]);
 
-        // إنشاء حساب المستخدم
         $user = User::create([
             'email'    => $data['email'],
             'password' => Hash::make($data['password']),
-            'role_id'  => 6, // guardian
+            'role_id'  => 6, 
         ]);
 
-        // إنشاء الوصي
         Guardian::create([
             'user_id'   => $user->id,
             'firstname' => $data['firstname'],
@@ -84,7 +82,6 @@ class GuardiansController extends Controller
             'address'   => $data['address'] ?? null,
         ]);
 
-        // ربط الوصي بالمعهد الحالي
         $institute = auth()->user()->institute;
         if ($institute) {
             $institute->users()->attach($user->id, [
@@ -97,27 +94,18 @@ class GuardiansController extends Controller
             ->with('success', 'تم إنشاء حساب وليّ الأمر وربطه بالمعهد بنجاح.');
     }
 
-    /**
-     * 4.4.6.4 عرض تفاصيل ولي أمر
-     */
     public function show(Guardian $guardian)
     {
         $guardian->load('students', 'user');
         return view('manager.guardians.show', compact('guardian'));
     }
 
-    /**
-     * 4.4.6.1 عرض نموذج تعديل ولي أمر
-     */
     public function edit(Guardian $guardian)
     {
         $guardian->load('user');
         return view('manager.guardians.edit', compact('guardian'));
     }
 
-    /**
-     * 4.4.6.1 تحديث بيانات ولي الأمر وحسابه
-     */
     public function update(Request $request, Guardian $guardian)
     {
         $data = $request->validate([
@@ -148,9 +136,6 @@ class GuardiansController extends Controller
             ->with('success', 'تم تحديث بيانات وليّ الأمر بنجاح.');
     }
 
-    /**
-     * 4.4.6.2 حذف/تعطيل ولي أمر
-     */
     public function destroy(Guardian $guardian)
     {
 

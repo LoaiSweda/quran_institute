@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\DB;
 
 class SchedulesController extends Controller
 {
-    /**
-     * IDs المعاهد المرتبط بها المشرف عبر pivot institute_user
-     */
     protected function myInstituteIds(): array
     {
         return auth()->user()
@@ -22,11 +19,6 @@ class SchedulesController extends Controller
             : [];
     }
 
-    /**
-     * تحديد المعهد الحالي:
-     * - إن كان مرتبطًا بمعهد واحد: يرجع نفسه
-     * - إن كان مرتبطًا بعدة معاهد: يعتمد على ?institute_id= بعد التحقق
-     */
     protected function currentInstitute(Request $request): Institute
     {
         $ids = $this->myInstituteIds();
@@ -42,26 +34,20 @@ class SchedulesController extends Controller
         return Institute::findOrFail($iid);
     }
 
-    /**
-     * عرض كل المواعيد مع فلاتر (حلقة/مادة/اليوم) وفرز (اليوم/البداية/المعلم)
-     */
     public function index(Request $request)
     {
         $inst = $this->currentInstitute($request);
 
-        // للحقلين في الفلاتر
         $classes  = EducationClass::whereHas('subject', fn($q) => $q->where('institute_id', $inst->id))
             ->orderBy('name')->get(['id','name','subject_id','user_id']);
         $subjects = Subject::where('institute_id', $inst->id)
             ->orderBy('name')->get(['id','name']);
 
-        // الاستعلام الأساسي
         $query = SessionSchedule::with(['educationClass.subject','educationClass.teacher'])
             ->whereHas('educationClass.subject', function($q) use ($inst) {
                 $q->where('institute_id', $inst->id);
             });
 
-        // الفلاتر
         if ($request->filled('class_id')) {
             $query->where('class_id', $request->integer('class_id'));
         }
@@ -74,7 +60,6 @@ class SchedulesController extends Controller
             $query->where('day_of_week', $request->get('day_of_week'));
         }
 
-        // الفرز
         $dir = $request->get('direction') === 'desc' ? 'desc' : 'asc';
         $sort = $request->get('sort');
         if ($sort === 'day') {
@@ -82,7 +67,6 @@ class SchedulesController extends Controller
         } elseif ($sort === 'start') {
             $query->orderBy('start_time', $dir);
         } elseif ($sort === 'teacher') {
-            // فرز بالمدرّس
             $query->select('session_schedules.*')
                 ->join('classes','classes.id','=','session_schedules.class_id')
                 ->join('teachers','teachers.user_id','=','classes.user_id')

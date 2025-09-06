@@ -18,12 +18,11 @@ class AnnouncementController extends Controller
         $this->middleware(['auth','role:admin']);
     }
 
-    /** معهد المشرف الحالي (من قائمة معاهده) */
     protected function currentInstitute(Request $request): Institute
     {
         $user = $request->user();
 
-        $ids = $user->institutes()->pluck('institutes.id'); // معاهد المشرف عبر pivot
+        $ids = $user->institutes()->pluck('institutes.id'); 
         abort_if($ids->isEmpty(), 403, 'لا تملك صلاحية على أي معهد.');
 
         $picked = (int) $request->query('institute_id', (int) $ids->first());
@@ -32,7 +31,6 @@ class AnnouncementController extends Controller
         return Institute::findOrFail($picked);
     }
 
-    /** تحقق الملكية + النطاق (المعهد) */
     protected function ensureScope(Request $request, Ad $ad): void
     {
         $inst = $this->currentInstitute($request);
@@ -40,7 +38,6 @@ class AnnouncementController extends Controller
         abort_if((int)$ad->institute_id !== (int)$inst->id, 403, 'هذا الإعلان خارج نطاق المعهد الحالي.');
     }
 
-    /** قائمة إعلانات المشرف داخل المعهد الحالي */
     public function index(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -57,7 +54,6 @@ class AnnouncementController extends Controller
         return view('supervisor.announcements.index', compact('ads','types'));
     }
 
-    /** إنشاء إعلان داخل المعهد الحالي */
     public function store(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -80,7 +76,7 @@ class AnnouncementController extends Controller
         }
 
         $data['user_id']      = Auth::id();
-        $data['institute_id'] = $inst->id; // مهم: ربط الإعلان بالمعهد الحالي
+        $data['institute_id'] = $inst->id; 
 
         $ad = Ad::create($data);
 
@@ -134,7 +130,6 @@ class AnnouncementController extends Controller
             $data['image'] = $request->file('image')->store('ads', 'public');
         }
 
-        // لا نسمح بتغيير institute_id/user_id من هنا
         unset($data['institute_id'], $data['user_id']);
 
         $ad->update($data);

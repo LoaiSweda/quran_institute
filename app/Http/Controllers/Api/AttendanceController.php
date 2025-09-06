@@ -31,14 +31,12 @@ class AttendanceController extends Controller
         $student  = Student::where('qr', $req->qr)->firstOrFail();
         $schedule = SessionSchedule::findOrFail($req->session_schedule_id);
 
-        // 👈 مهم: اسم اليوم نصياً ليتطابق مع عمود day_of_week
-        $today = Carbon::now('Asia/Damascus')->format('l'); // "Sunday"… "Saturday"
+        $today = Carbon::now('Asia/Damascus')->format('l'); 
 
         if ($schedule->day_of_week !== $today) {
             return response()->json(['message' => 'ليست هذه الحصة اليوم'], 403, [], JSON_UNESCAPED_UNICODE);
         }
 
-        // باقي الدالة كما هو...
         $now = Carbon::now('Asia/Damascus')->format('H:i');
         if ($now < $schedule->start_time->format('H:i')
             || $now > $schedule->end_time->format('H:i')) {

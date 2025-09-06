@@ -29,7 +29,6 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 
-            // توجيه بناءً على الدور
             switch (Auth::user()->role->name) {
                 case 'super admin':
                     return redirect()->intended('/super-admin/dashboard');

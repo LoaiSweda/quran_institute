@@ -11,7 +11,7 @@ Route::post('logout', [AuthController::class, 'logout'])
      ->middleware('auth:sanctum');
 
 
-Route::middleware(['auth:sanctum','role:student'])
+Route::middleware(['auth:sanctum','role:student,guardian'])
     ->prefix('student')
     ->group(function() {
         Route::get('institute-announcements', [StudentController::class, 'instituteAnnouncements']);

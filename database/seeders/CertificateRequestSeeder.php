@@ -12,7 +12,6 @@ class CertificateRequestSeeder extends Seeder
 {
     public function run(): void
     {
-        // لكل طالب، لكل مادة يدرسها، أنشئ طلب شهادة عشوائي
         Student::all()->each(function (Student $student) {
             $student->classes()->each(function ($class) use ($student) {
                 CertificateRequest::create([
@@ -24,7 +23,7 @@ class CertificateRequestSeeder extends Seeder
                     'revieweded_at' => rand(0,1)
                         ? Carbon::now()->subDays(rand(0, 5))
                         : null,
-                    'file_id'       => null, // أو ضع ID موجود من جدول files إذا لديك ملفات
+                    'file_id'       => null, 
                 ]);
             });
         });

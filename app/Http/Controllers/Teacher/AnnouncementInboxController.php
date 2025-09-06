@@ -19,7 +19,6 @@ class AnnouncementInboxController extends Controller
         $instituteIds = $user->institutes()->pluck('institutes.id');
 
         $ads = Ad::with(['type','publisher.role','institute'])
-            // نطاق المعهد أو إعلان عام من سوبر أدمن فقط
             ->where(function($q) use ($instituteIds) {
                 $q->whereIn('institute_id', $instituteIds)
                     ->orWhere(function($q2){
@@ -29,9 +28,7 @@ class AnnouncementInboxController extends Controller
                             });
                     });
             })
-            // موجّه للمعلم
             ->whereHas('userAds', fn($q)=> $q->where('watches_role','teacher'))
-            // نشط وغير منتهٍ
             ->where('status','active')
             ->whereDate('end_date','>=', now()->toDateString())
             ->latest('created_at')

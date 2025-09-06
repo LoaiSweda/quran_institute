@@ -14,18 +14,15 @@ class ForgotPasswordController extends Controller
         $this->middleware('guest');
     }
 
-    // يعرض صفحة طلب رابط إعادة التعيين
     public function showLinkRequestForm()
     {
         return view('auth.passwords.email');
     }
 
-    // يرسل رابط إعادة التعيين إلى البريد
     public function sendResetLinkEmail(Request $request)
     {
         $request->validate(['email' => 'required|email']);
 
-        // ترسل الإيميل وتعيد الحالة
         $status = Password::sendResetLink(
             $request->only('email')
         );

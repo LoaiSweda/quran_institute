@@ -13,7 +13,6 @@ class StudentSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1) دور الطالب ودور المعلم
         $studentRole = Role::where('name', 'student')->first();
         $teacherRole = Role::where('name', 'teacher')->first();
 
@@ -22,14 +21,12 @@ class StudentSeeder extends Seeder
             return;
         }
 
-        // 2) أول مُعلم
         $teacher = User::where('role_id', $teacherRole->id)->first();
         if (! $teacher) {
             $this->command->error('❌ لم أجد أي مستخدم برتبة teacher');
             return;
         }
 
-        // 3) أول صفّين لذلك المُعلم
         $classes = EducationClass::where('user_id', $teacher->id)
                                  ->take(2)
                                  ->get();
@@ -38,16 +35,13 @@ class StudentSeeder extends Seeder
             return;
         }
 
-        // 4) إنشاء 10 طلاب
         for ($i = 1; $i <= 2; $i++) {
-            // أ) انشاء المستخدم
             $user = User::create([
                 'email'    => "student{$i}@gmail.com",
                 'password' => Hash::make('123123123'),
                 'role_id'  => $studentRole->id,
             ]);
 
-            // ب) انشاء سجل في جدول students
             Student::create([
                 'user_id'            => $user->id,
                 'first_name'         => "طالب{$i}",
@@ -63,7 +57,6 @@ class StudentSeeder extends Seeder
                 'image'              => null,
             ]);
 
-            // ج) ربط الطالب بالصفّين
             foreach ($classes as $class) {
                 $class->users()->attach($user->id);
             }

@@ -34,12 +34,12 @@ class Student extends Model
     public function classes()
     {
         return $this->belongsToMany(
-            EducationClass::class, // الموديل المرتبط
-            'users_classes',       // <-- اسم الجدول كسلسلة نصية (ضروري بعلامات اقتباس)
-            'user_id',             // عمود الربط في الجدول الوسيط الذي يشير إلى users.id
-            'class_id',            // عمود الحلقة في الجدول الوسيط
-            'user_id',             // المفتاح في نموذج Student (students.user_id)
-            'id'                   // المفتاح في جدول classes (classes.id)
+            EducationClass::class, 
+            'users_classes',      
+            'user_id',             
+            'class_id',            
+            'user_id',             
+            'id'                   
         )->withTimestamps();
     }
 

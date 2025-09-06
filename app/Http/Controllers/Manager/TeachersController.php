@@ -13,9 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class TeachersController extends Controller
 {
-    /**
-     * استخرج معهد مدير الجلسة.
-     */
+    
     protected function institute()
     {
         return Institute::where('user_id', auth()->id())->firstOrFail();
@@ -25,9 +23,6 @@ class TeachersController extends Controller
         return view('manager.teachers.create_user');
     }
 
-    /**
-     *  حفظ بيانات المستخدم الجديد ثم إعادة توجيه إلى صفحة إنشاء المدرّس الأصلي
-     */
     public function storeUser(Request $request)
     {
         $data = $request->validate([
@@ -52,9 +47,6 @@ class TeachersController extends Controller
     }
 
 
-    /**
-     * 4.4.2.4 عرض جميع المدرّسين المرتبطين بالمعهد
-     */
     public function index(Request $request)
     {
         $institute = $this->institute();
@@ -80,18 +72,12 @@ class TeachersController extends Controller
         return view('manager.teachers.index', compact('teachers'));
     }
 
-    /**
-     * 4.4.2.1 عرض نموذج إضافة مدرس
-     */
     public function create()
     {
         $inst = $this->institute();
 
-        // (اختياري) جلب الحلقات التابعة للمعهد إن كنت تحتاجها في النموذج
         $classes = $inst->classes()->get();
 
-        // جلب المدرّسين المرتبطين بالمعهد كـ Collection من موديل Teacher مع user مرفق
-        // هكذا تحصل على teacher->id (مهم للروت) و teacher->user->email و باقي البيانات بسهولة
         $teachers = $inst->teachers()->with('user')->orderBy('first_name')->get();
 
         return view('manager.teachers.create', compact('classes', 'teachers'));
@@ -104,7 +90,6 @@ class TeachersController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            // بيانات Teacher
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
             'image' => 'nullable|image|max:2048',
@@ -118,7 +103,7 @@ class TeachersController extends Controller
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
-                'role_id' => 4, // دور المدرّس
+                'role_id' => 4,
             ]);
 
             if (isset($data['image'])) {
@@ -143,46 +128,35 @@ class TeachersController extends Controller
             ->route('manager.teachers.index')
             ->with('success', 'تم إنشاء المدرّس وحسابه وربطه بالمعهد بنجاح.');
     }
-    /**
-     * 4.4.2.5 عرض تفاصيل مدرس محدد
-     */
+   
     public function show($id)
     {
         $teacher = $this->institute()
             ->teachers()
             ->with('teachingClasses.sessionSchedules')
-            ->with('teachingClasses.subject')  // نحمل الموضوع أيضاً إن احتجنا
+            ->with('teachingClasses.subject') 
 
             ->findOrFail($id);
 
 
         return view('manager.teachers.show', compact('teacher'));
     }
-    /**
-     * 4.4.2.2 عرض نموذج تعديل بيانات مدرس
-     */
-    /**
-     * عرض نموذج تعديل بيانات مدرس (مع تمرير قائمة المدرّسين المرتبطين بالمعهد)
-     */
+  
+  
     public function edit($id)
     {
-        // نحصل على المدرّس للتأكد من أنه مرتبط بالمعهد
         $teacher = $this->institute()
             ->teachers()
             ->findOrFail($id);
 
-        // نجيب جميع المدرّسين المرتبطين بهذا المعهد ليُعرضوا أسفل صفحة التعديل
         $teachers = $this->institute()
             ->teachers()
-            ->with('user') // لجلب بيانات حساب المستخدم إن أردنا عرض الاسم/البريد
+            ->with('user')
             ->get();
 
         return view('manager.teachers.edit', compact('teacher', 'teachers'));
     }
 
-    /**
-     * حفظ تعديلات المدرّس ثم إعادة توجيه إلى صفحة التعديل (حتى يرى المستخدم القائمة أسفل الصفحة)
-     */
     public function update(Request $request, $id)
     {
         $teacher = $this->institute()
@@ -207,16 +181,12 @@ class TeachersController extends Controller
 
         $teacher->update($data);
 
-        // أرجع للموديل نفسه لصفحة التعديل حتى تظهر القائمة أسفل الصفحة
         return redirect()
             ->route('manager.teachers.edit', $teacher)
             ->with('success', 'تم تحديث بيانات المدرس بنجاح.');
     }
 
 
-    /**
-     * 4.4.2.3 فصل/تعطيل مدرس من المعهد
-     */
     public function destroy($id)
     {
         $teacher = $this->institute()

@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class ClasStudentsController extends Controller
 {
-    /**
-     * IDs المعاهد المرتبط بها المشرف عبر pivot institute_user
-     */
     protected function myInstituteIds(): array
     {
         return auth()->user()
@@ -21,11 +18,7 @@ class ClasStudentsController extends Controller
             : [];
     }
 
-    /**
-     * تحديد المعهد الحالي للمشرف (admin)
-     * - إن كان معهدًا واحدًا: يرجع نفسه
-     * - إن كانت عدّة: يعتمد على ?institute_id= بعد التحقق
-     */
+    
     protected function currentInstitute(Request $request): Institute
     {
         $ids = $this->myInstituteIds();
@@ -41,9 +34,7 @@ class ClasStudentsController extends Controller
         return Institute::findOrFail($iid);
     }
 
-    /**
-     * تحقق أن الحلقة تتبع المعهد الحالي
-     */
+
     protected function assertClassInInstitute(EducationClass $class, Institute $inst): void
     {
         $class->loadMissing('subject:id,institute_id');
@@ -70,13 +61,10 @@ class ClasStudentsController extends Controller
         $inst = $this->currentInstitute($request);
         $this->assertClassInInstitute($class, $inst);
 
-        // 1) الطلاب الموجودون بالفعل في هذه الحلقة
         $added = $class->users()->pluck('users.id')->toArray();
 
-        // 2) جلب معلومات المادة المرتبطة بالحلقة
         $subject = $class->subject;
 
-        // 3) إن كانت المادة مفعّلة: استثناء الطلاب المسجلين في أي حلقة أخرى لنفس المادة
         $enrolledInSubject = [];
         if ($subject && $subject->is_active) {
             $otherClassIds = EducationClass::where('subject_id', $class->subject_id)->pluck('id')->toArray();
@@ -88,10 +76,8 @@ class ClasStudentsController extends Controller
             }
         }
 
-        // 4) الاستثناء النهائي
         $exclude = array_unique(array_merge($added, $enrolledInSubject));
 
-        // 5) طلاب نفس المعهد وغير مستثنين
         $students = $inst->users()
             ->wherePivot('role_institute', 'student')
             ->whereNotIn('users.id', $exclude)
@@ -117,13 +103,11 @@ class ClasStudentsController extends Controller
             'user_id' => 'required|exists:users,id'
         ]);
 
-        // تأكيد ربط الطالب بالمعهد كـ student
         DB::table('institute_user')->updateOrInsert(
             ['institute_id' => $inst->id, 'user_id' => $data['user_id']],
             ['role_institute' => 'student', 'updated_at'=>now(), 'created_at'=>now()]
         );
 
-        // ربط الطالب بالحلقة
         $class->users()->syncWithoutDetaching([$data['user_id']]);
 
         return redirect()

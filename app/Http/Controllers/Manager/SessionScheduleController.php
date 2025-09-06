@@ -71,7 +71,6 @@ class SessionScheduleController extends Controller
         } elseif ($request->sort === 'start') {
             $query->orderBy('start_time', $dir);
         } elseif ($request->sort === 'teacher') {
-            // نفترض أن teacher relation موجودة ويملك first_name
             $query->join('classes', 'classes.id', '=', 'session_schedules.class_id')
                 ->join('teachers','teachers.user_id','=','classes.user_id')
                 ->orderBy('teachers.first_name', $dir)
@@ -113,15 +112,12 @@ class SessionScheduleController extends Controller
             'end_time'    => 'required|date_format:H:i|after:start_time',
         ]);
 
-        // ابحث عن user_id للمعلّم من عمود class.user_id
-        $teacherUserId = $class->user_id; // أو optional($class->teacher)->user_id
+        $teacherUserId = $class->user_id; 
 
-        // سلامة: إذا لم يكن هناك معلّم، ارجع خطأ أو استخدم الـ manager كمحافظ
         if (!$teacherUserId) {
             return back()->withErrors(['teacher' => 'لم يتم تعيين معلّم لهذه الحلقة.']);
         }
 
-        // نستخدم علاقة sessionSchedules لإنشاء السجل (تملأ class_id تلقائياً)
         $class->sessionSchedules()->create(array_merge($data, [
             'user_id' => $teacherUserId,
         ]));
@@ -163,7 +159,6 @@ class SessionScheduleController extends Controller
             'end_time'    => 'required|date_format:H:i|after:start_time',
         ]);
 
-        // خيار: اجعل user_id يعكس معلّم الحلقة الحالي
         $teacherUserId = $class->user_id;
         if ($teacherUserId) {
             $data['user_id'] = $teacherUserId;

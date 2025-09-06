@@ -18,9 +18,6 @@ use Illuminate\Support\Str;
 
 class StudentsController extends Controller
 {
-    /**
-     * جلب معاهد المشرف (IDs) من pivot institute_user.
-     */
     protected function myInstituteIds(): array
     {
         return auth()->user()
@@ -28,11 +25,6 @@ class StudentsController extends Controller
             : [];
     }
 
-    /**
-     * تحديد المعهد الحالي للمشرف:
-     * - إن كان مرتبطًا بمعهد واحد: يرجع هذا المعهد.
-     * - إن كان مرتبطًا بعدة معاهد: يأخذ ?institute_id= ويتأكد أنه ضمن معاهده.
-     */
     protected function currentInstitute(Request $request): Institute
     {
         $ids = $this->myInstituteIds();
@@ -48,15 +40,11 @@ class StudentsController extends Controller
         return Institute::findOrFail($iid);
     }
 
-    /**
-     * قيّد استعلام الطلاب بمعاهد المشرف.
-     */
     protected function studentsQueryRestrictedToMe()
     {
         $ids = $this->myInstituteIds();
         abort_if(empty($ids), 403, 'لا تملك صلاحية على أي معهد.');
 
-        // الطلاب الذين user_id لهم مرتبط بأحد معاهد المشرف في جدول institute_user
         return Student::query()
             ->with(['user', 'guardian', 'classes.subject', 'exams', 'progress'])
             ->whereHas('user.institutes', function ($q) use ($ids) {
@@ -64,9 +52,6 @@ class StudentsController extends Controller
             });
     }
 
-    /**
-     * 1) عرض قائمة الطلاب مع الفلاتر (مقيدة بمعاهد المشرف)
-     */
     public function index(Request $request)
     {
         $subjects = Subject::query()
@@ -115,34 +100,25 @@ class StudentsController extends Controller
         ));
     }
 
-    /**
-     * 2) نموذج إنشاء طالب جديد
-     * يعرض قائمة أولياء الأمور فقط ضمن معاهد المشرف.
-     * ويعرض جدولًا صغيرًا بآخر طلاب المعهد المحدد أسفل الصفحة (اختياري).
-     */
     public function create(Request $request)
     {
-        // معهد المشرف الحالي (منطقك الموجود)
         $inst = $this->currentInstitute($request);
 
-        // id دور الوصي
         $guardianRoleId = \App\Models\Role::where('name', 'guardian')->value('id');
 
-        // الأوصياء ضمن هذا المعهد فقط + فلترة على role_id في users
         $guardians = \App\Models\Guardian::with('user:id,email')
             ->when($guardianRoleId, function ($q) use ($guardianRoleId) {
                 $q->whereHas('user', function ($uq) use ($guardianRoleId) {
-                    $uq->where('role_id', $guardianRoleId);  // <-- بدلاً من user.roles
+                    $uq->where('role_id', $guardianRoleId);  
                 });
             })
             ->whereHas('user.institutes', function ($iq) use ($inst) {
                 $iq->where('institute_id', $inst->id);
             })
-            ->orderBy('firstname')   // <-- أعمدة guardians الفعلية
+            ->orderBy('firstname')  
             ->orderBy('lastname')
             ->get();
 
-        // آخر الطلاب في نفس المعهد
         $students  = \App\Models\Student::with('user')
             ->whereHas('user.institutes', fn($q) => $q->where('institute_id', $inst->id))
             ->orderBy('created_at','desc')
@@ -153,9 +129,6 @@ class StudentsController extends Controller
     }
 
 
-    /**
-     * 3) حفظ طالب جديد: users + students + institute_user
-     */
     public function store(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -172,7 +145,6 @@ class StudentsController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        // توليد QR فريد
         $qr = Str::upper(Str::random(8));
         while (Student::where('qr', $qr)->exists()) {
             $qr = Str::upper(Str::random(8));
@@ -217,12 +189,8 @@ class StudentsController extends Controller
             ->with('success', 'تم إضافة الطالب وربطه بالمعهد بنجاح.');
     }
 
-    /**
-     * 4) عرض طالب
-     */
     public function show(Request $request, Student $student)
     {
-        // تحقق أن الطالب ضمن معاهد المشرف
         $allowed = $this->studentsQueryRestrictedToMe()->where('students.id', $student->id)->exists();
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
 
@@ -235,12 +203,8 @@ class StudentsController extends Controller
         return view('supervisor.students.show', compact('student'));
     }
 
-    /**
-     * 5) نموذج تعديل طالب
-     */
     public function edit(Request $request, Student $student)
     {
-        // تحقق الصلاحية
         $allowed = $this->studentsQueryRestrictedToMe()->where('students.id', $student->id)->exists();
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
 
@@ -253,12 +217,8 @@ class StudentsController extends Controller
         return view('supervisor.students.edit', compact('student', 'guardians', 'inst'));
     }
 
-    /**
-     * 6) حفظ تعديل طالب
-     */
     public function update(Request $request, Student $student)
     {
-        // تحقق الصلاحية
         $allowed = $this->studentsQueryRestrictedToMe()->where('students.id', $student->id)->exists();
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
 
@@ -279,19 +239,14 @@ class StudentsController extends Controller
             ->with('success', 'تم تحديث بيانات الطالب.');
     }
 
-    /**
-     * 7) حذف طالب (نهائي)
-     */
     public function destroy(Student $student)
     {
         $allowed = $this->studentsQueryRestrictedToMe()->where('students.id', $student->id)->exists();
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
 
-        // حذف نهائي (إن أردت soft delete غيّرها)
         $student->forceDelete();
 
-        // ملاحظة: إن رغبت حذف user وربطه من institute_user كذلك، أضِف ذلك هنا بحذر.
-
+    
         return redirect()
             ->route('admin.students.index')
             ->with('success', 'تم حذف الطالب.');

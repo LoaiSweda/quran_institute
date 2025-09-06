@@ -58,12 +58,7 @@
                             <i class="bi bi-easel2"></i>الحلقات
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link @if(request()->is('admin/reports')) active @endif"
-                           href="{{ url('/admin/reports') }}">
-                            <i class="bi bi-bar-chart"></i> التقارير
-                        </a>
-                    </li>
+                    
                     <li class="nav-item">
                         <a class="nav-link @if(request()->is('admin/guardians*')) active @endif"
                            href="{{ url('/admin/guardians') }}">

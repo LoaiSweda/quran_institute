@@ -12,14 +12,12 @@ class GuardianSeeder extends Seeder
 {
     public function run(): void
     {
-        // نجيب دور guardian
         $role = Role::firstWhere('name', 'guardian');
         if (! $role) {
             $this->command->error("دور guardian غير موجود!");
             return;
         }
 
-        // مصفوفة بيانات أوصياء افتراضيين
         $guardians = [
             [
                 'firstname' => 'نوار',
@@ -40,7 +38,6 @@ class GuardianSeeder extends Seeder
         ];
 
         foreach ($guardians as $g) {
-            // إنشاء أو تحديث المستخدم
             $user = User::updateOrCreate(
                 ['email' => $g['email']],
                 [
@@ -49,7 +46,6 @@ class GuardianSeeder extends Seeder
                 ]
             );
 
-            // إنشاء أو تحديث بيانات الوصي
             Guardian::updateOrCreate(
                 ['user_id' => $user->id],
                 [

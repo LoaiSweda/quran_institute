@@ -81,12 +81,11 @@ class LibraryController extends Controller
     {
         $user = Auth::user();
 
-        // admin مثل institute manager تمامًا
         if ($user->hasAnyRole(['institute manager', 'admin'])) {
             $instituteId = $user->institute_id;
             $query->where(function ($q) use ($instituteId) {
                 $q->where('institute_id', $instituteId)
-                ->orWhereNull('institute_id'); // موارد عامة
+                ->orWhereNull('institute_id');
             });
             return;
         }
@@ -257,7 +256,7 @@ class LibraryController extends Controller
                 'size' => $file->getSize(),
             ]);
 
-            $library->file_id = $uploadedFile->id; // ثم أكمل update كما لديك
+            $library->file_id = $uploadedFile->id; 
         }
 
 

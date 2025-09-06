@@ -54,7 +54,7 @@ class SubjectsController extends Controller
 
         $query = Subject::where('institute_id', $institute->id);
 
-//        // (اختياري) قم بنفس بحث/فرز GET params إن أردت:
+//       
 //        if ($search = $request->input('search')) {
 //            $query->where(fn($q) =>
 //            $q->where('name','like',"%{$search}%")

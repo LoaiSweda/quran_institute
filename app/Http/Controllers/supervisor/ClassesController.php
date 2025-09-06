@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class ClassesController extends Controller
 {
-    /**
-     * IDs المعاهد المرتبط بها المشرف عبر institute_user
-     */
+    
     protected function myInstituteIds(): array
     {
         return auth()->user()
@@ -22,11 +20,6 @@ class ClassesController extends Controller
             : [];
     }
 
-    /**
-     * تحديد المعهد الحالي للمشرف (admin):
-     * - إن كان مرتبطًا بمعهد واحد: يرجع نفسه
-     * - إن كان مرتبطًا بأكثر من معهد: يعتمد على ?institute_id= بعد التحقق أنه ضمن معاهده
-     */
     protected function currentInstitute(Request $request): Institute
     {
         $ids = $this->myInstituteIds();
@@ -42,9 +35,6 @@ class ClassesController extends Controller
         return Institute::findOrFail($iid);
     }
 
-    /**
-     * قائمة الحلقات ضمن معهد المشرف الحالي فقط
-     */
     public function index(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -59,17 +49,12 @@ class ClassesController extends Controller
         return view('supervisor.classes.index', compact('classes', 'inst'));
     }
 
-    /**
-     * نموذج إنشاء حلقة جديدة (ضمن معهد المشرف الحالي فقط)
-     */
     public function create(Request $request)
     {
         $inst = $this->currentInstitute($request);
 
-        // مواد نفس المعهد
         $subjects = Subject::where('institute_id', $inst->id)->get();
 
-        // المعلمون المرتبطون بهذا المعهد عبر pivot institute_user (role_institute=teacher)
         $teachers = DB::table('institute_user')
             ->join('teachers', 'institute_user.user_id', '=', 'teachers.user_id')
             ->where('institute_user.institute_id', $inst->id)
@@ -81,7 +66,6 @@ class ClassesController extends Controller
             ])
             ->get();
 
-        // عرض بعض الحلقات الحالية لنفس المعهد (اختياري)
         $classes = EducationClass::whereHas('subject', function ($q) use ($inst) {
             $q->where('institute_id', $inst->id);
         })
@@ -91,9 +75,6 @@ class ClassesController extends Controller
         return view('supervisor.classes.create', compact('subjects', 'teachers', 'classes', 'inst'));
     }
 
-    /**
-     * حفظ حلقة جديدة ضمن معهد المشرف الحالي فقط
-     */
     public function store(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -109,26 +90,22 @@ class ClassesController extends Controller
             'schedules.*.end_time'     => 'required_with:schedules|date_format:H:i|after:schedules.*.start_time',
         ]);
 
-        // تحقق صارم: المادة المختارة ضمن هذا المعهد فقط
         abort_if(
             !Subject::where('id', $data['subject_id'])->where('institute_id', $inst->id)->exists(),
             403,
             'هذه المادة لا تتبع معهدك.'
         );
 
-        // تحقق أن المعلّم مرتبط بنفس المعهد (وإلا اربطه)
         $teacherUserId = (int) $data['user_id'];
 
         DB::transaction(function () use ($data, $inst, $teacherUserId, &$cls) {
-            // إنشاء الحلقة
             $cls = EducationClass::create([
                 'name'           => $data['name'],
                 'subject_id'     => $data['subject_id'],
-                'user_id'        => $teacherUserId,   // معلم الحلقة
+                'user_id'        => $teacherUserId,   
                 'students_count' => $data['students_count'],
             ]);
 
-            // تأكيد ربط المعلّم بالمعهد
             DB::table('institute_user')->updateOrInsert(
                 [
                     'institute_id' => $inst->id,
@@ -141,10 +118,8 @@ class ClassesController extends Controller
                 ]
             );
 
-            // ربط المعلّم بالحصة (جدول users_classes)
             $cls->users()->syncWithoutDetaching([$teacherUserId]);
 
-            // إنشاء الجداول الزمنية إن وجدت
             if (!empty($data['schedules'])) {
                 foreach ($data['schedules'] as $sch) {
                     $cls->sessionSchedules()->create($sch);
@@ -157,9 +132,6 @@ class ClassesController extends Controller
             ->with('success', 'تم إنشاء الحلقة ضمن معهدك بنجاح.');
     }
 
-    /**
-     * عرض تفاصيل حلقة (بعد التحقق أنها داخل معهد المشرف الحالي)
-     */
     public function show(Request $request, \App\Models\EducationClass $class)
     {
         $inst = $this->currentInstitute($request);
@@ -185,9 +157,6 @@ class ClassesController extends Controller
         ));
     }
 
-    /**
-     * نموذج تعديل حلقة
-     */
     public function edit(Request $request, EducationClass $class)
     {
         $inst = $this->currentInstitute($request);
@@ -211,9 +180,6 @@ class ClassesController extends Controller
         return view('supervisor.classes.edit', compact('class','subjects','teachers','inst'));
     }
 
-    /**
-     * حفظ التعديلات
-     */
     public function update(Request $request, EducationClass $class)
     {
         $inst = $this->currentInstitute($request);
@@ -231,7 +197,6 @@ class ClassesController extends Controller
             'schedules.*.end_time'     => 'required_with:schedules|date_format:H:i|after:schedules.*.start_time',
         ]);
 
-        // المادة يجب أن تكون لنفس المعهد
         abort_if(
             !Subject::where('id', $data['subject_id'])->where('institute_id', $inst->id)->exists(),
             403,
@@ -248,7 +213,6 @@ class ClassesController extends Controller
                 'students_count' => $data['students_count'],
             ]);
 
-            // تأكيد ربط المعلّم بالمعهد
             DB::table('institute_user')->updateOrInsert(
                 [
                     'institute_id' => $inst->id,
@@ -261,10 +225,8 @@ class ClassesController extends Controller
                 ]
             );
 
-            // ربط المعلّم بالحصة
             $class->users()->syncWithoutDetaching([$teacherUserId]);
 
-            // مزامنة الجداول الزمنية: تحديث/إضافة/حذف
             $keep = [];
             if (!empty($data['schedules'])) {
                 foreach ($data['schedules'] as $sch) {
@@ -281,7 +243,7 @@ class ClassesController extends Controller
 
             $class->sessionSchedules()
                 ->when(!empty($keep), fn($q) => $q->whereNotIn('id', $keep))
-                ->when(empty($keep), fn($q) => $q) // لا شيء للإبقاء عليه => حذف الكل
+                ->when(empty($keep), fn($q) => $q)
                 ->delete();
         });
 
@@ -290,9 +252,6 @@ class ClassesController extends Controller
             ->with('success', 'تم حفظ التعديلات على الحلقة.');
     }
 
-    /**
-     * حذف حلقة (ضمن صلاحية معهد المشرف)
-     */
     public function destroy(Request $request, EducationClass $class)
     {
         $inst = $this->currentInstitute($request);

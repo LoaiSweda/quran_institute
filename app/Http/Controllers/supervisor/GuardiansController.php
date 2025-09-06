@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Hash;
 
 class GuardiansController extends Controller
 {
-    /** IDs المعاهد المرتبط بها المشرف عبر institute_user */
     protected function myInstituteIds(): array
     {
         return auth()->user()
@@ -22,11 +21,6 @@ class GuardiansController extends Controller
     }
 
 
-    /**
-     * تحديد المعهد الحالي:
-     * - لو مشرف مرتبط بمعهد واحد: يرجع نفسه
-     * - لو أكثر: يستخدم ?institute_id= ويتأكد أنه ضمن معاهده
-     */
     protected function currentInstitute(Request $request): Institute
     {
         $ids = $this->myInstituteIds();
@@ -42,7 +36,6 @@ class GuardiansController extends Controller
         return Institute::findOrFail($iid);
     }
 
-    /** استعلام أوصياء مقيّد بمعهد واحد */
     protected function guardiansQueryForInstitute(int $instituteId)
     {
         return Guardian::query()
@@ -50,15 +43,11 @@ class GuardiansController extends Controller
             ->whereHas('user.institutes', fn($q) => $q->where('institute_id', $instituteId));
     }
 
-    /**
-     * 1) قائمة الأوصياء (فلترة + فرز + ترقيم) داخل المعهد الحالي فقط
-     */
     public function index(Request $request)
     {
         $inst  = $this->currentInstitute($request);
         $query = $this->guardiansQueryForInstitute($inst->id);
 
-        // بحث
         if ($search = $request->input('search')) {
             $query->where(function($q) use ($search) {
                 $q->where('firstname', 'like', "%{$search}%")
@@ -68,7 +57,6 @@ class GuardiansController extends Controller
             });
         }
 
-        // فرز بسيط: created_at_desc | firstname_asc... (اختياري)
         if ($sort = $request->input('sort')) {
             $parts = explode('_', $sort);
             $field = $parts[0] ?? 'created_at';
@@ -83,9 +71,6 @@ class GuardiansController extends Controller
         return view('supervisor.guardians.index', compact('guardians','inst'));
     }
 
-    /**
-     * 2) نموذج إنشاء ولي أمر + قائمة بأحدث الأوصياء في نفس المعهد
-     */
     public function create(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -98,9 +83,6 @@ class GuardiansController extends Controller
         return view('supervisor.guardians.create', compact('guardians','inst'));
     }
 
-    /**
-     * 3) حفظ حساب ولي أمر جديد + ربطه بالمعهد الحالي (فقط)
-     */
     public function store(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -118,14 +100,12 @@ class GuardiansController extends Controller
 
         DB::transaction(function () use ($data, $inst, $guardianRoleId) {
 
-            // users
             $user = User::create([
                 'email'    => $data['email'],
                 'password' => Hash::make($data['password']),
                 'role_id'  => $guardianRoleId,
             ]);
 
-            // guardians
             Guardian::create([
                 'user_id'   => $user->id,
                 'firstname' => $data['firstname'],
@@ -134,7 +114,6 @@ class GuardiansController extends Controller
                 'address'   => $data['address'] ?? null,
             ]);
 
-            // الربط بمعهد واحد فقط (يمسح أي روابط أخرى)
             $user->institutes()->sync([
                 $inst->id => ['role_institute' => 'guardian']
             ]);
@@ -145,9 +124,6 @@ class GuardiansController extends Controller
             ->with('success', 'تم إنشاء حساب وليّ الأمر وربطه بالمعهد الحالي فقط.');
     }
 
-    /**
-     * 4) عرض ولي أمر (تحقق الانتماء للمعهد الحالي)
-     */
     public function show(Request $request, Guardian $guardian)
     {
         $inst = $this->currentInstitute($request);
@@ -161,9 +137,6 @@ class GuardiansController extends Controller
         return view('supervisor.guardians.show', compact('guardian','inst'));
     }
 
-    /**
-     * 5) نموذج تعديل ولي أمر (تحقق الانتماء)
-     */
     public function edit(Request $request, Guardian $guardian)
     {
         $inst = $this->currentInstitute($request);
@@ -177,9 +150,6 @@ class GuardiansController extends Controller
         return view('supervisor.guardians.edit', compact('guardian','inst'));
     }
 
-    /**
-     * 6) تحديث بيانات ولي الأمر
-     */
     public function update(Request $request, Guardian $guardian)
     {
         $inst = $this->currentInstitute($request);
@@ -219,9 +189,6 @@ class GuardiansController extends Controller
             ->with('success', 'تم تحديث بيانات وليّ الأمر بنجاح.');
     }
 
-    /**
-     * 7) حذف ولي أمر (فك الربط من هذا المعهد ثم حذف)
-     */
     public function destroy(Request $request, Guardian $guardian)
     {
         $inst = $this->currentInstitute($request);
@@ -232,10 +199,7 @@ class GuardiansController extends Controller
         );
 
         DB::transaction(function () use ($guardian, $inst) {
-            // فك الربط من هذا المعهد فقط
             $guardian->user->institutes()->detach($inst->id);
-
-            // حذف الوصي والمستخدم (إن رغبت إبقاء المستخدم، احذف Guardian فقط)
             $user = $guardian->user;
             $guardian->delete();
             $user->delete();

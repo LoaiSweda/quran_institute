@@ -284,7 +284,6 @@
     </style>
 </head>
 <body>
-    <!-- شريط التنقل -->
     <header class="app-navbar">
         <div class="navbar-left">
             <h1 class="app-title">نظام إدارة المعاهد الشرعية</h1>
@@ -293,7 +292,6 @@
         @php
             $user = auth()->user();
             $role = $user->role?->name;
-            // تحديد الاسم المعروض بناءً على الدور
             if ($role === 'teacher') {
                 $displayName = $user->teacher?->first_name;
             } else {
@@ -323,7 +321,6 @@
 
 
     <script>
-        // كود للتحكم في إظهار وإخفاء الشريط الجانبي
         const toggleSidebar = document.querySelector('.toggle-sidebar');
         const sidebar = document.querySelector('.sidebar');
         const mainContent = document.querySelector('.main-content');
@@ -332,7 +329,6 @@
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
             
-            // تغيير الأيقونة عند التبديل
             const icon = this.querySelector('i');
             if (sidebar.classList.contains('collapsed')) {
                 icon.classList.remove('fa-bars');
@@ -343,7 +339,6 @@
             }
         });
         
-        // إغلاق الشريط الجانبي تلقائياً على الشاشات الصغيرة
         function handleResize() {
             if (window.innerWidth <= 768) {
                 sidebar.classList.add('collapsed');
@@ -358,17 +353,14 @@
             }
         }
         
-        // التعامل مع تغيير حجم النافذة
         window.addEventListener('resize', handleResize);
         
-        // التهيئة الأولية
         document.addEventListener('DOMContentLoaded', function() {
             handleResize();
         });
     </script>
 
     <script>
-  // إدارة حالة active بحيث يكون واحد فقط
   function wireSidebarActive() {
     const links = document.querySelectorAll('.sidebar a');
 
@@ -377,7 +369,6 @@
       el.classList.add('active');
     }
 
-    // استرجاع آخر اختيار أو مطابق لمسار الرابط الحالي
     const saved = localStorage.getItem('sidebarActiveHref');
     let initial =
       (saved && document.querySelector(`.sidebar a[href="${saved}"]`)) ||

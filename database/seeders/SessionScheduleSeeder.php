@@ -15,7 +15,6 @@ class SessionScheduleSeeder extends Seeder
     {
         $teacherId = 2;
 
-        // اجلب جميع معرفات الصفوف
         $classIds = EducationClass::pluck('id')->toArray();
 
         if (empty($classIds)) {
@@ -23,7 +22,6 @@ class SessionScheduleSeeder extends Seeder
             return;
         }
 
-        // لكل يوم من السبت (0) إلى الخميس (5) أضف جلسة واحدة
         foreach (range(0, 5) as $dayOfWeek) {
             SessionSchedule::create([
                 'user_id'     => $teacherId,

@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 class ClassesController extends Controller
 {
     /**
-     * احصل على معهد المدير الحالي أو ارمي 403
+     *  403
      *
      * @return Institute
      */
@@ -31,9 +31,6 @@ class ClassesController extends Controller
         return $inst;
     }
 
-    /**
-     * عرض قائمة الحلقات الخاصة بمعهد المدير
-     */
     public function index()
     {
         $inst = $this->currentInstitute();
@@ -47,13 +44,6 @@ class ClassesController extends Controller
     }
 
 
-    /**
-     * عرض نموذج إنشاء حلقة جديدة
-     */
-
-    /**
-     * نموذج إنشاء حلقة + عرض الحلقات المنشأة
-     */
     public function create()
     {
         $inst     = $this->currentInstitute();
@@ -82,11 +72,6 @@ class ClassesController extends Controller
         return view('manager.classes.create', compact('subjects','teachers','classes'));
     }
 
-
-
-    /**
-     * حفظ حلقة جديدة وتوليد QR بصيغة SVG
-     */
 
     public function store(Request $request)
     {
@@ -141,13 +126,11 @@ class ClassesController extends Controller
             'sessions',
             'exams.student',
             'progress',
-            'enrolledStudents.student', // مهم
+            'enrolledStudents.student', 
         ]);
 
-        // مصفوفة Students جاهزة للاستخدام في العرض
         $students = $class->enrolledStudents->pluck('student');
 
-        // مثال على الإحصائيات
         $studentsCount      = $students->count();
         $presentPercentage  = $class->present_percentage ?? 0;
         $sessionsHeld       = $class->sessions->count();
@@ -158,9 +141,6 @@ class ClassesController extends Controller
         ));
     }
 
-    /**
-     * عرض نموذج تعديل حلقة
-     */
     public function edit(EducationClass $class)
     {
         $inst = $this->currentInstitute();
@@ -187,9 +167,6 @@ class ClassesController extends Controller
         return view('manager.classes.edit', compact('class','subjects','teachers'));
     }
 
-    /**
-     * حفظ تعديل حلقة
-     */
     public function update(Request $request, EducationClass $class)
     {
         $inst = $this->currentInstitute();
@@ -231,9 +208,7 @@ class ClassesController extends Controller
 
         return back()->with('success', 'تم حفظ التعديلات على الحلقة وجداول المواعيد');
     }
-    /**
-     * حذف/تعطيل حلقة
-     */
+  
     public function destroy(EducationClass $class)
     {
         $inst = $this->currentInstitute();

@@ -29,7 +29,7 @@ class InstituteController extends Controller
         }
 
         $institutes = \App\Models\Institute::query()
-            ->with(['manager.admin'])   // مهم: يحل N+1 ويخلّي العلاقات جاهزة
+            ->with(['manager.admin'])  
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -44,15 +44,15 @@ class InstituteController extends Controller
     $newManagerId = session('new_manager_id');
 
     $managers = \App\Models\User::query()
-        ->instituteManagers()              // scope عندك
-        ->whereHas('admin')                // لازم يكون له بطاقة Admin
-        ->whereDoesntHave('institute')     // غير مخصص كمدير لأي معهد
+        ->instituteManagers()             
+        ->whereHas('admin')                
+        ->whereDoesntHave('institute')     
         ->with(['admin:id,user_id,first_name,last_name'])
         ->orderBy('id','desc')
         ->get();
 
     $institutes = \App\Models\Institute::query()
-        ->with(['manager.admin'])   // مهم: يحل N+1 ويخلّي العلاقات جاهزة
+        ->with(['manager.admin'])   
         ->latest()
         ->paginate(10)
         ->withQueryString();
@@ -117,8 +117,8 @@ public function edit(\App\Models\Institute $institute)
         ->instituteManagers()
         ->whereHas('admin')
         ->where(function ($q) use ($institute) {
-            $q->whereDoesntHave('institute')                              // غير معيّن
-              ->orWhereHas('institute', fn($iq) => $iq->where('id', $institute->id)); // المدير الحالي
+            $q->whereDoesntHave('institute')                           
+              ->orWhereHas('institute', fn($iq) => $iq->where('id', $institute->id)); 
         })
         ->with(['admin:id,user_id,first_name,last_name'])
         ->orderBy('id','desc')
@@ -155,14 +155,11 @@ public function edit(\App\Models\Institute $institute)
         return back()->with('success','تم تعطيل المعهد');
     }
 
-    // --------------------------------
-    // عرض نموذج إنشاء مدير جديد
     public function createManager()
     {
         return view('super-admin.institutes.manager-form');
     }
 
-    // تخزين مدير جديد ثم إعادة التوجيه إلى create institute
     public function storeManager(Request $request)
     {
         $data = $request->validate([

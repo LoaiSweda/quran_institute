@@ -14,7 +14,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->date('start_date')->nullable();
 
-            // نحضّر العمود فقط بدون FK
             $table->unsignedBigInteger('institute_id');
 
             $table->date('end_date')->nullable();

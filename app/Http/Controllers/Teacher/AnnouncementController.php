@@ -18,7 +18,6 @@ class AnnouncementController extends Controller
         $this->middleware(['auth','role:teacher']);
     }
 
-    /** تحديد المعهد الحالي للمعلم (من قائمة معاهده) */
     protected function currentInstitute(Request $request): Institute
     {
         $user = $request->user();
@@ -31,7 +30,6 @@ class AnnouncementController extends Controller
         return Institute::findOrFail($picked);
     }
 
-    /** تحقق النطاق: الإعلان يجب أن يخص المعهد الحالي ونفس الناشر */
     protected function ensureScope(Request $request, Ad $ad): void
     {
         $inst = $this->currentInstitute($request);
@@ -39,7 +37,6 @@ class AnnouncementController extends Controller
         abort_if((int)$ad->institute_id !== (int)$inst->id, 403);
     }
 
-    /** قائمة إعلانات المعلم (هو الناشر) داخل المعهد الحالي */
     public function index(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -77,7 +74,7 @@ class AnnouncementController extends Controller
         }
 
         $data['user_id']      = Auth::id();
-        $data['institute_id'] = $inst->id; // مهم: لا نتركه NULL
+        $data['institute_id'] = $inst->id; 
 
         $ad = Ad::create($data);
 
@@ -130,7 +127,6 @@ class AnnouncementController extends Controller
             $data['image'] = $request->file('image')->store('ads','public');
         }
 
-        // لا نسمح بتغيير institute_id/user_id من هنا
         unset($data['institute_id'], $data['user_id']);
 
         $ad->update($data);

@@ -15,7 +15,6 @@ class AnnouncementInboxController extends Controller
         $this->middleware(['auth','role:admin']);
     }
 
-    // معهد المشرف الحالي من قائمة معاهده (?institute_id= أو الأول)
     protected function currentInstitute(Request $request): Institute
     {
         $user = $request->user();
@@ -28,7 +27,6 @@ class AnnouncementInboxController extends Controller
         return Institute::findOrFail($picked);
     }
 
-    // قائمة الإعلانات الموجّهة للمشرف
     public function index(Request $request)
     {
         $inst = $this->currentInstitute($request);
@@ -54,7 +52,6 @@ class AnnouncementInboxController extends Controller
         return view('supervisor.announcements.inbox.index', compact('ads'));
     }
 
-    // عرض إعلان واحد من الوارد
     public function show(Request $request, Ad $ad)
     {
         $inst = $this->currentInstitute($request);

@@ -15,18 +15,14 @@ class AttendanceScanController extends Controller
     {
         $supervisor = Auth::user();
 
-        // خُذ كل المعاهد المرتبط بها المستخدم (بدون تقييد الدور حتى لا تصفّر)
         $instIds = $supervisor->institutes()->pluck('institutes.id')->toArray();
 
-        // إن لم يكن مرتبطًا بأي معهد، أوقف برسالة واضحة
         if (empty($instIds)) {
             abort(403, 'حسابك غير مرتبط بأي معهد.');
         }
 
-        // اسم اليوم بالإنجليزية مثل Sunday
         $today = Carbon::now('Asia/Damascus')->format('l');
 
-        // الاستعلام: طابق اليوم بلا حساسية حالة الأحرف/المسافات، وفلترة بالـ relations
         $schedules = SessionSchedule::query()
             ->with(['educationClass' => function ($q) {
                 $q->select('id','name','subject_id');

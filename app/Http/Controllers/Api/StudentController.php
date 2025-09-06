@@ -17,55 +17,88 @@ use App\Models\File;
 use App\Models\Teacher;
 use App\Models\SessionSchedule;
 
-
 class StudentController extends Controller
 {
     
     public function instituteAnnouncements(Request $request)
     {
-        $student = $request->user();
-
-        // 1) class IDs
-        $classIds = $student->classes()
-                            ->pluck('classes.id')
-                            ->toArray();
-
-        // 2) institute_id
-        $instIds = EducationClass::query()
-            ->whereIn('classes.id', $classIds)
-            ->join('subjects', 'classes.subject_id', '=', 'subjects.id')
-            ->pluck('subjects.institute_id')
-            ->unique()
-            ->toArray();
-
-        // 3) managers - supervisores 
-        $instUserIds = DB::table('institute_user')
-            ->whereIn('institute_id', $instIds)
-            ->pluck('user_id')
-            ->unique()
-            ->toArray();
-
-        // 4) super-admin
-        $superIds = User::where('role_id', 1)
-                        ->pluck('id')
-                        ->toArray();
-
-        // 5) merge
-        $publisherIds = array_unique(array_merge($instUserIds, $superIds));
-
-        // 6) ads
+        $auth = $request->user();
+    
+        // 1) حصص المستخدم نفسه (إن كان طالبًا)
+        $selfClassIds = $auth->classes()->pluck('classes.id')->toArray();
+    
+        // 2) حصص أبناء الولي عبر guardians → students (بدون توابع)
+        $guardianId = DB::table('guardians')->where('user_id', $auth->id)->value('id'); // قد تكون null
+        $childUserIds = $guardianId
+            ? DB::table('students')->where('guardian_id', $guardianId)->pluck('user_id')->toArray()
+            : [];
+    
+        $childClassIds = !empty($childUserIds)
+            ? DB::table('users_classes')->whereIn('user_id', $childUserIds)->pluck('class_id')->toArray()
+            : [];
+    
+        // 3) دمج كل الحصص (الولي + الأبناء)
+        $classIds = array_values(array_unique(array_merge($selfClassIds, $childClassIds)));
+    
+        // 4) مؤسسات هذه الحصص
+        $instIds = !empty($classIds)
+            ? EducationClass::query()
+                ->whereIn('classes.id', $classIds)
+                ->join('subjects', 'classes.subject_id', '=', 'subjects.id')
+                ->pluck('subjects.institute_id')->unique()->toArray()
+            : [];
+    
+        // 5) ناشرو المؤسسة + السوبر أدمن
+        $instUserIds = !empty($instIds)
+            ? DB::table('institute_user')->whereIn('institute_id', $instIds)->pluck('user_id')->unique()->toArray()
+            : [];
+        $superIds     = User::where('role_id', 1)->pluck('id')->toArray();
+        $publisherIds = array_values(array_unique(array_merge($instUserIds, $superIds)));
+    
+        // 6) الإعلانات الموجّهة للطالب/الولي:
+        //    - منشورة بواسطة أحد ناشري المؤسسة (user_ads.publish_id)
+        //    - أو الإعلان مربوط مباشرة بإحدى مؤسسات الطالب/الأبناء (ads.institute_id)
         $ads = Ad::query()
-            ->whereIn('user_id', $publisherIds)
-            ->whereHas('userAds', fn($q) => $q->where('watches_role', 'student'))
-            ->with(['type:id,name', 'publisher:id,name,email,role_id'])
+            ->when(!empty($publisherIds) && !empty($instIds), function ($q) use ($publisherIds, $instIds) {
+                $q->whereHas('userAds', function ($qq) use ($publisherIds) {
+                    $qq->whereIn('publish_id', $publisherIds)
+                       ->whereIn(DB::raw('LOWER(watches_role)'), ['student','guardian']);
+                })->orWhereIn('institute_id', $instIds);
+            })
+            ->when(!empty($publisherIds) && empty($instIds), function ($q) use ($publisherIds) {
+                $q->whereHas('userAds', function ($qq) use ($publisherIds) {
+                    $qq->whereIn('publish_id', $publisherIds)
+                       ->whereIn(DB::raw('LOWER(watches_role)'), ['student','guardian']);
+                });
+            })
+            ->when(empty($publisherIds) && !empty($instIds), function ($q) use ($instIds) {
+                $q->whereIn('institute_id', $instIds);
+            })
+            ->with(['type:id,name', 'publisher:id,email,role_id'])
             ->orderByDesc('created_at')
-            ->get([
-                'id', 'title', 'description', 'link',
-                'image', 'end_date', 'status', 'type_id', 'user_id'
-            ]);
-
+            ->get(['id','title','description','link','image','end_date','status','type_id','user_id','institute_id'])
+            ->map(function ($ad) {
+                return [
+                    'id' => $ad->id,
+                    'title' => $ad->title,
+                    'description' => $ad->description,
+                    'link' => $ad->link,
+                    'image_url' => $ad->image ? asset('storage/app/public/'.$ad->image) : null, // storage:link
+                    'end_date' => $ad->end_date,
+                    'status' => $ad->status,
+                    'computed_status' => $ad->computed_status,
+                    'type' => ['id' => optional($ad->type)->id, 'name' => optional($ad->type)->name],
+                    'publisher' => [
+                        'id' => optional($ad->publisher)->id,
+                        'email' => optional($ad->publisher)->email,
+                        'role_id' => optional($ad->publisher)->role_id,
+                    ],
+                ];
+            });
+    
         return response()->json(['data' => $ads], 200);
     }
+
 
    
     public function classAnnouncements(Request $request, EducationClass $class)
@@ -90,6 +123,14 @@ class StudentController extends Controller
                 'image','end_date','status','type_id','user_id'
             ]);
 
+        // إضافة asset() للصور
+        $ads->transform(function ($ad) {
+            if ($ad->image) {
+                $ad->image = asset('storage/app/public/' . $ad->image);
+            }
+            return $ad;
+        });
+
         return response()->json(['data' => $ads], 200);
     }
 
@@ -104,7 +145,6 @@ class StudentController extends Controller
             ], 403);
         }
 
-
         $ad->load([
             'type:id,name',
             'publisher:id,email,role_id',
@@ -116,7 +156,7 @@ class StudentController extends Controller
             'title'           => $ad->title,
             'description'     => $ad->description,
             'link'            => $ad->link,
-            'image_url'       => $ad->image ? asset('storage/'.$ad->image) : null,
+            'image_url'       => $ad->image ? asset('storage/app/public/'.$ad->image) : null,
             'end_date'        => $ad->end_date,
             'computed_status' => $ad->computed_status,
             'type'            => [
@@ -146,35 +186,39 @@ class StudentController extends Controller
             ->with(['subject', 'teacher.user'])
             ->get();
 
-        $result = $classes->map(fn($class) => [
-            'id'                 => $class->id,
-            'name'               => $class->name,
-            'subject'            => [
-                'id'          => $class->subject->id,
-                'name'        => $class->subject->name,
-                'image'       => $class->subject->image,
-                'description' => $class->subject->description,
-                'start_date'  => $class->subject->start_date
-                                    ? $class->subject->start_date->toDateString()
-                                    : null,
-                'end_date'    => $class->subject->end_date
-                                    ? $class->subject->end_date->toDateString()
-                                    : null,
-                'level'       => $class->subject->level,
-                'degree'      => $class->subject->degree,
-                'is_active'   => (bool) $class->subject->is_active,
-            ],
-            'teacher'            => [
-                'id'         => $class->teacher->id,
-                'first_name' => $class->teacher->user->first_name,
-                'last_name'  => $class->teacher->user->last_name,
-                'email'      => $class->teacher->user->email,
-            ],
-            'students_count'     => $class->students_count,
-            'session_count'      => $class->session_count,
-            'qr'                 => $class->qr,
-            'present_percentage' => $class->present_percentage,
-        ]);
+        $result = $classes->map(function ($class) {
+            $subjectImage = $class->subject->image ? asset('storage/app/public/' . $class->subject->image) : null;
+            
+            return [
+                'id'                 => $class->id,
+                'name'               => $class->name,
+                'subject'            => [
+                    'id'          => $class->subject->id,
+                    'name'        => $class->subject->name,
+                    'image'       => $subjectImage,
+                    'description' => $class->subject->description,
+                    'start_date'  => $class->subject->start_date
+                                        ? $class->subject->start_date->toDateString()
+                                        : null,
+                    'end_date'    => $class->subject->end_date
+                                        ? $class->subject->end_date->toDateString()
+                                        : null,
+                    'level'       => $class->subject->level,
+                    'degree'      => $class->subject->degree,
+                    'is_active'   => (bool) $class->subject->is_active,
+                ],
+                'teacher'            => [
+                    'id'         => $class->teacher->id,
+                    'first_name' => $class->teacher->user->first_name,
+                    'last_name'  => $class->teacher->user->last_name,
+                    'email'      => $class->teacher->user->email,
+                ],
+                'students_count'     => $class->students_count,
+                'session_count'      => $class->session_count,
+                'qr'                 => $class->qr,
+                'present_percentage' => $class->present_percentage,
+            ];
+        });
 
         return response()->json(['classes' => $result], 200);
     }
@@ -219,6 +263,8 @@ class StudentController extends Controller
                         ['subject_id', $class->subject_id],
                     ])->get();
 
+        $subjectImage = $class->subject->image ? asset('storage/app/public/' . $class->subject->image) : null;
+
         $studentDetail = [
             'user' => [
                 'id'         => $studentUser->id,
@@ -250,7 +296,7 @@ class StudentController extends Controller
                                  'file'        => $c->file ? [
                                      'id'   => $c->file->id,
                                      'name' => $c->file->name,
-                                     'path' => asset('storage/' . $c->file->path),
+                                     'path' => asset('storage/app/public/' . $c->file->path),
                                      'size' => $c->file->size,
                                      'mime' => $c->file->mime,
                                  ] : null,
@@ -274,7 +320,7 @@ class StudentController extends Controller
                 'degree'         => $class->subject->degree,
                 'total_sessions' => $class->subject->total_sessions,
                 'is_active'      => (bool) $class->subject->is_active,
-                'image_url'      => $class->subject->image_url ?? null,
+                'image_url'      => $subjectImage,
             ],
             'teacher' => [
                 'id'         => $class->teacher->user_id,

@@ -17,7 +17,6 @@ class ResetPasswordController extends Controller
         $this->middleware('guest');
     }
 
-    // يعرض نموذج إعادة التعيين مع التوكن والبريد
     public function showResetForm(Request $request, $token = null)
     {
         return view('auth.passwords.reset')->with([
@@ -26,7 +25,6 @@ class ResetPasswordController extends Controller
         ]);
     }
 
-    // يعالج إعادة التعيين
     public function reset(Request $request)
     {
         $request->validate([

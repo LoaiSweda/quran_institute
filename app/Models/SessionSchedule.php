@@ -49,30 +49,25 @@ class SessionSchedule extends Model
 
     public function timeRemaining()
     {
-        // وقت الآن في دمشق
         $now = Carbon::now('Asia/Damascus');
 
-        // خذ فقط ساعة ونهاية الحصة (H:i:s) وحولها إلى "دمشق" مع يوم اليوم
         $end = Carbon::createFromFormat(
             'Y-m-d H:i:s',
-            // نسند تاريخ اليوم مع الوقت المخزن
             $now->toDateString() . ' ' . $this->end_time->format('H:i:s'),
             'Asia/Damascus'
         );
 
-        // لو انتهت الجلسة بالفعل
         if ($now->gte($end)) {
             return '00:00';
         }
 
-        // احسب الفارق في نفس المنطقة
         return $end->diffForHumans(
             $now,
             [
-                'syntax' => Carbon::DIFF_RELATIVE_TO_NOW, // "باقي"
-                'parts'  => 2,                           // ساعتين ودقيقتين
-                'short'  => true,                        // اختصار "1س 40د"
-                'options'=> Carbon::JUST_NOW             // تجنب كلمات زائدة
+                'syntax' => Carbon::DIFF_RELATIVE_TO_NOW, 
+                'parts'  => 2,                           
+                'short'  => true,                        
+                'options'=> Carbon::JUST_NOW             
             ]
         );
     }

@@ -16,6 +16,19 @@
             </a>
         </div>
 
+        {{-- رسائل الخطأ العامة --}}
+        @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> يوجد أخطاء في المدخلات</h5>
+                <ul class="mb-0">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         {{-- النموذج --}}
         <div class="card shadow-sm mb-4">
             <div class="card-body">
@@ -38,7 +51,7 @@
                             required
                         >
                         @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -58,7 +71,7 @@
                         </select>
 
                         @error('user_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -74,7 +87,7 @@
                             placeholder="العنوان التفصيلي (اختياري)"
                         >
                         @error('address')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
 
@@ -89,8 +102,13 @@
                             accept="image/*"
                         >
                         @error('image')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
+                        
+                        {{-- تلميح حول مواصفات الصورة --}}
+                        <small class="form-text text-muted">
+                            يُفضل صورة بأبعاد 1:1 (مربعة) وحجم لا يتجاوز 2MB
+                        </small>
                     </div>
 
                     {{-- عرض الشعار الحالي --}}
@@ -109,7 +127,7 @@
                     @endif
 
                     {{-- زر الحفظ --}}
-                    <div class="col-12 text-center">
+                    <div class="col-12 text-center mt-4">
                         <button type="submit" class="btn btn-success px-4">
                             <i class="bi bi-save"></i>
                             {{ $institute->exists ? 'تحديث البيانات' : 'حفظ المعهد' }}
@@ -119,7 +137,7 @@
             </div>
         </div>
 
-        {{-- جدول المعاهد الحالية (لا يتم حذفها) --}}
+        {{-- جدول المعاهد الحالية --}}
         <div class="card shadow-sm">
             <div class="card-header py-3">
                 <h6 class="m-0 fw-bold text-primary">المعاهد المنشأة سابقاً</h6>
@@ -217,6 +235,13 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             margin-bottom: 1.5rem;
         }
-        .invalid-feedback { display: block; }
+        .invalid-feedback { 
+            display: block; 
+            font-size: 0.85rem;
+            color: #dc3545;
+        }
+        .alert-danger {
+            border-left: 4px solid #dc3545;
+        }
     </style>
 @endpush

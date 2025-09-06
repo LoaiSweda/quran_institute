@@ -66,13 +66,9 @@ class ClassSchedulesController extends Controller
             $q->orderBy('day_of_week')->orderBy('start_time');
         }]);
 
-        // مسار العرض للمشرف
         return view('supervisor.classes.schedules.create', compact('class', 'inst'));
     }
 
-    /**
-     * حفظ موعد جديد
-     */
     public function store(Request $request, EducationClass $class)
     {
         $inst = $this->currentInstitute($request);
@@ -84,7 +80,6 @@ class ClassSchedulesController extends Controller
             'end_time'    => 'required|date_format:H:i|after:start_time',
         ]);
 
-        // نعين معلّم الحلقة (user_id) كصاحب الموعد
         $teacherUserId = $class->user_id;
         abort_if(!$teacherUserId, 422, 'لم يتم تعيين معلّم لهذه الحلقة.');
 
@@ -97,9 +92,6 @@ class ClassSchedulesController extends Controller
             ->with('success', 'تم إضافة الموعد بنجاح.');
     }
 
-    /**
-     * نموذج تعديل موعد
-     */
     public function edit(Request $request, EducationClass $class, SessionSchedule $schedule)
     {
         $inst = $this->currentInstitute($request);
@@ -114,9 +106,6 @@ class ClassSchedulesController extends Controller
         return view('supervisor.classes.schedules.edit', compact('class', 'schedule', 'inst'));
     }
 
-    /**
-     * حفظ تعديل موعد
-     */
     public function update(Request $request, EducationClass $class, SessionSchedule $schedule)
     {
         $inst = $this->currentInstitute($request);
@@ -130,7 +119,6 @@ class ClassSchedulesController extends Controller
             'end_time'    => 'required|date_format:H:i|after:start_time',
         ]);
 
-        // اختيارياً: مواكبة أي تغيير على معلّم الحلقة
         if ($class->user_id) {
             $data['user_id'] = $class->user_id;
         }
@@ -142,9 +130,6 @@ class ClassSchedulesController extends Controller
             ->with('success', 'تم تحديث الموعد بنجاح.');
     }
 
-    /**
-     * حذف موعد
-     */
     public function destroy(Request $request, EducationClass $class, SessionSchedule $schedule)
     {
         $inst = $this->currentInstitute($request);

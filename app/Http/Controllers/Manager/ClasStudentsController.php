@@ -33,15 +33,12 @@ class ClasStudentsController extends Controller
     {
         $inst = $this->currentInstitute();
 
-        // 1) الطلاب الموجودون بالفعل في هذه الحلقة
         $added = $class->users()->pluck('users.id')->toArray();
 
-        // 2) جلب معلومات المادة المرتبطة بالحلقة الحالية
-        $subject = $class->subject; // يفترض وجود علاقة subject() في EducationClass
+        $subject = $class->subject; 
 
         $enrolledInSubject = [];
         if ($subject && $subject->is_active) {
-            // 3) إذا كانت المادة مفعّلة: اجمع كل الحلقات لنفس المادة ثم الطلاب المسجلين فيها
             $otherClassIds = EducationClass::where('subject_id', $class->subject_id)
                 ->pluck('id')
                 ->toArray();
@@ -53,18 +50,13 @@ class ClasStudentsController extends Controller
                     ->toArray();
             }
         }
-        // إذا كانت المادة غير مفعّلة، نترك $enrolledInSubject فارغة (لا نستثني أحداً بناءً على المادة)
 
-        // 4) استبعاد الجمعتين معاً
         $exclude = array_unique(array_merge($added, $enrolledInSubject));
 
-        // 5) جلب طلاب المعهد الذين ليسوا في $exclude
-        //    نستخدم علاقة users() على Institute لأن pivot موجود هناك
-        //    ونضم جدول students لاستخراج first_name/last_name (أو غيّرها إن أسماء الطلبة في جدول آخر)
         $studentsQuery = $inst->users()
             ->wherePivot('role_institute', 'student')
             ->whereNotIn('users.id', $exclude)
-            ->join('students', 'students.user_id', '=', 'users.id') // غيّر 'students' إذا لديك جدول آخر
+            ->join('students', 'students.user_id', '=', 'users.id') 
             ->select([
                 'users.id',
                 'users.email',
@@ -73,9 +65,8 @@ class ClasStudentsController extends Controller
             ])
             ->orderBy('students.first_name');
 
-        // لو كنت تتوقّع عددًا كبيرًا من النتائج يمكنك هنا استخدام pagination:
-         $students = $studentsQuery->paginate(30);
-        $students = $studentsQuery->get();
+        $students = $studentsQuery->paginate(30);
+        //$students = $studentsQuery->get();
 
         return view('manager.classes.students.create', compact('class','students'));
     }

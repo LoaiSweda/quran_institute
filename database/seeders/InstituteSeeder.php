@@ -14,20 +14,17 @@ class InstituteSeeder extends Seeder
      */
     public function run(): void
     {
-        // نفترض أن لديك 3 مديرين مسجّلين في جدول users بدور 2
-        // ونعطي لكل واحد منهم معهدًا
         $managers = User::where('role_id', 2)->take(3)->get();
 
         foreach ($managers as $index => $manager) {
             Institute::create([
                 'name'    => "المعهد التجريبي " . ($index + 1),
                 'address' => "عنوان المعهد رقم " . ($index + 1),
-                'image'   => null,              // أو ضع مسار صورة افتراضي
-                'user_id' => $manager->id,      // المدير صاحب المعهد
+                'image'   => null,              
+                'user_id' => $manager->id,      
             ]);
         }
 
-        // مثال: إضافة معهد رابع لــ Super Admin (role_id = 1)
         $superAdmin = User::where('role_id', 1)->first();
         if ($superAdmin) {
             Institute::create([

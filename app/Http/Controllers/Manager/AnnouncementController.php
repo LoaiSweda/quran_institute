@@ -18,13 +18,11 @@ class AnnouncementController extends Controller
         $this->middleware(['auth','role:institute manager']);
     }
 
-    /** معهد المدير الحالي (مالك المعهد) */
     protected function currentInstitute(): Institute
     {
         return Institute::where('user_id', Auth::id())->firstOrFail();
     }
 
-    /** تحقق الملكية + النطاق (المعهد) */
     protected function ensureScope(Ad $ad): void
     {
         $inst = $this->currentInstitute();
@@ -32,13 +30,12 @@ class AnnouncementController extends Controller
         abort_if((int)$ad->institute_id !== (int)$inst->id, 403, 'هذا الإعلان خارج نطاق معهدك.');
     }
 
-    /** قائمة إعلانات المدير داخل معهدِه فقط */
     public function index()
     {
         $inst = $this->currentInstitute();
 
         $ads = Ad::where('user_id', Auth::id())
-            ->where('institute_id', $inst->id) // مدير يدير فقط ما يخص معهدَه
+            ->where('institute_id', $inst->id) 
             ->with('type')
             ->latest('created_at')
             ->paginate(10);
@@ -48,7 +45,6 @@ class AnnouncementController extends Controller
         return view('manager.announcements.index', compact('ads','types'));
     }
 
-    /** إنشاء إعلان داخل معهد المدير */
     public function store(Request $request)
     {
         $inst = $this->currentInstitute();
@@ -70,7 +66,7 @@ class AnnouncementController extends Controller
         }
 
         $data['user_id'] = Auth::id();
-        $data['institute_id'] = $inst->id; // مهم: ربط الإعلان بمعهد المدير
+        $data['institute_id'] = $inst->id;
 
         $ad = Ad::create($data);
 
@@ -123,7 +119,6 @@ class AnnouncementController extends Controller
             $data['image'] = $request->file('image')->store('ads', 'public');
         }
 
-        // لا نسمح بتغيير institute_id هنا — يبقى بنفس المعهد
         unset($data['institute_id'], $data['user_id']);
 
         $ad->update($data);

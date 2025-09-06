@@ -12,8 +12,7 @@ class Admin extends Model
     ];
 
     protected $casts = [
-        'birthdate' => 'date', // سترجع كـ Carbon تلقائيًا
-        // ملاحظة: created_at و updated_at تُحوَّلان لـ Carbon تلقائيًا، ولا حاجة لتعريفهما هنا.
+        'birthdate' => 'date',
     ];
 
     public function user(): BelongsTo

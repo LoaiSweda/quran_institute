@@ -20,13 +20,11 @@ class AnnouncementInboxController extends Controller
         return Institute::where('user_id', Auth::id())->firstOrFail();
     }
 
-    // قائمة الإعلانات الموجّهة للمدير
     public function index(Request $request)
     {
         $inst = $this->currentInstitute();
 
         $ads = Ad::with(['type','publisher.role','institute'])
-            // نطاق المعهد، أو إعلان عام من سوبر أدمن فقط
             ->where(function($q) use ($inst) {
                 $q->where('institute_id', $inst->id)
                     ->orWhere(function($q2){
@@ -36,11 +34,8 @@ class AnnouncementInboxController extends Controller
                             });
                     });
             })
-            // موجّه لدور "manager"
             ->whereHas('userAds', fn($q)=> $q->where('watches_role','manager'))
-            // لا تُظهر للناشر نفسه
             ->where('user_id', '<>', Auth::id())
-            // نشط وغير منتهٍ
             ->where('status','active')
             ->whereDate('end_date','>=', now()->toDateString())
             ->latest('created_at')
@@ -50,7 +45,6 @@ class AnnouncementInboxController extends Controller
         return view('manager.announcements.inbox.index', compact('ads'));
     }
 
-    // عرض إعلان واحد من الوارد
     public function show(Request $request, Ad $ad)
     {
         $inst = $this->currentInstitute();
