@@ -150,14 +150,36 @@ class CertificateRequestController extends Controller
         $subject = $certificateRequest->subject;
 
         // Data passed to the template
-        $issuedAt = now()->locale('ar'); // Arabic numerals/format if your locale is set
+        // helper to turn a public-disk path into data URI
+        $toDataUri = function (?string $diskPath): ?string {
+            if (!$diskPath) return null;
+            $abs = \Storage::disk('public')->path($diskPath);
+            if (!is_file($abs)) return null;
+            $mime = @mime_content_type($abs) ?: 'image/png';
+            return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($abs));
+        };
+
+        // build sources
+        $logoSrc            = $toDataUri($institute->image ?? null);                       // شعار المعهد (إن وجد)
+        $adminStampSrc      = $toDataUri($admin->institution_stamp_path ?? null);         // ختم المؤسسة (من Admin)
+        $instStampSrc       = $toDataUri($institute->institute_stamp_path ?? null);        // ختم المعهد
+        $directorSignSrc    = $toDataUri($institute->director_signature_path ?? null);     // توقيع مدير المعهد
+        $teacherSignSrc = $toDataUri($teacher->signature_path ?? null);
+
+        $issuedAt = now()->locale('ar');
+
         $viewData = [
-            'institute'   => $institute,
-            'student'     => $student,
-            'subject'     => $subject,
-            'certificate' => $certificateRequest,
-            'issued_at'   => $issuedAt,
-            'admin'       => $admin,
+            'institute'            => $institute,
+            'student'              => $certificateRequest->student,
+            'subject'              => $certificateRequest->subject,
+            'certificate'          => $certificateRequest,
+            'issued_at'            => $issuedAt,
+            // image data-uris:
+            'logo_src'             => $logoSrc,
+            'admin_stamp_src'      => $adminStampSrc,
+            'institute_stamp_src'  => $instStampSrc,
+            'director_signature_src'=> $directorSignSrc,
+            'teacher_signature_src'=> $teacherSignSrc ?? null,
         ];
 
         // Render PDF (A4 landscape)

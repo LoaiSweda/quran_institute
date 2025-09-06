@@ -76,18 +76,34 @@
         .cell-left  { text-align: left;  }
 
         /* منطقة الختم */
-        .signature-area { height: 20mm; margin-bottom: 4mm; position: relative; }
+        .signature-area { height: 22mm; margin-bottom: 4mm; position: relative; }
         .signature-stamp {
-            position: absolute; bottom: 0;
-            width: 42mm; height: 25mm;
+            width: 36mm; height: 20mm;                 /* كان 42×25mm */
             border: 2px dashed #D4AF37; border-radius: 3mm;
             display: inline-flex; align-items: center; justify-content: center;
-            color: #D4AF37; font-size: 10pt; background: rgba(255,255,255,.7);
-            z-index: 0; pointer-events: none;
+            text-align: center; background: rgba(255,255,255,.7);
+            color: #D4AF37; font-size: 10pt;
+            overflow: hidden;                           /* يمنع التمدد */
+        }
+
+        .stamp-img {
+            display: block;
+            max-width: 34mm;                            /* أقل من الحاوية بقليل */
+            max-height: 18mm;
+            width: auto; height: auto;
+            margin: 0 auto;
         }
         /* ألصق الختم لليمين/اليسار لكل خلية */
-        .cell-right .signature-stamp { right: 0; }
-        .cell-left  .signature-stamp { left: 0;  }
+        .cell-right .signature-stamp { margin-left: auto; }   /* يمين */
+        .cell-left  .signature-stamp { margin-right: auto; }  /* يسار */
+
+        /* صورة التوقيع: ارتفاع صغير */
+        .signature-img {
+            display: block;
+            height: 14mm;         /* اضبط كما تشاء 10–16mm */
+            width: auto;
+            margin: 0;            /* يمكنك ضبط محاذاة بالـtext-align للخلية */
+        }
 
         /* سطر التوقيع */
         .sign-line { border-top: 1px solid #bdc3c7; padding-top: 3mm; font-size: 10pt; color: #7f8c8d; }
@@ -139,12 +155,13 @@
     <div class="certificate-id">ID: NO_{{ $certificate->id }}</div>
 
     <div class="brand">
-        @if(!empty($institute->logo_url ?? null))
-            <img src="{{ $institute->logo_url }}" alt="Logo">
+        @if(!empty($logo_src))
+            <img src="{{ $logo_src }}" alt="Logo">
         @endif
         <div class="title">شـهـادة إنـهـاء مـادة</div>
         <div class="subtitle">{{ $institute->name ?? 'المعهد' }}</div>
     </div>
+
 
     <div class="content">
         يُشهد بأن
@@ -169,14 +186,10 @@
             <td class="cell-right">
                 <div class="signature-area">
                     <div class="signature-stamp">
-                        @php
-                            $adminStamp = $admin?->institution_stamp_url
-                                ?? ($admin?->institution_stamp_path ? asset('storage/'.$admin->institution_stamp_path) : null);
-                        @endphp
-                        @if($adminStamp)
-                            <img src="{{ $adminStamp }}" style="position:absolute;inset:0;object-fit:contain;opacity:.9;">
+                        @if(!empty($admin_stamp_src))
+                            <img src="{{ $admin_stamp_src }}" class="stamp-img" alt="ختم المؤسسة">
                         @endif
-                        ختم المؤسسة
+                        @empty($admin_stamp_src) ختم المؤسسة @endempty
                     </div>
                 </div>
             </td>
@@ -184,19 +197,33 @@
             <td class="cell-left">
                 <div class="signature-area">
                     <div class="signature-stamp">
-                        @php
-                            $instStamp = $institute?->institute_stamp_url
-                                ?? ($institute?->institute_stamp_path ? asset('storage/'.$institute->institute_stamp_path) : null);
-                        @endphp
-                        @if($instStamp)
-                            <img src="{{ $instStamp }}" style="position:absolute;inset:0;object-fit:contain;opacity:.9;">
+                        @if(!empty($institute_stamp_src))
+                            <img src="{{ $institute_stamp_src }}" class="stamp-img" alt="ختم المعهد">
                         @endif
-                        ختم المعهد
+                        @empty($institute_stamp_src) ختم المعهد @endempty
                     </div>
                 </div>
             </td>
         </tr>
     </table>
+
+    <table class="table-two-col" style="margin-top: 6mm;">
+        <tr>
+            <td class="cell-right">
+                @if(!empty($teacher_signature_src))
+                    <img src="{{ $teacher_signature_src }}" class="signature-img" alt="توقيع الأستاذ المشرف">
+                @endif
+                <div class="sign-line">توقيع الأستاذ المشرف</div>
+            </td>
+            <td class="cell-left">
+                @if(!empty($director_signature_src))
+                    <img src="{{ $director_signature_src }}" class="signature-img" alt="توقيع مدير المعهد">
+                @endif
+                <div class="sign-line">توقيع مدير المعهد</div>
+            </td>
+        </tr>
+    </table>
+
 
     <div class="footer">
         <div>العنوان:{{ $institute->address ?? '' }}</div>
