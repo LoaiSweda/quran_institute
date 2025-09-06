@@ -9,8 +9,11 @@ use App\Models\EducationClass;
 use App\Models\Student;
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
+use niklasravnsborg\LaravelPdf\Facades\Pdf as PDF; // <- wrapper alias
 
 class CertificateRequestController extends Controller
 {
@@ -120,26 +123,73 @@ class CertificateRequestController extends Controller
                 ? 'تم إرسال طلب الشهادة إلى المشرف العام.'
                 : 'يوجد طلب سابق قيد المعالجة أو مكتمل لهذا الطالب.'
         );
-
     }
 
     public function export(Request $request, CertificateRequest $certificateRequest)
     {
-        $manager = $request->user();
+        if ($certificateRequest->file_id && class_exists(\App\Models\File::class)) {
+            $file = \App\Models\File::find($certificateRequest->file_id);
+            if ($file && Storage::disk('public')->exists($file->path)) {
+                return response()->download(Storage::disk('public')->path($file->path));
+            }
+        }
+        $admin = optional(Auth::user())->admin;   // ✅ null-safe
+        $manager   = $request->user();
         $institute = $manager->institute;
         abort_unless($institute, 403);
-
 
         // Scope check
         abort_unless(optional($certificateRequest->subject)->institute_id === $institute->id, 403);
 
-
+        // Only after approval
         if ($certificateRequest->status !== CertificateRequest::STATUS_APPROVED) {
             return back()->withErrors(['export' => 'التصدير متاح بعد الموافقة فقط.']);
         }
 
+        $student = $certificateRequest->student;
+        $subject = $certificateRequest->subject;
 
-        // TODO: implement PDF generation + file attach
-        return back()->with('success', '(تجريبي) التصدير سيتوفر بعد إضافة مولّد الشهادات.');
+        // Data passed to the template
+        $issuedAt = now()->locale('ar'); // Arabic numerals/format if your locale is set
+        $viewData = [
+            'institute'   => $institute,
+            'student'     => $student,
+            'subject'     => $subject,
+            'certificate' => $certificateRequest,
+            'issued_at'   => $issuedAt,
+            'admin'       => $admin,
+        ];
+
+        // Render PDF (A4 landscape)
+        $pdf = PDF::loadView('pdf.certificates.certificate', $viewData);
+
+        // Persist to storage/public/certificates/...
+        $filename = sprintf(
+            'certificate-%d-st%s-sub%s.pdf',
+            $certificateRequest->id,
+            $student?->id ?? 'x',
+            $subject?->id ?? 'x'
+        );
+        $path = "certificates/{$filename}";
+
+        Storage::disk('public')->put($path, $pdf->output());
+
+        // (Optional) Save/attach file record if you have a File model
+        if (class_exists(\App\Models\File::class)) {
+            try {
+                $file = \App\Models\File::create([
+                    'name'    => $filename,
+                    'path'    => $path,
+                    'mime'    => 'application/pdf',
+                    'size'    => Storage::disk('public')->size($path),
+                ]);
+                $certificateRequest->update(['file_id' => $file->id]);
+            } catch (\Throwable $e) {
+                // ignore if schema differs; file is still saved on disk
+            }
+        }
+
+        // Return the download
+        return response()->download(Storage::disk('public')->path($path));
     }
 }

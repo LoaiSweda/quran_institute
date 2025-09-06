@@ -16,6 +16,7 @@ class Teacher extends Model
         'address',
         'birthdate',
         'user_id',
+        'signature_path'
     ];
 
 
@@ -29,6 +30,13 @@ class Teacher extends Model
     public $incrementing = false;
     public $timestamps = false;
 
+
+    public function getSupervisorSignatureUrlAttribute(): ?string
+    {
+        return $this->signature_path
+            ? \Storage::disk('public')->url($this->signature_path)
+            : null;
+    }
 
     public function user()
     {

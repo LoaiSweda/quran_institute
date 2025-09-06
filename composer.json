@@ -10,6 +10,7 @@
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.1",
         "laravel/tinker": "^2.9",
+        "niklasravnsborg/laravel-pdf": "4.0",
         "spatie/laravel-permission": "^6.21"
     },
     "require-dev": {

@@ -15,6 +15,10 @@ class StoreInstituteRequest extends FormRequest
             'address' => 'nullable|string|max:500',
             'image'   => 'nullable|image|max:2048',
             'user_id' => 'required|exists:users,id',
+            'email'  => ['nullable','email','max:255'],
+            'phone'  => ['nullable','string','max:50'],
+            'institute_stamp'   => ['nullable','mimes:jpg,jpeg,png,webp,svg','max:4096'],
+            'director_signature'=> ['nullable','mimes:jpg,jpeg,png,webp,svg','max:4096'],
 
         ];
     }

@@ -4,14 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Institute extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
-        'name', 'address', 'image', 'user_id',
+        'name', 'address', 'image', 'user_id','institute_stamp_path','director_signature_path','phone','email'
     ];
+
+    public function getInstituteStampUrlAttribute(): ?string
+    {
+        return $this->institute_stamp_path
+            ? Storage::disk('public')->url($this->institute_stamp_path)
+            : null;
+    }
+    public function getDirectorSignatureUrlAttribute(): ?string
+    {
+        return $this->director_signature_path
+            ? \Storage::disk('public')->url($this->director_signature_path)
+            : null;
+    }
+
 
     public function manager()
     {
