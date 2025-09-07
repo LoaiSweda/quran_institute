@@ -56,7 +56,7 @@ class AuthController extends Controller
                     'last_name'         => $student->last_name,
                     'phone'             => $student->phone,
                     'address'           => $student->address,
-                    'birthdate'         => $student->birthdate->format('Y-m-d'),
+                    'birthdate' => $student->birthdate?->toDateString(),
                     'father_name'       => $student->father_name,
                     'points'            => $student->points,
                     'present_percentage'=> $student->present_percentage,

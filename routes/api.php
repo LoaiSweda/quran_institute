@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\EducationClassController;
 use App\Http\Controllers\Api\GuardianStudentsController;
 use App\Http\Controllers\Api\GuardianImpersonationController;
+use App\Http\Controllers\Api\LibraryController;
 
 
 Route::post('login', [AuthController::class, 'login']);
@@ -26,6 +27,10 @@ Route::middleware(['auth:sanctum','role:student,guardian'])
 
         Route::get('profile', [StudentController::class, 'profile']);
         Route::get('weekly-schedule', [StudentController::class, 'weeklySchedule']);
+
+        Route::get('library/categories', [LibraryController::class, 'categories']);
+        Route::get('library/categories/{category}', [LibraryController::class, 'categoryItems']);
+
     });
 
 
