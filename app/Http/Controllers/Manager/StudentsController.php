@@ -13,6 +13,7 @@ use App\Models\Institute;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class StudentsController extends Controller
@@ -32,7 +33,7 @@ class StudentsController extends Controller
             });
     }
 
-    
+
     public function index(Request $request)
     {
         $inst = $this->currentInstitute();
@@ -94,6 +95,7 @@ class StudentsController extends Controller
             'guardian_id'  => 'nullable|exists:guardians,id',
             'email'        => ['required','email','unique:users,email'],
             'password'     => 'required|string|min:6|confirmed',
+            'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // إضافة التحقق من الصورة
         ]);
 
         $qr = Str::upper(Str::random(8));
@@ -104,14 +106,19 @@ class StudentsController extends Controller
         $roleId = Role::where('name','student')->value('id');
         abort_if(!$roleId, 500, "Role 'student' not found.");
 
-        DB::transaction(function () use ($data, $qr, $roleId, $inst) {
-
+        DB::transaction(function () use ($data, $qr, $roleId, $inst, $request) {
             $user = User::create([
                 'name'     => "{$data['first_name']} {$data['last_name']}",
                 'email'    => $data['email'],
                 'password' => Hash::make($data['password']),
                 'role_id'  => $roleId,
             ]);
+
+            // معالجة رفع الصورة
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('students', 'public');
+            }
 
             $student = Student::create([
                 'first_name'         => $data['first_name'],
@@ -125,6 +132,7 @@ class StudentsController extends Controller
                 'user_id'            => $user->id,
                 'points'             => 0,
                 'present_percentage' => 0,
+                'image'              => $imagePath, // حفظ مسار الصورة
             ]);
 
             $user->institutes()->sync([
@@ -135,6 +143,7 @@ class StudentsController extends Controller
         return redirect()->route('manager.students.index')
             ->with('success','تم إضافة الطالب وربطه بالمعهد الحالي فقط.');
     }
+
 
     public function show(Student $student)
     {
@@ -179,14 +188,26 @@ class StudentsController extends Controller
             'address'      => 'nullable|string',
             'father_name'  => 'nullable|string',
             'guardian_id'  => 'nullable|exists:guardians,id',
+            'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // إضافة التحقق من الصورة
         ]);
+
+        // معالجة رفع الصورة
+        if ($request->hasFile('image')) {
+            // حذف الصورة القديمة إذا كانت موجودة
+            if ($student->image) {
+                Storage::disk('public')->delete($student->image);
+            }
+            $imagePath = $request->file('image')->store('students', 'public');
+            $data['image'] = $imagePath;
+        } else {
+            unset($data['image']); // عدم تحديث الصورة إذا لم يتم رفع جديدة
+        }
 
         $student->update($data);
 
         return redirect()->route('manager.students.show', $student)
             ->with('success','تم تحديث بيانات الطالب.');
     }
-
     public function destroy(Student $student)
     {
         $inst = $this->currentInstitute();

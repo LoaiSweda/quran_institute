@@ -14,9 +14,19 @@
 
         {{-- Form Card --}}
         <div class="card shadow-sm mb-4 p-4">
-            <form action="{{ route('admin.students.store') }}" method="POST" class="row g-3">
+            <form action="{{ route('manager.students.store') }}" method="POST" class="row g-3" enctype="multipart/form-data">
                 @csrf
 
+                {{-- حقل الصورة --}}
+                <div class="col-md-6">
+                    <label class="form-label">صورة الطالب</label>
+                    <input type="file" name="image"
+                           class="form-control form-control-sm @error('image') is-invalid @enderror"
+                           accept="image/*">
+                    @error('image')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
                 {{-- تمرير المعهد الحالي عند الحاجة --}}
                 @isset($inst)
                     <input type="hidden" name="institute_id" value="{{ $inst->id }}">

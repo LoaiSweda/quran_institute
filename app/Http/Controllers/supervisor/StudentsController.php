@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class StudentsController extends Controller
@@ -109,13 +110,13 @@ class StudentsController extends Controller
         $guardians = \App\Models\Guardian::with('user:id,email')
             ->when($guardianRoleId, function ($q) use ($guardianRoleId) {
                 $q->whereHas('user', function ($uq) use ($guardianRoleId) {
-                    $uq->where('role_id', $guardianRoleId);  
+                    $uq->where('role_id', $guardianRoleId);
                 });
             })
             ->whereHas('user.institutes', function ($iq) use ($inst) {
                 $iq->where('institute_id', $inst->id);
             })
-            ->orderBy('firstname')  
+            ->orderBy('firstname')
             ->orderBy('lastname')
             ->get();
 
@@ -131,18 +132,19 @@ class StudentsController extends Controller
 
     public function store(Request $request)
     {
-        $inst = $this->currentInstitute($request);
+        $inst = $this->currentInstitute();
 
         $data = $request->validate([
-            'first_name' => 'required|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'birthdate' => 'nullable|date',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'father_name' => 'nullable|string',
-            'guardian_id' => 'nullable|exists:guardians,id',
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => 'required|string|min:6|confirmed',
+            'first_name'   => 'required|string|max:50',
+            'last_name'    => 'required|string|max:50',
+            'birthdate'    => 'nullable|date',
+            'phone'        => 'nullable|string',
+            'address'      => 'nullable|string',
+            'father_name'  => 'nullable|string',
+            'guardian_id'  => 'nullable|exists:guardians,id',
+            'email'        => ['required','email','unique:users,email'],
+            'password'     => 'required|string|min:6|confirmed',
+            'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // تحقق من الصورة
         ]);
 
         $qr = Str::upper(Str::random(8));
@@ -150,45 +152,46 @@ class StudentsController extends Controller
             $qr = Str::upper(Str::random(8));
         }
 
-        $roleId = Role::where('name', 'student')->value('id');
+        $roleId = Role::where('name','student')->value('id');
         abort_if(!$roleId, 500, "Role 'student' not found.");
 
-        DB::transaction(function () use ($data, $qr, $roleId, $inst) {
-
-            // users
+        DB::transaction(function () use ($data, $qr, $roleId, $inst, $request) {
             $user = User::create([
-                'name' => "{$data['first_name']} {$data['last_name']}",
-                'email' => $data['email'],
+                'name'     => "{$data['first_name']} {$data['last_name']}",
+                'email'    => $data['email'],
                 'password' => Hash::make($data['password']),
-                'role_id' => $roleId,
+                'role_id'  => $roleId,
             ]);
 
-            // students
+            // معالجة رفع الصورة إذا وجدت
+            $imagePath = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('students', 'public');
+            }
+
             $student = Student::create([
-                'first_name' => $data['first_name'],
-                'last_name' => $data['last_name'],
-                'birthdate' => $data['birthdate'] ?? null,
-                'phone' => $data['phone'] ?? null,
-                'address' => $data['address'] ?? null,
-                'father_name' => $data['father_name'] ?? null,
-                'guardian_id' => $data['guardian_id'] ?? null,
-                'qr' => $qr,
-                'user_id' => $user->id,
-                'points' => 0,
+                'first_name'         => $data['first_name'],
+                'last_name'          => $data['last_name'],
+                'birthdate'          => $data['birthdate'] ?? null,
+                'phone'              => $data['phone'] ?? null,
+                'address'            => $data['address'] ?? null,
+                'father_name'        => $data['father_name'] ?? null,
+                'guardian_id'        => $data['guardian_id'] ?? null,
+                'qr'                 => $qr,
+                'user_id'            => $user->id,
+                'points'             => 0,
                 'present_percentage' => 0,
+                'image'              => $imagePath, // حفظ مسار الصورة
             ]);
 
-            // institute_user (role_institute + timestamps)
-            $user->institutes()->attach($inst->id, [
-                'role_institute' => 'student',
+            $user->institutes()->sync([
+                $inst->id => ['role_institute' => 'student']
             ]);
         });
 
-        return redirect()
-            ->route('admin.students.index', ['institute_id' => $inst->id])
-            ->with('success', 'تم إضافة الطالب وربطه بالمعهد بنجاح.');
+        return redirect()->route('manager.students.index')
+            ->with('success','تم إضافة الطالب وربطه بالمعهد الحالي فقط.');
     }
-
     public function show(Request $request, Student $student)
     {
         $allowed = $this->studentsQueryRestrictedToMe()->where('students.id', $student->id)->exists();
@@ -219,26 +222,38 @@ class StudentsController extends Controller
 
     public function update(Request $request, Student $student)
     {
-        $allowed = $this->studentsQueryRestrictedToMe()->where('students.id', $student->id)->exists();
+        $allowed = $this->studentsQueryForCurrentInstitute()
+            ->where('students.id', $student->id)->exists();
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
 
         $data = $request->validate([
-            'first_name' => 'required|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'birthdate' => 'nullable|date',
-            'phone' => 'nullable|string',
-            'address' => 'nullable|string',
-            'father_name' => 'nullable|string',
-            'guardian_id' => 'nullable|exists:guardians,id',
+            'first_name'   => 'required|string|max:50',
+            'last_name'    => 'required|string|max:50',
+            'birthdate'    => 'nullable|date',
+            'phone'        => 'nullable|string',
+            'address'      => 'nullable|string',
+            'father_name'  => 'nullable|string',
+            'guardian_id'  => 'nullable|exists:guardians,id',
+            'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // تحقق من الصورة
         ]);
+
+        // معالجة رفع الصورة إذا وجدت
+        if ($request->hasFile('image')) {
+            // احذف الصورة القديمة إذا كانت موجودة
+            if ($student->image) {
+                Storage::disk('public')->delete($student->image);
+            }
+            $imagePath = $request->file('image')->store('students', 'public');
+            $data['image'] = $imagePath;
+        } else {
+            unset($data['image']); // لا تقم بتحديث الحقل إذا لم يتم رفع صورة جديدة
+        }
 
         $student->update($data);
 
-        return redirect()
-            ->route('admin.students.show', $student)
-            ->with('success', 'تم تحديث بيانات الطالب.');
+        return redirect()->route('manager.students.show', $student)
+            ->with('success','تم تحديث بيانات الطالب.');
     }
-
     public function destroy(Student $student)
     {
         $allowed = $this->studentsQueryRestrictedToMe()->where('students.id', $student->id)->exists();
@@ -246,7 +261,7 @@ class StudentsController extends Controller
 
         $student->forceDelete();
 
-    
+
         return redirect()
             ->route('admin.students.index')
             ->with('success', 'تم حذف الطالب.');

@@ -14,12 +14,35 @@
                 <i class="bi bi-arrow-left"></i> رجوع
             </a>
         </div>
-
         <div class="card shadow-sm p-4">
             <form action="{{ route('manager.students.update', $student) }}"
-                  method="POST" class="row g-3">
+                  method="POST" class="row g-3" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
+
+                {{-- عرض الصورة الحالية --}}
+                @if($student->image)
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label class="form-label">الصورة الحالية</label>
+                            <div>
+                                <img src="{{ Storage::url($student->image) }}" alt="صورة الطالب"
+                                     style="max-width: 200px; max-height: 200px;" class="img-thumbnail">
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                {{-- حقل الصورة الجديدة --}}
+                <div class="col-md-6">
+                    <label class="form-label">صورة جديدة (اختياري)</label>
+                    <input type="file" name="image"
+                           class="form-control form-control-sm @error('image') is-invalid @enderror"
+                           accept="image/*">
+                    @error('image')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
 
                 {{-- QR Code (قراءة فقط) --}}
                 <div class="col-md-4">
