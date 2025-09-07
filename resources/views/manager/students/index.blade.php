@@ -7,56 +7,23 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 text-gray-800">إدارة الطلاب</h1>
-            <a href="{{ route('manager.students.create') }}" class="btn btn-primary">
-                <i class="bi bi-plus-lg"></i> إضافة طالب جديد
-            </a>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ route('manager.students.create') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-plus-lg"></i> إضافة طالب جديد
+                </a>
+
+                <button type="button" class="btn btn-outline-primary"
+                        data-bs-toggle="modal" data-bs-target="#requestCertificateModal">
+                    <i class="bi bi-award"></i> طلب شهادة
+                </button>
+            </div>
         </div>
 
         {{-- Card للفلاتر --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header py-3">
                 <form method="GET" action="{{ route('manager.students.index') }}" class="row g-3 align-items-end">
-                    {{-- مادة --}}
-                    <div class="col-md-2">
-                        <label class="form-label">المادة</label>
-                        <select name="subject_id" class="form-select form-select-sm">
-                            <option value="">الكل</option>
-                            @foreach($subjects as $sub)
-                                <option value="{{ $sub->id }}"
-                                        @selected(request('subject_id') == $sub->id)>
-                                {{ $sub->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- حلقة --}}
-                    <div class="col-md-2">
-                        <label class="form-label">الحلقة</label>
-                        <select name="class_id" class="form-select form-select-sm">
-                            <option value="">الكل</option>
-                            @foreach($classes as $cls)
-                                <option value="{{ $cls->id }}"
-                                        @selected(request('class_id') == $cls->id)>
-                                {{ $cls->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- مستوى --}}
-                    <div class="col-md-2">
-                        <label class="form-label">المستوى</label>
-                        <select name="level" class="form-select form-select-sm">
-                            <option value="">الكل</option>
-                            @foreach($levels as $lvl)
-                                <option value="{{ $lvl }}"
-                                        @selected(request('level') == $lvl)>
-                                {{ $lvl }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
 
                     {{-- نسبة حضور ≥ --}}
                     <div class="col-md-2">
@@ -81,6 +48,9 @@
                         <button type="submit" class="btn btn-outline-primary btn-sm w-100">
                             <i class="bi bi-funnel-fill"></i> تطبيق
                         </button>
+                    </div>
+
+                    <div class="col-md-2 text-end">
                         <a href="{{ route('manager.students.index') }}"
                            class="btn btn-outline-secondary btn-sm w-100 mt-1">
                             إعادة ضبط
@@ -97,8 +67,9 @@
                         <tr>
                             <th>#</th>
                             <th>الاسم</th>
-                            <th>المادة</th>
-                            <th>الحلقة</th>
+                            <th>رقم الهاتف</th>
+                            <th>العنوان</th>
+                            <th>تاريخ الميلاد</th>
                             <th>نسبة الحضور</th>
                             <th>أقصى تسميع</th>
                             <th class="text-center">إجراءات</th>
@@ -112,36 +83,17 @@
                                 <td>
                                     {{ $student->first_name }} {{ $student->last_name }}
                                 </td>
-                                @php
-
-                                    // أول حلقة للطالب + مادتها
-                                    $firstClass   = $student->classes->first();
-                                    $rowSubject   = $firstClass?->subject;          // null إذا ما في مادة
-                                    $rowSubjectId = $rowSubject?->id;
-
-                                    // قاعدة الانتهاء: end_date ماضية أو is_active = false
-                                    $isFinished = false;
-                                    if ($rowSubject) {
-                                        if ($rowSubject->end_date) {
-                                            try { $isFinished = Carbon::parse($rowSubject->end_date)->isPast(); } catch (\Throwable $e) {}
-                                        }
-                                        if (! $isFinished && isset($rowSubject->is_active)) {
-                                            $isFinished = ! (bool) $rowSubject->is_active;
-                                        }
-                                    }
-                                @endphp
 
                                 <td>
-                                    @if($rowSubject)
-                                        {{ $rowSubject->name }}
-                                        <span class="text-muted">(#{{ $rowSubjectId }})</span>
-                                    @else
-                                        —
-                                    @endif
+                                    {{ $student->phone }}
+                                </td> <td>
+                                    {{ $student->address }}
                                 </td>
+
                                 <td>
-                                    {{ optional($student->classes->first())->name ?? '—' }}
+                                    {{ $student->birthdate }}
                                 </td>
+
                                 <td>{{ $student->present_percentage }}%</td>
                                 <td>
                                     {{
@@ -169,22 +121,6 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
-                                    {{-- طلب شهادة: يستخدم subject_id من نفس السطر فقط --}}
-                                    @if($rowSubjectId && $isFinished)
-                                        <form method="POST" action="{{ route('manager.certificates.store') }}" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="subject_id" value="{{ $rowSubjectId }}">
-                                            <input type="hidden" name="student_id" value="{{ $student->id }}">
-                                            <button class="btn btn-primary btn-sm" type="submit" title="طلب شهادة">
-                                                <i class="bi bi-send"></i> طلب شهادة
-                                            </button>
-                                        </form>
-                                    @else
-                                        <button class="btn btn-outline-secondary btn-sm" disabled
-                                                title="لا يمكن طلب الشهادة إلا بعد اختيار مادة منتهية">
-                                            <i class="bi bi-send"></i> طلب شهادة
-                                        </button>
-                                    @endif
                                 </td>
                             </tr>
                         @empty
@@ -207,4 +143,126 @@
             @endif
         </div>
     </div>
+
+    {{-- Modal: طلب شهادة --}}
+    <div class="modal fade" id="requestCertificateModal" tabindex="-1" aria-labelledby="reqCertLabel" aria-hidden="true" dir="rtl">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="reqCertLabel">طلب شهادة</h5>
+                    <button type="button" class="btn-close ms-0" data-bs-dismiss="modal" aria-label="إغلاق"></button>
+                </div>
+
+                <form method="POST" action="{{ route('manager.certificates.store') }}" id="reqCertForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="alert alert-info small mb-3">
+                            اختر الحلقة (من المواد المنتهية فقط)، ثم اختر الطالب من طلاب تلك الحلقة.
+                        </div>
+
+                        {{-- Class --}}
+                        <div class="mb-3">
+                            <label class="form-label">الحلقة</label>
+                            <select id="reqClass" class="form-select" required>
+                                <option value="">— اختر الحلقة —</option>
+                            </select>
+                            <div class="form-text">يتم تحميل الحلقات المنتهية تلقائيًا.</div>
+                        </div>
+
+                        {{-- Student --}}
+                        <div class="mb-3">
+                            <label class="form-label">الطالب</label>
+                            <select id="reqStudent" name="student_id" class="form-select" disabled required>
+                                <option value="">— اختر الطالب —</option>
+                            </select>
+                        </div>
+
+                        {{-- Hidden subject_id (filled after class choice) --}}
+                        <input type="hidden" name="subject_id" id="reqSubjectId">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                        <button type="submit" class="btn btn-success" id="reqSubmit" disabled>
+                            <i class="bi bi-send"></i> إرسال الطلب
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            (function () {
+                const modalEl    = document.getElementById('requestCertificateModal');
+                const classSel   = document.getElementById('reqClass');
+                const studentSel = document.getElementById('reqStudent');
+                const subjInput  = document.getElementById('reqSubjectId');
+                const submitBtn  = document.getElementById('reqSubmit');
+
+                const CLASSES_URL  = @json(route('manager.certificates.ajax.finished-classes'));
+                const STUDENTS_URL = @json(route('manager.certificates.ajax.class-students', ['class' => '__ID__']));
+
+                function opt(el, value, text) {
+                    const o = document.createElement('option');
+                    o.value = value; o.textContent = text; return o;
+                }
+
+                function clearSelect(sel, placeholder='— اختر —') {
+                    sel.innerHTML = '';
+                    sel.appendChild(opt(sel, '', placeholder));
+                }
+
+                modalEl.addEventListener('shown.bs.modal', async () => {
+                    submitBtn.disabled = true;
+                    subjInput.value = '';
+                    clearSelect(classSel, '— اختر الحلقة —');
+                    clearSelect(studentSel, '— اختر الطالب —');
+                    studentSel.disabled = true;
+
+                    try {
+                        const res = await fetch(CLASSES_URL, { headers: { 'Accept': 'application/json' }});
+                        const data = await res.json(); // [{id,name,subject_id,subject_name}]
+                        data.forEach(c => {
+                            const o = opt(classSel, c.id, `${c.name} — ${c.subject_name} (#${c.subject_id})`);
+                            o.dataset.subjectId = c.subject_id;
+                            classSel.appendChild(o);
+                        });
+                    } catch (e) {
+                        clearSelect(classSel, 'تعذّر تحميل الحلقات');
+                    }
+                });
+
+                classSel.addEventListener('change', async (e) => {
+                    const classId   = classSel.value;
+                    const subjectId = classSel.selectedOptions[0]?.dataset?.subjectId || '';
+                    subjInput.value = subjectId;
+
+                    submitBtn.disabled = true;
+                    clearSelect(studentSel, '— جاري التحميل —');
+                    studentSel.disabled = true;
+
+                    if (!classId) {
+                        clearSelect(studentSel, '— اختر الطالب —');
+                        return;
+                    }
+                    try {
+                        const res = await fetch(STUDENTS_URL.replace('__ID__', classId), { headers: { 'Accept': 'application/json' }});
+                        const data = await res.json(); // [{id, first_name, last_name}]
+                        clearSelect(studentSel, '— اختر الطالب —');
+                        data.forEach(s => studentSel.appendChild(opt(studentSel, s.id, `${s.first_name} ${s.last_name}`)));
+                        studentSel.disabled = false;
+                    } catch (e) {
+                        clearSelect(studentSel, 'تعذّر تحميل الطلاب');
+                    }
+                });
+
+                studentSel.addEventListener('change', () => {
+                    submitBtn.disabled = !(studentSel.value && subjInput.value);
+                });
+            })();
+        </script>
+    @endpush
+
 @endsection

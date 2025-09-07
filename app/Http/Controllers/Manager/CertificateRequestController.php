@@ -214,4 +214,61 @@ class CertificateRequestController extends Controller
         // Return the download
         return response()->download(Storage::disk('public')->path($path));
     }
+
+    public function finishedClasses(Request $request)
+    {
+        $inst = $request->user()->institute;
+        abort_unless($inst, 403);
+
+        // classes whose subject belongs to this institute and is finished
+        $classes = EducationClass::query()
+            ->with('subject:id,name,institute_id,end_date,is_active')
+            ->whereHas('subject', function ($q) use ($inst) {
+                $q->where('institute_id', $inst->id);
+            })
+            ->get()
+            ->filter(function ($cls) {
+                $s = $cls->subject;
+                if (!$s) return false;
+                $finished = false;
+                if ($s->end_date) {
+                    try { $finished = Carbon::parse($s->end_date)->isPast(); } catch (\Throwable $e) {}
+                }
+                if (!$finished && isset($s->is_active)) {
+                    $finished = ! (bool) $s->is_active;
+                }
+                return $finished;
+            })
+            ->values()
+            ->map(function ($cls) {
+                return [
+                    'id'           => $cls->id,
+                    'name'         => $cls->name,
+                    'subject_id'   => $cls->subject?->id,
+                    'subject_name' => $cls->subject?->name,
+                ];
+            });
+
+        return response()->json($classes);
+    }
+
+    public function students(Request $request, EducationClass $class)
+    {
+        $inst = $request->user()->institute;
+        abort_unless($inst, 403);
+
+        // scope: class must belong to current institute via its subject
+        abort_unless(optional($class->subject)->institute_id === $inst->id, 403);
+
+        // students enrolled in this class (via users_classes -> students.user_id)
+        $userIds = DB::table('users_classes')->where('class_id', $class->id)->pluck('user_id');
+        if ($userIds->isEmpty()) return response()->json([]);
+
+        $students = Student::query()
+            ->whereIn('user_id', $userIds)
+            ->orderBy('last_name')
+            ->get(['id','first_name','last_name']);
+
+        return response()->json($students);
+    }
 }

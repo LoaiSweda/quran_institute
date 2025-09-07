@@ -261,6 +261,9 @@ Route::middleware(['auth', 'role:institute manager'])
             // Export (enabled only when approved)
             Route::get('{certificateRequest}/export', [ManagerCertificateRequestController::class, 'export'])
                 ->name('export');
+
+            Route::get('/ajax/finished-classes', [ManagerCertificateRequestController::class, 'finishedClasses'])->name('ajax.finished-classes');
+            Route::get('/ajax/class-students/{class}', [ManagerCertificateRequestController::class, 'students'])->name('ajax.class-students');
         });
 
     });
