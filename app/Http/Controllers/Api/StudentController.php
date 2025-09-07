@@ -19,27 +19,26 @@ use App\Models\SessionSchedule;
 
 class StudentController extends Controller
 {
-    
     public function instituteAnnouncements(Request $request)
     {
         $auth = $request->user();
-    
+
         // 1) حصص المستخدم نفسه (إن كان طالبًا)
         $selfClassIds = $auth->classes()->pluck('classes.id')->toArray();
-    
+
         // 2) حصص أبناء الولي عبر guardians → students (بدون توابع)
         $guardianId = DB::table('guardians')->where('user_id', $auth->id)->value('id'); // قد تكون null
         $childUserIds = $guardianId
             ? DB::table('students')->where('guardian_id', $guardianId)->pluck('user_id')->toArray()
             : [];
-    
+
         $childClassIds = !empty($childUserIds)
             ? DB::table('users_classes')->whereIn('user_id', $childUserIds)->pluck('class_id')->toArray()
             : [];
-    
+
         // 3) دمج كل الحصص (الولي + الأبناء)
         $classIds = array_values(array_unique(array_merge($selfClassIds, $childClassIds)));
-    
+
         // 4) مؤسسات هذه الحصص
         $instIds = !empty($classIds)
             ? EducationClass::query()
@@ -47,17 +46,15 @@ class StudentController extends Controller
                 ->join('subjects', 'classes.subject_id', '=', 'subjects.id')
                 ->pluck('subjects.institute_id')->unique()->toArray()
             : [];
-    
+
         // 5) ناشرو المؤسسة + السوبر أدمن
         $instUserIds = !empty($instIds)
             ? DB::table('institute_user')->whereIn('institute_id', $instIds)->pluck('user_id')->unique()->toArray()
             : [];
         $superIds     = User::where('role_id', 1)->pluck('id')->toArray();
         $publisherIds = array_values(array_unique(array_merge($instUserIds, $superIds)));
-    
-        // 6) الإعلانات الموجّهة للطالب/الولي:
-        //    - منشورة بواسطة أحد ناشري المؤسسة (user_ads.publish_id)
-        //    - أو الإعلان مربوط مباشرة بإحدى مؤسسات الطالب/الأبناء (ads.institute_id)
+
+        // 6) الإعلانات الموجّهة للطالب/الولي
         $ads = Ad::query()
             ->when(!empty($publisherIds) && !empty($instIds), function ($q) use ($publisherIds, $instIds) {
                 $q->whereHas('userAds', function ($qq) use ($publisherIds) {
@@ -83,7 +80,7 @@ class StudentController extends Controller
                     'title' => $ad->title,
                     'description' => $ad->description,
                     'link' => $ad->link,
-                    'image_url' => $ad->image ? asset('storage/app/public/'.$ad->image) : null, // storage:link
+                    'image_url' => $ad->image ? asset('storage/app/public/'.$ad->image) : null,
                     'end_date' => $ad->end_date,
                     'status' => $ad->status,
                     'computed_status' => $ad->computed_status,
@@ -95,12 +92,10 @@ class StudentController extends Controller
                     ],
                 ];
             });
-    
+
         return response()->json(['data' => $ads], 200);
     }
 
-
-   
     public function classAnnouncements(Request $request, EducationClass $class)
     {
         $student = $request->user();
@@ -123,7 +118,6 @@ class StudentController extends Controller
                 'image','end_date','status','type_id','user_id'
             ]);
 
-        // إضافة asset() للصور
         $ads->transform(function ($ad) {
             if ($ad->image) {
                 $ad->image = asset('storage/app/public/' . $ad->image);
@@ -134,7 +128,6 @@ class StudentController extends Controller
         return response()->json(['data' => $ads], 200);
     }
 
-    
     public function announcementDetail(Request $request, Ad $ad)
     {
         $student = $request->user();
@@ -176,7 +169,6 @@ class StudentController extends Controller
         return response()->json(['data' => $data], 200);
     }
 
-    
     public function classes(Request $request)
     {
         $user = $request->user();
@@ -188,7 +180,7 @@ class StudentController extends Controller
 
         $result = $classes->map(function ($class) {
             $subjectImage = $class->subject->image ? asset('storage/app/public/' . $class->subject->image) : null;
-            
+
             return [
                 'id'                 => $class->id,
                 'name'               => $class->name,
@@ -223,7 +215,6 @@ class StudentController extends Controller
         return response()->json(['classes' => $result], 200);
     }
 
-    
     public function classDetail(Request $request, EducationClass $class)
     {
         $studentUser = $request->user();
@@ -328,12 +319,14 @@ class StudentController extends Controller
                 'last_name'  => $class->teacher->last_name,
                 'email'      => $class->teacher->user->email,
             ],
+            // لاحظ: نُرجع اليوم بالعربية + رقم اليوم لضمان التوافق مع الواجهات
             'session_schedules' => $class->sessionSchedules->map(fn($s) => [
-                'id'          => $s->id,
-                'day_of_week' => $s->day_of_week,
-                'start_time'  => $s->start_time->format('H:i'),
-                'end_time'    => $s->end_time->format('H:i'),
-                'attendees'   => $s->persents
+                'id'           => $s->id,
+                'day_index'    => $s->day_of_week_index,      // 0..6
+                'day_of_week'  => $s->day_of_week_name_ar,    // بالعربية
+                'start_time'   => $s->start_time->format('H:i'),
+                'end_time'     => $s->end_time->format('H:i'),
+                'attendees'    => $s->persents
                                     ->where('date', Carbon::now()->toDateString())
                                     ->flatMap(fn($p) => $p->userPersents
                                         ->where('status', 'present')
@@ -350,7 +343,6 @@ class StudentController extends Controller
         return response()->json(['data' => $data], 200);
     }
 
-    
     public function profile(Request $request)
     {
         $user = $request->user();
@@ -377,47 +369,46 @@ class StudentController extends Controller
         ], 200);
     }
 
-    
     public function weeklySchedule(Request $request)
     {
         $user = $request->user();
 
-        // 1) class_id 
+        // 1) الحلقات الخاصة بالمستخدم
         $classIds = $user->classes()->pluck('classes.id')->toArray();
 
-        // 2) 
-        $schedules = SessionSchedule::with([
-            'educationClass.subject'
-        ])
-        ->whereIn('class_id', $classIds)
-        ->whereHas('educationClass')                            
-        ->whereHas('educationClass.subject')                    
-        ->orderBy('day_of_week')
-        ->orderBy('start_time')
-        ->get([
-            'id','class_id','day_of_week','start_time','end_time'
-        ]);
+        // 2) نبني الاستعلام مع خيار فلترة اليوم (?day=0 أو sunday أو الأحد)
+        $q = SessionSchedule::with(['educationClass.subject'])
+            ->whereIn('class_id', $classIds)
+            ->whereHas('educationClass')
+            ->whereHas('educationClass.subject');
 
-        // 3) 
-        $days = [
-            0 => 'الأحد',
-            1 => 'الإثنين',
-            2 => 'الثلاثاء',
-            3 => 'الأربعاء',
-            4 => 'الخميس',
-            5 => 'الجمعة',
-            6 => 'السبت',
-        ];
+        if ($request->filled('day')) {
+            $q->whereDow($request->query('day'));
+        }
 
-        // 4) نبني الناتج: كل يوم يحتوي مصفوفة من الحصص
+        // الترتيب الصحيح للأسبوع حتى لو القيم نصية
+        $schedules = $q->orderByDow()
+                       ->orderBy('start_time')
+                       ->get(['id','class_id','day_of_week','start_time','end_time']);
+
+        // 3) مصفوفة الأيام بالعربية
+        $days = SessionSchedule::DAYS_AR;
+
+        // 4) بناء الناتج: مفاتيح عربية والقيم حصص اليوم
         $weekly = [];
-        foreach ($days as $dow => $label) {
+        foreach ($days as $label) {
             $weekly[$label] = [];
         }
 
         foreach ($schedules as $sch) {
-            $weekly[$days[$sch->day_of_week]][] = [
+            $label = $sch->day_of_week_name_ar ?? (string) $sch->day_of_week; // fallback لو غير معروف
+            if (! array_key_exists($label, $weekly)) {
+                $weekly[$label] = [];
+            }
+
+            $weekly[$label][] = [
                 'schedule_id' => $sch->id,
+                'day_index'   => $sch->day_of_week_index,
                 'class'       => [
                     'id'   => $sch->educationClass->id,
                     'name' => $sch->educationClass->name,
@@ -435,5 +426,4 @@ class StudentController extends Controller
             'data' => $weekly,
         ], 200);
     }
-
 }
