@@ -5,6 +5,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\GuardianController;
 use App\Http\Controllers\Api\EducationClassController;
+use App\Http\Controllers\Api\GuardianStudentsController;
+use App\Http\Controllers\Api\GuardianImpersonationController;
+
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])
@@ -28,13 +31,13 @@ Route::middleware(['auth:sanctum','role:student,guardian'])
 
 
     
-/*
 
 Route::middleware(['auth:sanctum','role:guardian'])
-    ->prefix('guardian')
+    ->prefix('guardians')
     ->group(function() {
-        Route::get('profile', [GuardianController::class, 'profile']);
-        Route::get('children', [GuardianController::class, 'children']);
-    });
+        Route::get('{guardian}/students', [GuardianStudentsController::class, 'index']);
+        Route::post('students/{student}/impersonate', [GuardianImpersonationController::class, 'impersonate']);
+        // (اختياري) لإلغاء كل توكنات الانتحال لطالب معيّن
+        Route::delete('students/{student}/impersonate', [GuardianImpersonationController::class, 'revokeForStudent']);
 
-*/
+    });
