@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - نظام إدارة المعاهد الشرعية</title>
+    <title>نظام سُبُل - تسجيل الدخول</title>
     <style>
         /* التنسيقات العامة */
         * {
@@ -206,9 +206,9 @@
 </head>
 <body>
 <div class="container">
-    <div class="image-section">
+    <div class="image-section">   
         <div class="image-content">
-            <h1>نظام إدارة المعاهد الشرعية</h1>
+            <h1>نظام سُبُل</h1>
             <p>منصة متكاملة لإدارة المعاهد الشرعية وتسهيل العمليات التعليمية والإدارية</p>
             <ul class="features">
                 <li><i class="fas fa-check-circle"></i> إدارة الطلاب والمناهج الدراسية</li>
@@ -221,7 +221,7 @@
 
     <div class="form-section">
         <div class="logo">
-            <h2>نظام إدارة المعاهد الشرعية</h2>
+            <h2> نظام سُبُل </h2>
             <p>سجل الدخول للوصول إلى حسابك</p>
         </div>
 

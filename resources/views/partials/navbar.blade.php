@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المعاهد الشرعية</title>
+    <title>نظام سُبُل</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
     <style>
@@ -223,6 +223,28 @@
             min-height: calc(100vh - var(--header-height));
         }
         
+
+        /* اجعل صندوق الترحيب شفاف بدون خلفية */
+        .user-welcome {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        /* ترحيب بنفس ستايل العنوان لكن باللون الأبيض */
+        .greeting-title{
+            color: #fff;
+            font-size: 1.1rem;   /* قريب من حجم العنوان */
+            font-weight: 600;
+            letter-spacing: .3px;
+        }
+
+        /* تأكيد أن الـ strong يبقى أبيض */
+        .greeting-title strong{
+            color: #fff;
+            font-weight: 700;
+        }
+
+
         .main-content.expanded {
             margin-right: 0;
         }
@@ -286,7 +308,7 @@
 <body>
     <header class="app-navbar">
         <div class="navbar-left">
-            <h1 class="app-title">نظام إدارة المعاهد الشرعية</h1>
+            <h1 class="app-title">نظام سُبُل</h1>
         </div>
 
         @php
@@ -299,15 +321,16 @@
             }
         @endphp
         
-        <div class="navbar-right">
-            <div class="user-welcome">
+            <div class="navbar-right">
+                        <div class="user-welcome">
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <div>
+                <div class="greeting-title">
                     مرحباً، <strong>أستاذ {{ $displayName }}</strong>
                 </div>
             </div>
+
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit" class="btn-logout">
