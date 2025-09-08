@@ -24,7 +24,6 @@ use App\Http\Controllers\SuperAdmin\InstituteController;
 use App\Http\Controllers\SuperAdmin\InstituteManagerController;
 use App\Http\Controllers\Manager\CertificateRequestController as ManagerCertificateRequestController;
 
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Manager\AnnouncementController as ManagerAnnouncementController;
 use App\Http\Controllers\Manager\AnnouncementInboxController as ManagerAnnouncementInboxController;
@@ -86,15 +85,10 @@ Route::middleware(['auth','role:super admin'])
         Route::post('/certificates/{certificateRequest}/refuse', [CertificateReviewController::class, 'refuse'])->name('super-admin.certificates.refuse');
 
     });
+
 Route::middleware(['auth','role:admin'])
-
-
-
-
      ->prefix('admin')
      ->group(fn() => Route::view('dashboard','dashboards.admin'));
-
-
 
 Route::middleware(['auth', 'role:institute manager'])
     ->prefix('manager')
@@ -105,6 +99,7 @@ Route::middleware(['auth', 'role:institute manager'])
 
         Route::get('profile', [\App\Http\Controllers\Manager\ProfileController::class, 'show'])
             ->name('profile.show');
+
         // إدارة الحلقات (Classes = الحلقات)
         Route::prefix('classes')->name('classes.')->group(function(){
 
@@ -141,7 +136,7 @@ Route::middleware(['auth', 'role:institute manager'])
                 });
         });
 
-// إدارة الـ Admins من قبل مدير المعهد
+        // إدارة الـ Admins من قبل مدير المعهد
         Route::prefix('admins')->name('admins.')->group(function () {
             Route::get('/', [\App\Http\Controllers\Manager\AdminsController::class, 'index'])->name('index');
             Route::get('create', [\App\Http\Controllers\Manager\AdminsController::class, 'create'])->name('create');
@@ -154,46 +149,25 @@ Route::middleware(['auth', 'role:institute manager'])
 
         // إدارة أولياء الأمور
         Route::prefix('guardians')->name('guardians.')->group(function () {
-            // 4.4.6.3 عرض جميع أولياء الأمور
             Route::get('/', [GuardiansController::class, 'index'])->name('index');
-
-            // 4.4.6.1 إنشاء ولي أمر (عرض النموذج + حفظ)
             Route::get('create', [GuardiansController::class, 'create'])->name('create');
             Route::post('/', [GuardiansController::class, 'store'])->name('store');
-
-            // 4.4.6.4 عرض ولي أمر محدد
             Route::get('{guardian}', [GuardiansController::class, 'show'])->name('show');
-
-            // 4.4.6.1 تعديل ولي أمر (عرض النموذج + حفظ)
             Route::get('{guardian}/edit', [GuardiansController::class, 'edit'])->name('edit');
             Route::put('{guardian}', [GuardiansController::class, 'update'])->name('update');
-
-            // 4.4.6.2 حذف/تعطيل ولي أمر
             Route::delete('{guardian}', [GuardiansController::class, 'destroy'])->name('destroy');
         });
 
-
-
         // إدارة الطلاب
         Route::prefix('students')->name('students.')->group(function () {
-            // 4.4.4.4 عرض جميع الطلاب مع فلترة
             Route::get('/', [StudentsController::class, 'index'])->name('index');
-
-            // 4.4.4.1 إضافة طالب (عرض النموذج + حفظ)
             Route::get('create', [StudentsController::class, 'create'])->name('create');
             Route::post('/', [StudentsController::class, 'store'])->name('store');
-
-            // 4.4.4.5 عرض طالب محدد
             Route::get('{student}', [StudentsController::class, 'show'])->name('show');
-
-            // 4.4.4.2 تعديل بيانات طالب (عرض النموذج + حفظ)
             Route::get('{student}/edit', [StudentsController::class, 'edit'])->name('edit');
             Route::put('{student}', [StudentsController::class, 'update'])->name('update');
-
-            // 4.4.4.3 حذف/تعطيل طالب
             Route::delete('{student}', [StudentsController::class, 'destroy'])->name('destroy');
         });
-
 
         // إدارة المدرّسين
         Route::prefix('teachers')->name('teachers.')->group(function(){
@@ -208,37 +182,32 @@ Route::middleware(['auth', 'role:institute manager'])
 
         // إدارة المواد
         Route::prefix('subjects')->name('subjects.')->group(function() {
-            // قائمة المواد مع بحث وفرز
             Route::get('/', [SubjectsController::class, 'index'])->name('index');
-            // نموذج إضافة مادة
             Route::get('create', [SubjectsController::class, 'create'])->name('create');
-            // حفظ المادة الجديدة
             Route::post('/', [SubjectsController::class, 'store'])->name('store');
-            // عرض تفاصيل مادة
             Route::get('{subject}', [SubjectsController::class, 'show'])->name('show');
-            // نموذج تعديل مادة
             Route::get('{subject}/edit', [SubjectsController::class, 'edit'])->name('edit');
-            // تحديث بيانات المادة
             Route::put('{subject}', [SubjectsController::class, 'update'])->name('update');
-            // تعطيل/تفعيل المادة
             Route::delete('{subject}', [SubjectsController::class, 'destroy'])->name('destroy');
-
         });
+
         // Library Routes for Institute Manager
         Route::prefix('library')->name('library.')->group(function()
         {
-                Route::get('/', [LibraryController::class, 'index'])->name('index');
-                Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
-                Route::get('create', [LibraryController::class, 'create'])->name('create');
-                Route::post('/', [LibraryController::class, 'store'])->name('store');
-                Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
-                Route::put('{library}', [LibraryController::class, 'update'])->name('update');
-                Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
-                Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
+            Route::get('/', [LibraryController::class, 'index'])->name('index');
+            Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+            Route::get('create', [LibraryController::class, 'create'])->name('create');
+            Route::post('/', [LibraryController::class, 'store'])->name('store');
+            Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+            Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+            Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+            Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
         });
-        Route::get('announcements/inbox',      [ManagerAnnouncementInboxController::class, 'index'])->name('announcements.inbox');
-        Route::get('announcements/inbox/{ad}', [ManagerAnnouncementInboxController::class, 'show'])->name('announcements.inbox.show');
 
+        // صندوق الوارد للمدير
+        Route::get('announcements/inbox',                [ManagerAnnouncementInboxController::class, 'index'])->name('announcements.inbox');
+        Route::get('announcements/inbox/unread-count',   [ManagerAnnouncementInboxController::class, 'unreadCount'])->name('announcements.inbox.unreadCount'); // NEW
+        Route::get('announcements/inbox/{ad}',           [ManagerAnnouncementInboxController::class, 'show'])->whereNumber('ad')->name('announcements.inbox.show'); // constrained
 
         Route::prefix('announcements')->name('announcements.')->group(function () {
             Route::get('/',                 [ManagerAnnouncementController::class,'index'])->name('index');
@@ -254,11 +223,8 @@ Route::middleware(['auth', 'role:institute manager'])
         });
 
         Route::prefix('certificates')->name('certificates.')->group(function () {
-            // List + request form
             Route::get('/', [ManagerCertificateRequestController::class, 'index'])->name('index');
-            // Create a new request (subject must be finished)
             Route::post('/', [ManagerCertificateRequestController::class, 'store'])->name('store');
-            // Export (enabled only when approved)
             Route::get('{certificateRequest}/export', [ManagerCertificateRequestController::class, 'export'])
                 ->name('export');
 
@@ -268,29 +234,13 @@ Route::middleware(['auth', 'role:institute manager'])
 
     });
 
-
-
 Route::patch('manager/subjects/{subject}/toggle', [SubjectsController::class,'toggle'])
     ->name('manager.subjects.toggle')
     ->middleware(['auth','role:institute manager']);
 
-
-
 Route::get('manager/schedules', [SessionScheduleController::class,'index'])
     ->name('manager.schedules.index')
     ->middleware(['auth','role:institute manager']);
-
-
-
-
-
-
-
-
-
-
-
-
 
 //////////////////////////////////////////////////////////////////
 use App\Http\Controllers\Teacher\AnnouncementInboxController;
@@ -304,11 +254,13 @@ Route::middleware(['auth','role:teacher'])
      // لوحة المعلم
      Route::view('dashboard','dashboards.teacher')->name('dashboard');
 
-         Route::get('profile', [TeacherProfileController::class, 'show'])->name('profile.show');
+     Route::get('profile', [TeacherProfileController::class, 'show'])->name('profile.show');
 
+     // صندوق الوارد للمعلم
+     Route::get('announcements/inbox',               [AnnouncementInboxController::class, 'index'])->name('announcements.inbox');
+     Route::get('announcements/inbox/unread-count',  [AnnouncementInboxController::class, 'unreadCount'])->name('announcements.inbox.unreadCount'); // NEW
+     Route::get('announcements/inbox/{ad}',          [AnnouncementInboxController::class, 'show'])->whereNumber('ad')->name('announcements.inbox.show'); // constrained
 
-         Route::get('announcements/inbox',       [AnnouncementInboxController::class, 'index'])->name('announcements.inbox');
-         Route::get('announcements/inbox/{ad}',  [AnnouncementInboxController::class, 'show'])->name('announcements.inbox.show');
      Route::get('announcements', [AnnouncementController::class,'index'])
           ->name('announcements.index');
 
@@ -370,21 +322,19 @@ Route::middleware(['auth','role:teacher'])
 
      Route::get('classes/{class}/students', [ClassController::class, 'students'])
           ->name('classes.students');
-         // Library Routes for Institute Manager
+
+     // Library Routes للمعلم
      Route::prefix('library')->name('library.')->group(function()
      {
-             Route::get('/', [LibraryController::class, 'index'])->name('index');
-             Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
-             Route::get('create', [LibraryController::class, 'create'])->name('create');
-             Route::post('/', [LibraryController::class, 'store'])->name('store');
-             Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
-             Route::put('{library}', [LibraryController::class, 'update'])->name('update');
-             Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+         Route::get('/', [LibraryController::class, 'index'])->name('index');
+         Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+         Route::get('create', [LibraryController::class, 'create'])->name('create');
+         Route::post('/', [LibraryController::class, 'store'])->name('store');
+         Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+         Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+         Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
      });
 });
-
-
-
 
 Route::middleware(['auth','role:super admin'])
     ->prefix('super-admin/managers')
@@ -398,10 +348,7 @@ Route::middleware(['auth','role:super admin'])
         Route::put('{user}',       [InstituteManagerController::class, 'update'])->name('update');
         Route::delete('{user}',    [InstituteManagerController::class, 'destroy'])->name('destroy');
         Route::post('{user}/unassign-institute', [InstituteManagerController::class, 'unassignInstitute'])->name('unassign-institute');
-
      });
-
-
 
 Route::middleware(['auth','role:super admin'])
     ->prefix('super-admin/institutes')
@@ -422,7 +369,6 @@ Route::middleware(['auth','role:super admin'])
         Route::put('{institute}',  [InstituteController::class, 'update'])->name('update');
         Route::delete('{institute}', [InstituteController::class, 'destroy'])->name('destroy');
 
-
         Route::prefix('library')->name('library.')->group(function()
         {
             Route::get('/', [LibraryController::class, 'index'])->name('index');
@@ -436,29 +382,26 @@ Route::middleware(['auth','role:super admin'])
     });
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
-    Route::middleware(['auth','role:admin'])
-          ->get('/attendance/scan', [AttendanceScanController::class, 'show'])
-          ->name('attendance.scan');
+Route::middleware(['auth','role:admin'])
+      ->get('/attendance/scan', [AttendanceScanController::class, 'show'])
+      ->name('attendance.scan');
 
-     Route::middleware(['auth','role:admin'])
-          ->post('/attendance/scan', [AttendanceController::class,'scan'])
-          ->name('attendance.scan.post');
+Route::middleware(['auth','role:admin'])
+      ->post('/attendance/scan', [AttendanceController::class,'scan'])
+      ->name('attendance.scan.post');
 
+// إضافة مسار جديد لتسجيل الغياب
+Route::middleware(['auth','role:admin'])
+      ->post('/attendance/mark-absent', [AttendanceController::class, 'markAbsent'])
+      ->name('attendance.mark.absent');
 
-   // إضافة مسار جديد لتسجيل الغياب
-     Route::middleware(['auth','role:admin'])
-          ->post('/attendance/mark-absent', [AttendanceController::class, 'markAbsent'])
-          ->name('attendance.mark.absent');
+Route::middleware(['auth','role:admin'])
+      ->get('/attendance/status', [AttendanceController::class, 'attendanceStatus'])
+      ->name('attendance.status');
 
-     Route::middleware(['auth','role:admin'])
-          ->get('/attendance/status', [AttendanceController::class, 'attendanceStatus'])
-          ->name('attendance.status');
-
-     Route::middleware(['auth','role:admin'])
-          ->get('/attendance/session-status', [AttendanceController::class, 'sessionStatus'])
-          ->name('attendance.session-status');
-
-
+Route::middleware(['auth','role:admin'])
+      ->get('/attendance/session-status', [AttendanceController::class, 'sessionStatus'])
+      ->name('attendance.session-status');
 
 use App\Http\Controllers\supervisor\AnnouncementInboxController as AdminAnnouncementInboxController;
 
@@ -476,17 +419,16 @@ Route::middleware(['auth','role:admin'])
     ->name('admin.')
     ->group(function () {
 
-
-         Route::prefix('library')->name('library.')->group(function()
+        Route::prefix('library')->name('library.')->group(function()
         {
-                Route::get('/', [LibraryController::class, 'index'])->name('index');
-                Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
-                Route::get('create', [LibraryController::class, 'create'])->name('create');
-                Route::post('/', [LibraryController::class, 'store'])->name('store');
-                Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
-                Route::put('{library}', [LibraryController::class, 'update'])->name('update');
-                Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
-                Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
+            Route::get('/', [LibraryController::class, 'index'])->name('index');
+            Route::get('/library/api', [LibraryController::class, 'apiIndex'])->name('api.index');
+            Route::get('create', [LibraryController::class, 'create'])->name('create');
+            Route::post('/', [LibraryController::class, 'store'])->name('store');
+            Route::get('{library}/edit', [LibraryController::class, 'edit'])->name('edit');
+            Route::put('{library}', [LibraryController::class, 'update'])->name('update');
+            Route::delete('{library}', [LibraryController::class, 'destroy'])->name('destroy');
+            Route::patch('{library}/toggle-visibility', [LibraryController::class, 'toggleVisibility'])->name('toggle-visibility');
         });
 
         Route::get('profile', [\App\Http\Controllers\supervisor\ProfileController::class, 'show'])
@@ -509,9 +451,7 @@ Route::middleware(['auth','role:admin'])
             Route::get('{student}/edit',   [supervisorStudentsController::class, 'edit'])->name('edit');
             Route::put('{student}',        [supervisorStudentsController::class, 'update'])->name('update');
             Route::delete('{student}',     [supervisorStudentsController::class, 'destroy'])->name('destroy');
-
         });
-
 
         // إدارة أولياء الأمور (CRUD)
         Route::prefix('guardians')->name('guardians.')->group(function () {
@@ -523,6 +463,7 @@ Route::middleware(['auth','role:admin'])
             Route::put('{guardian}',     [SupervisorGuardiansController::class, 'update'])->name('update');
             Route::delete('{guardian}',  [SupervisorGuardiansController::class, 'destroy'])->name('destroy');
         });
+
         // إدارة الحلقات (Classes = الحلقات) للمشرف
         Route::prefix('classes')->name('classes.')->group(function () {
             Route::get('/',            [\App\Http\Controllers\supervisor\ClassesController::class, 'index'])->name('index');
@@ -535,11 +476,11 @@ Route::middleware(['auth','role:admin'])
             Route::post('{class}/students',           [AdminClasStudentsController::class,'store'])  ->name('students.store');
             Route::delete('{class}/students/{user}',  [AdminClasStudentsController::class,'destroy'])->name('students.destroy');
 
-
             Route::get('{class}/edit', [\App\Http\Controllers\supervisor\ClassesController::class, 'edit'])->name('edit');
             Route::put('{class}',      [\App\Http\Controllers\supervisor\ClassesController::class, 'update'])->name('update');
             Route::delete('{class}',   [\App\Http\Controllers\supervisor\ClassesController::class, 'destroy'])->name('destroy');
         });
+
         // إدارة جداول مواعيد الحلقة (Schedules) للمشرف
         Route::prefix('classes/{class}/schedules')
             ->name('classes.schedules.')
@@ -551,9 +492,10 @@ Route::middleware(['auth','role:admin'])
                 Route::delete('{schedule}',     [SupervisorClassSchedulesController::class, 'destroy'])->name('destroy');
             });
 
-
-        Route::get('announcements/inbox',      [AdminAnnouncementInboxController::class, 'index'])->name('announcements.inbox');
-        Route::get('announcements/inbox/{ad}', [AdminAnnouncementInboxController::class, 'show'])->name('announcements.inbox.show');
+        // صندوق الوارد للمشرف (admin)
+        Route::get('announcements/inbox',               [AdminAnnouncementInboxController::class, 'index'])->name('announcements.inbox');
+        Route::get('announcements/inbox/unread-count',  [AdminAnnouncementInboxController::class, 'unreadCount'])->name('announcements.inbox.unreadCount'); // NEW
+        Route::get('announcements/inbox/{ad}',          [AdminAnnouncementInboxController::class, 'show'])->whereNumber('ad')->name('announcements.inbox.show'); // constrained
 
         Route::prefix('announcements')->name('announcements.')->group(function () {
             Route::get('/',                 [AdminAnnouncementController::class,'index'])->name('index');
@@ -567,4 +509,3 @@ Route::middleware(['auth','role:admin'])
         Route::get('schedules', [SupervisorSchedulesController::class,'index'])
             ->name('schedules.index');
     });
-
