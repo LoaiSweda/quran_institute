@@ -11,17 +11,35 @@
 
 
                     @case('super admin')
-                        <li><a href="{{ url('/super-admin/dashboard') }}">الرئيسية</a></li>
-                        <li><a href="{{ url('/super-admin/managers') }}">إدارة مدراء المعاهد</a></li>
-                        <li><a href="{{ url('/super-admin/institutes') }}">إعدادات المعاهد</a></li>
                         <li class="nav-item">
-                            <a class="nav-link @if(request()->is('super-admin/certificates*')) active @endif"
-                               href="{{ route('super-admin.certificates.index') }}">
-                                <i class="bi bi-award"></i> طلبات الشهادات
+                            <a class="nav-link {{ request()->is('super-admin/dashboard') ? 'active' : '' }}"
+                            href="{{ url('/super-admin/dashboard') }}">
+                                <i class="bi bi-speedometer2 me-2"></i> الرئيسية
                             </a>
                         </li>
 
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->is('super-admin/managers*') ? 'active' : '' }}"
+                            href="{{ url('/super-admin/managers') }}">
+                                <i class="bi bi-people-fill me-2"></i> إدارة مدراء المعاهد
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->is('super-admin/institutes*') ? 'active' : '' }}"
+                            href="{{ url('/super-admin/institutes') }}">
+                                <i class="bi bi-gear me-2"></i> إعدادات المعاهد
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->is('super-admin/certificates*') ? 'active' : '' }}"
+                            href="{{ route('super-admin.certificates.index') }}">
+                                <i class="bi bi-award me-2"></i> طلبات الشهادات
+                            </a>
+                        </li>
                     @break
+
 
                     @case('admin')
 
@@ -87,6 +105,14 @@
                             <i class="bi bi-book"></i> المكتبة الإلكترونية
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('attendance.scan') ? 'active' : '' }}"
+                        href="{{ route('attendance.scan') }}">
+                            <i class="bi bi-qr-code-scan"></i> تسجيل حضور
+                        </a>
+                    </li>
+
                     @break
 
 

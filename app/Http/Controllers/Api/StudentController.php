@@ -16,6 +16,7 @@ use App\Models\CertificateRequest;
 use App\Models\File;
 use App\Models\Teacher;
 use App\Models\SessionSchedule;
+use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
@@ -354,20 +355,32 @@ class StudentController extends Controller
             ], 404);
         }
 
+        // ابنِ رابط الصورة بشكل آمن:
+        // - إذا كان الحقل يحوي رابطًا جاهزًا (http/https أو data:) نعيده كما هو
+        // - وإلا نستخدم asset('storage/...') مع ضرورة وجود symlink: php artisan storage:link
+        $imageUrl = null;
+        if (!empty($student->image)) {
+            $imageUrl = Str::startsWith($student->image, ['http://', 'https://', 'data:'])
+                ? $student->image
+                : asset('storage/app/public/' . ltrim($student->image, '/'));
+        }
+
         return response()->json([
             'data' => [
-                'id'                => $student->id,
-                'first_name'        => $student->first_name,
-                'last_name'         => $student->last_name,
-                'phone'             => $student->phone,
-                'address'           => $student->address,
-                'birthdate'         => $student->birthdate?->toDateString(),
-                'guardian_id'       => $student->guardian_id,
-                'present_percentage'=> $student->present_percentage,
-                'qr'                => $student->qr,
+                'id'                 => $student->id,
+                'first_name'         => $student->first_name,
+                'last_name'          => $student->last_name,
+                'phone'              => $student->phone,
+                'address'            => $student->address,
+                'birthdate'          => $student->birthdate?->toDateString(),
+                'guardian_id'        => $student->guardian_id,
+                'present_percentage' => $student->present_percentage,
+                'qr'                 => $student->qr,
+                'image_url'          => $imageUrl,
             ]
         ], 200);
     }
+
 
     public function weeklySchedule(Request $request)
     {

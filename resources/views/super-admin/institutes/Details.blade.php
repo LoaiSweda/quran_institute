@@ -23,16 +23,13 @@
 
         <!-- البطاقات الإحصائية الكبيرة -->
         <div class="row">
-            <!-- بطاقة الطلاب -->
+            <!-- الطلاب -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.students', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-user-graduate"></i>
-                            </div>
-                            <div class="stat-icon bg-primary mb-3">
-                                <i class="fas fa-user-graduate fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-user-graduate fa-2x text-primary"></i>
                             </div>
                             <h3 class="stat-value text-primary mb-1">{{ $institute->students_count }}</h3>
                             <p class="stat-label text-muted mb-0">الطلاب</p>
@@ -47,23 +44,20 @@
                 </div>
             </div>
 
-            <!-- بطاقة المعلمين -->
+            <!-- المعلمين -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.teachers', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-chalkboard-teacher"></i>
-                            </div>
-                            <div class="stat-icon bg-info mb-3">
-                                <i class="fas fa-chalkboard-teacher fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-chalkboard-teacher fa-2x text-info"></i>
                             </div>
                             <h3 class="stat-value text-info mb-1">{{ $institute->teachers_count }}</h3>
                             <p class="stat-label text-muted mb-0">المعلمين</p>
                             <div class="stat-details mt-3">
                                 <div class="d-flex justify-content-center align-items-center">
                                     <span class="badge bg-success me-2">
-                                        <i class="fas fa-check-circle me-1"></i> {{ $stats['active_teachers'] }} نشطين
+                                        <i class="fas fa-check-circle me-1"></i> {{ $stats['active_teachers'] }} معلمين
                                     </span>
                                 </div>
                             </div>
@@ -72,16 +66,13 @@
                 </div>
             </div>
 
-            <!-- بطاقة الفصول -->
+            <!-- الفصول -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.classes', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-door-open"></i>
-                            </div>
-                            <div class="stat-icon bg-success mb-3">
-                                <i class="fas fa-door-open fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-door-open fa-2x text-success"></i>
                             </div>
                             <h3 class="stat-value text-success mb-1">{{ $institute->classes_count }}</h3>
                             <p class="stat-label text-muted mb-0">الفصول</p>
@@ -95,16 +86,13 @@
                 </div>
             </div>
 
-            <!-- بطاقة المواد -->
+            <!-- المواد -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.subjects', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-book"></i>
-                            </div>
-                            <div class="stat-icon bg-warning mb-3">
-                                <i class="fas fa-book fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-book fa-2x text-warning"></i>
                             </div>
                             <h3 class="stat-value text-warning mb-1">{{ $institute->subjects_count }}</h3>
                             <p class="stat-label text-muted mb-0">المواد</p>
@@ -118,16 +106,13 @@
                 </div>
             </div>
 
-            <!-- بطاقة التسميعات -->
+            <!-- التسميعات -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.memorizations', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-quran"></i>
-                            </div>
-                            <div class="stat-icon bg-purple mb-3">
-                                <i class="fas fa-quran fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-quran fa-2x text-purple"></i>
                             </div>
                             <h3 class="stat-value text-purple mb-1">{{ $stats['total_memorizations'] }}</h3>
                             <p class="stat-label text-muted mb-0">التسميعات</p>
@@ -139,16 +124,13 @@
                 </div>
             </div>
 
-            <!-- بطاقة الامتحانات -->
+            <!-- الامتحانات -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.exams', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-file-alt"></i>
-                            </div>
-                            <div class="stat-icon bg-danger mb-3">
-                                <i class="fas fa-file-alt fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-file-alt fa-2x text-danger"></i>
                             </div>
                             <h3 class="stat-value text-danger mb-1">{{ $stats['total_exams'] }}</h3>
                             <p class="stat-label text-muted mb-0">الامتحانات</p>
@@ -160,16 +142,13 @@
                 </div>
             </div>
 
-            <!-- بطاقة أولياء الأمور -->
+            <!-- أولياء الأمور -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.guardians', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div class="stat-icon bg-secondary mb-3">
-                                <i class="fas fa-users fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-users fa-2x text-secondary"></i>
                             </div>
                             <h3 class="stat-value text-secondary mb-1">{{ $stats['total_guardians'] }}</h3>
                             <p class="stat-label text-muted mb-0">أولياء الأمور</p>
@@ -181,16 +160,13 @@
                 </div>
             </div>
 
-            <!-- بطاقة الجداول -->
+            <!-- الجداول -->
             <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
                 <div class="card stat-card h-100 border-0 shadow-lg hover-card">
                     <a href="{{ route('super-admin.institutes.schedules', $institute) }}" class="card-link text-decoration-none">
                         <div class="card-body text-center p-4 position-relative">
-                            <div class="floating-icon">
-                                <i class="fas fa-calendar-alt"></i>
-                            </div>
-                            <div class="stat-icon bg-indigo mb-3">
-                                <i class="fas fa-calendar-alt fa-2x text-white"></i>
+                            <div class="stat-icon mb-3">
+                                <i class="fas fa-calendar-alt fa-2x text-indigo"></i>
                             </div>
                             <h3 class="stat-value text-indigo mb-1">{{ $stats['total_sessions'] }}</h3>
                             <p class="stat-label text-muted mb-0">الجداول</p>
@@ -216,7 +192,7 @@
                             <div class="col-md-6">
                                 <div class="info-item mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon bg-light-primary rounded-circle p-2 me-3">
+                                        <div class="info-icon rounded-circle p-2 me-3">
                                             <i class="fas fa-signature text-primary"></i>
                                         </div>
                                         <div>
@@ -227,7 +203,7 @@
                                 </div>
                                 <div class="info-item mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon bg-light-primary rounded-circle p-2 me-3">
+                                        <div class="info-icon rounded-circle p-2 me-3">
                                             <i class="fas fa-map-marker-alt text-primary"></i>
                                         </div>
                                         <div>
@@ -238,7 +214,7 @@
                                 </div>
                                 <div class="info-item mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon bg-light-primary rounded-circle p-2 me-3">
+                                        <div class="info-icon rounded-circle p-2 me-3">
                                             <i class="fas fa-calendar-day text-primary"></i>
                                         </div>
                                         <div>
@@ -251,7 +227,7 @@
                             <div class="col-md-6">
                                 <div class="info-item mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon bg-light-primary rounded-circle p-2 me-3">
+                                        <div class="info-icon rounded-circle p-2 me-3">
                                             <i class="fas fa-user-tie text-primary"></i>
                                         </div>
                                         <div>
@@ -268,7 +244,7 @@
                                 </div>
                                 <div class="info-item mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon bg-light-primary rounded-circle p-2 me-3">
+                                        <div class="info-icon rounded-circle p-2 me-3">
                                             <i class="fas fa-envelope text-primary"></i>
                                         </div>
                                         <div>
@@ -285,7 +261,7 @@
                                 </div>
                                 <div class="info-item mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="info-icon bg-light-primary rounded-circle p-2 me-3">
+                                        <div class="info-icon rounded-circle p-2 me-3">
                                             <i class="fas fa-phone text-primary"></i>
                                         </div>
                                         <div>
@@ -329,7 +305,7 @@
                             </div>
                             <div class="stat-item d-flex justify-content-between align-items-center mb-3 p-2 rounded bg-light">
                                 <div class="d-flex align-items-center">
-                                    <i class="fas fa-users-class text-info me-2"></i>
+                                    <i class="fas fa-users text-info me-2"></i>
                                     <span>كثافة الفصول</span>
                                 </div>
                                 <span class="badge bg-info">{{ round($institute->students_count / max($institute->classes_count, 1)) }} طالب/فصل</span>
@@ -376,15 +352,8 @@
             box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.15) !important;
         }
 
-        .card-link {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .card-link:hover {
-            text-decoration: none;
-            color: inherit;
-        }
+        .card-link { text-decoration: none; color: inherit; }
+        .card-link:hover { text-decoration: none; color: inherit; }
 
         .floating-icon {
             position: absolute;
@@ -394,91 +363,45 @@
             font-size: 2.5rem;
         }
 
-        .stat-icon {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
+        /* === الأيقونات بلا خلفية === */
+        .stat-icon{
+            width: auto;
+            height: auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
-            transition: all 0.3s ease;
         }
+        /* تكبير بسيط عند التحويم */
+        .stat-card:hover .stat-icon i { transform: scale(1.06); }
+        .stat-icon i { transition: transform .25s ease; }
 
-        .stat-card:hover .stat-icon {
-            transform: scale(1.1);
-        }
+        .stat-value { font-size: 2.5rem; font-weight: 700; transition: all 0.3s ease; }
+        .stat-card:hover .stat-value { transform: scale(1.03); }
+        .stat-label { font-size: 1.1rem; font-weight: 500; }
 
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            transition: all 0.3s ease;
-        }
+        .stat-details { border-top: 1px solid rgba(0, 0, 0, 0.05); padding-top: 0.8rem; }
 
-        .stat-card:hover .stat-value {
-            transform: scale(1.05);
-        }
-
-        .stat-label {
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .stat-details {
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
-            padding-top: 0.8rem;
-        }
-
-        .bg-purple {
-            background-color: var(--purple) !important;
-        }
-
-        .text-purple {
-            color: var(--purple) !important;
-        }
-
-        .bg-indigo {
-            background-color: var(--indigo) !important;
-        }
-
-        .text-indigo {
-            color: var(--indigo) !important;
-        }
+        .bg-purple { background-color: var(--purple) !important; }
+        .text-purple { color: var(--purple) !important; }
+        .bg-indigo { background-color: var(--indigo) !important; }
+        .text-indigo { color: var(--indigo) !important; }
 
         .info-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 40px; height: 40px; display:flex; align-items:center; justify-content:center;
+            background: transparent !important; /* بلا خلفية */
         }
 
-        .bg-light-primary {
-            background-color: rgba(94, 114, 228, 0.1) !important;
-        }
+        .bg-light-primary { background-color: rgba(94, 114, 228, 0.1) !important; }
 
-        .quick-stats .stat-item {
-            transition: all 0.3s ease;
-        }
-
+        .quick-stats .stat-item { transition: all 0.3s ease; }
         .quick-stats .stat-item:hover {
             background-color: rgba(94, 114, 228, 0.15) !important;
             transform: translateX(5px);
         }
 
         @media (max-width: 768px) {
-            .stat-value {
-                font-size: 2rem;
-            }
-
-            .stat-icon {
-                width: 60px;
-                height: 60px;
-            }
-
-            .floating-icon {
-                font-size: 2rem;
-            }
+            .stat-value { font-size: 2rem; }
+            .floating-icon { font-size: 2rem; }
         }
     </style>
 @endsection
@@ -486,12 +409,7 @@
 @section('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // إضافة تأثيرات للبطاقات عند التمرير
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-
+            // دخول ناعم للبطاقات
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -499,7 +417,7 @@
                         entry.target.style.transform = 'translateY(0)';
                     }
                 });
-            }, observerOptions);
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
             document.querySelectorAll('.stat-card').forEach(card => {
                 card.style.opacity = 0;
@@ -508,16 +426,10 @@
                 observer.observe(card);
             });
 
-            // تأثيرات عند التحويم على البطاقات
-            const statCards = document.querySelectorAll('.stat-card');
-            statCards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-8px)';
-                });
-
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
+            // hover
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-8px)');
+                card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
             });
         });
     </script>
