@@ -26,7 +26,7 @@
             <div class="col-md-4">
                 <div class="card border-0 shadow-sm">
                     @if($institute->image)
-                        <img src="{{ asset('storage/'.$institute->image) }}"
+                        <img src="{{ asset('storage/app/public/'.$institute->image) }}"
                              class="card-img-top" alt="شعار المعهد">
                     @else
                         <div class="bg-light p-5 text-center text-muted">

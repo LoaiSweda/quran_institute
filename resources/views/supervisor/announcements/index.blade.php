@@ -135,7 +135,7 @@
                             </td>
                             <td class="text-center">
                                 @if($ad->image)
-                                    <img src="{{ asset('storage/'.$ad->image) }}" alt="صورة الإعلان"
+                                    <img src="{{ asset('storage/app/public/'.$ad->image) }}" alt="صورة الإعلان"
                                          class="img-thumbnail" style="max-width:60px;">
                                 @else
                                     —

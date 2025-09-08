@@ -27,7 +27,7 @@
                     <div class="card-body text-center">
                         <div class="mb-3">
                             @if($admin->image)
-                                <img src="{{ asset('storage/'.$admin->image) }}" class="rounded-circle" width="120" height="120" alt="">
+                                <img src="{{ asset('storage/app/public/'.$admin->image) }}" class="rounded-circle" width="120" height="120" alt="">
                             @else
                                 <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center" style="width:120px;height:120px;">
                                     <i class="bi bi-person fs-1 text-muted"></i>

@@ -25,7 +25,7 @@
 
     @if($ad->image)
         <div class="text-center mb-4">
-            <img src="{{ asset('storage/'.$ad->image) }}"
+            <img src="{{ asset('storage/app/public/'.$ad->image) }}"
                 alt="صورة الإعلان" class="img-fluid rounded">
         </div>
     @endif

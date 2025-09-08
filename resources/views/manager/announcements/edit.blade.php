@@ -95,7 +95,7 @@
                         <label for="image" class="form-label">تغيير صورة الإعلان</label>
                         @if($ad->image)
                             <div class="mb-2">
-                                <img src="{{ asset('storage/'.$ad->image) }}" alt="صورة حالية" class="img-thumbnail" style="max-width:150px;">
+                                <img src="{{ asset('storage/app/public/'.$ad->image) }}" alt="صورة حالية" class="img-thumbnail" style="max-width:150px;">
                             </div>
                         @endif
                         <input type="file" class="form-control @error('image') is-invalid @enderror"

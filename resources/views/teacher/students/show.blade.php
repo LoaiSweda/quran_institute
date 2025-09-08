@@ -20,7 +20,7 @@
             {{-- عمود الصورة والاسم --}}
             <div class="col-md-4 text-center p-4 border-end">
                 @if($profile->image)
-                    <img src="{{ asset('storage/'.$profile->image) }}"
+                    <img src="{{ asset('storage/app/public/'.$profile->image) }}"
                          alt="صورة الطالب"
                          class="rounded-circle img-fluid"
                          style="max-width:180px;">

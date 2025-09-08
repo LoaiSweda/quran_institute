@@ -29,7 +29,7 @@
 
             @if($ad->image)
                 <div class="text-center p-3">
-                    <img src="{{ asset('storage/'.$ad->image) }}" alt="صورة الإعلان" class="img-fluid rounded" style="max-height:360px">
+                    <img src="{{ asset('storage/app/public/'.$ad->image) }}" alt="صورة الإعلان" class="img-fluid rounded" style="max-height:360px">
                 </div>
             @endif
 

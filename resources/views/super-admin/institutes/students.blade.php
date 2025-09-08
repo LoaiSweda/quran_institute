@@ -53,7 +53,7 @@
                                             <td>{{ $loop->iteration }}</td>
                                             <td>
                                                 @if($student->image)
-                                                    <img src="{{ asset('storage/' . $student->image) }}" alt="{{ $student->first_name }}" class="rounded-circle" width="40" height="40">
+                                                    <img src="{{ asset('storage/app/public/' . $student->image) }}" alt="{{ $student->first_name }}" class="rounded-circle" width="40" height="40">
                                                 @else
                                                     <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                                         <i class="fas fa-user text-white"></i>

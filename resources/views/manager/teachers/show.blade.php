@@ -72,7 +72,7 @@
             <div class="card-body text-end row gy-3">
                 <div class="col-md-4 text-center">
                     @if($teacher->image)
-                        <img src="{{ asset('storage/'.$teacher->image) }}"
+                        <img src="{{ asset('storage/app/public/'.$teacher->image) }}"
                              alt="صورة المدرس"
                              class="rounded-circle shadow-sm"
                              style="width:120px;height:120px;object-fit:cover;">

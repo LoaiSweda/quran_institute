@@ -440,7 +440,7 @@
                             <div class="card institute-card h-100">
                                 <div class="card-header">
                                     @if($institute->image)
-                                        <img src="{{ asset('storage/' . $institute->image) }}" alt="{{ $institute->name }}">
+                                        <img src="{{ asset('storage/app/public/' . $institute->image) }}" alt="{{ $institute->name }}">
                                     @else
                                         <div class="institute-image-placeholder">
                                             <i class="fas fa-university"></i>

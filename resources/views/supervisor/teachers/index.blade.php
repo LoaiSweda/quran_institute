@@ -91,7 +91,7 @@
 
                                 <td>
                                     @if($t->image)
-                                        <img src="{{ asset('storage/'.$t->image) }}"
+                                        <img src="{{ asset('storage/app/public/'.$t->image) }}"
                                              alt="صورة المدرس" width="40" height="40"
                                              class="rounded-circle" style="object-fit:cover">
                                     @else

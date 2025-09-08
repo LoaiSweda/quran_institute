@@ -160,7 +160,7 @@
                             <div>
                                 <div class="text-muted mb-1">الصورة الحالية:</div>
                                 <img
-                                    src="{{ asset('storage/'.$user->admin->image) }}"
+                                    src="{{ asset('storage/app/public/'.$user->admin->image) }}"
                                     alt="صورة المدير"
                                     class="rounded"
                                     style="max-height:60px;"

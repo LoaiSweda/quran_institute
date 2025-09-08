@@ -91,7 +91,7 @@
                     <h6 class="mb-0">QR Code للحلقة</h6>
                 </div>
                 <div class="card-body text-center">
-                    <img src="{{ asset('storage/' . $class->qr) }}"
+                    <img src="{{ asset('storage/app/public/' . $class->qr) }}"
                          alt="QR Code" class="img-fluid" style="max-width:200px">
                 </div>
             </div>

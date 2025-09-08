@@ -117,7 +117,7 @@
                             <div>
                                 <div class="text-muted mb-1">الشعار الحالي:</div>
                                 <img
-                                    src="{{ asset('storage/'.$institute->image) }}"
+                                    src="{{ asset('storage/app/public/'.$institute->image) }}"
                                     alt="شعار المعهد"
                                     class="rounded"
                                     style="max-height:60px;"
@@ -158,7 +158,7 @@
                         <div class="col-md-6 d-flex align-items-center">
                             <div>
                                 <div class="text-muted mb-1">الختم الحالي:</div>
-                                <img src="{{ asset('storage/'.$institute->institute_stamp_path) }}" alt="ختم المعهد" class="rounded" style="max-height:60px;">
+                                <img src="{{ asset('storage/app/public/'.$institute->institute_stamp_path) }}" alt="ختم المعهد" class="rounded" style="max-height:60px;">
                             </div>
                         </div>
                     @endif
@@ -175,7 +175,7 @@
                         <div class="col-md-6 d-flex align-items-center">
                             <div>
                                 <div class="text-muted mb-1">التوقيع الحالي:</div>
-                                <img src="{{ asset('storage/'.$institute->director_signature_path) }}" alt="توقيع المدير" class="rounded" style="max-height:60px;">
+                                <img src="{{ asset('storage/app/public/'.$institute->director_signature_path) }}" alt="توقيع المدير" class="rounded" style="max-height:60px;">
                             </div>
                         </div>
                     @endif

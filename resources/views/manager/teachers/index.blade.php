@@ -66,7 +66,7 @@
                                 <td>{{ $loop->iteration + ($teachers->perPage() * ($teachers->currentPage()-1)) }}</td>
                                 <td>
                                     @if($teacher->image)
-                                        <img src="{{ asset('storage/'.$teacher->image) }}"
+                                        <img src="{{ asset('storage/app/public/'.$teacher->image) }}"
                                              alt="صورة المدرس"
                                              width="40" height="40"
                                              class="rounded-circle">

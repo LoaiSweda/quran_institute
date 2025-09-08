@@ -68,7 +68,7 @@
                 <div class="col-md-4 text-end">
                     <label class="form-label d-block">الصورة الحالية</label>
                     @if($admin->image)
-                        <img src="{{ asset('storage/'.$admin->image) }}"
+                        <img src="{{ asset('storage/app/public/'.$admin->image) }}"
                              width="60" height="60" class="rounded-circle" alt="">
                     @else
                         <span class="text-muted">—</span>

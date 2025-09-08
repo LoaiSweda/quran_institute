@@ -32,7 +32,7 @@
                     <div class="col-md-3 text-center">
                         <label class="form-label d-block">الصورة الحالية</label>
                         @if($teacher->image)
-                            <img src="{{ asset('storage/'.$teacher->image) }}"
+                            <img src="{{ asset('storage/app/public/'.$teacher->image) }}"
                                  alt="صورة المدرّس"
                                  class="rounded-circle mb-2"
                                  style="width:120px;height:120px;object-fit:cover;">

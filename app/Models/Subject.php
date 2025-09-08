@@ -38,7 +38,7 @@ class Subject extends Model
     public function getImageUrlAttribute(): ?string
     {
         return $this->image
-            ? asset('storage/subjects/' . $this->image)
+            ? asset('storage/app/public/subjects/' . $this->image)
             : null;
     }
 

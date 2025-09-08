@@ -167,7 +167,7 @@
                             <div class="inst-box">
                                 <div class="inst-logo">
                                     @if($inst->image)
-                                        <img src="{{ asset('storage/'.$inst->image) }}" alt="Institute" style="width:100%;height:100%;object-fit:cover">
+                                        <img src="{{ asset('storage/app/public/'.$inst->image) }}" alt="Institute" style="width:100%;height:100%;object-fit:cover">
                                     @else
                                         <i class="bi bi-building fs-2 text-secondary"></i>
                                     @endif

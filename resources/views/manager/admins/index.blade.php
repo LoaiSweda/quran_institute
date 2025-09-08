@@ -68,7 +68,7 @@
                                 <td>{{ $loop->iteration + ($admins->perPage() * ($admins->currentPage()-1)) }}</td>
                                 <td>
                                     @if($admin->image)
-                                        <img src="{{ asset('storage/'.$admin->image) }}"
+                                        <img src="{{ asset('storage/app/public/'.$admin->image) }}"
                                              alt="صورة المشرف"
                                              width="40" height="40"
                                              class="rounded-circle">
