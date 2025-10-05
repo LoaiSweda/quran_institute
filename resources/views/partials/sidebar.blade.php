@@ -252,6 +252,12 @@
                         <span><i class="bi bi-book"></i> المكتبة الإلكترونية</span>
                     </a>
                 </li>
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('attendance.scan') ? 'active' : '' }}"
+                   href="{{ route('attendance.scan.teacher') }}">
+                    <span><i class="bi bi-qr-code-scan"></i> تسجيل حضور</span>
+                </a>
+            </li>
             @break
 
             @default

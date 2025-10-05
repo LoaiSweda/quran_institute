@@ -1,7 +1,7 @@
 {{-- resources/views/teacher/exams/create.blade.php --}}
 @extends('layouts.app')
 
-@section('title', "إضافة امتحان لـ {$student->student->first_name} {$student->student->last_name}")
+@section('title', "إضافة تسميع لـ {$student->student->first_name} {$student->student->last_name}")
 
 @section('content')
 <div class="container-fluid">
@@ -14,20 +14,20 @@
     @endif
 
     <div class="content-header">
-        <h2>إضافة امتحان / تسميع</h2>
+        <h2>إضافة تسميع</h2>
         <button id="toggleForm" class="btn-open">
-            <i class="bi bi-journal-plus"></i> إضافة امتحان جديد
+            <i class="bi bi-journal-plus"></i> إضافة تسميع جديد
         </button>
     </div>
 
     {{-- form مخفي افتراضياً --}}
     <div id="inlineForm" class="announcement-form mb-4">
-        <h3>نموذج إضافة امتحان</h3>
+        <h3>اضافة تسميع</h3>
         <form action="{{ route('teacher.classes.students.exams.store', ['class'=>$class->id,'student'=>$student->id]) }}"
               method="POST">
             @csrf
             <div class="form-group">
-                <label for="name">اسم الامتحان *</label>
+                <label for="name">عدد الصفحات</label>
                 <input type="text" name="name" id="name"
                        class="@error('name') is-invalid @enderror"
                        value="{{ old('name') }}" required>
@@ -43,7 +43,7 @@
 
             <div class="form-row">
                 <div class="form-group half">
-                    <label for="points">نقاط الامتحان *</label>
+                    <label for="points">النقاط المستحقة</label>
                     <input type="number" name="points" id="points"
                            class="@error('points') is-invalid @enderror"
                            value="{{ old('points') }}" required>
@@ -58,7 +58,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-submit">حفظ الامتحان</button>
+            <button type="submit" class="btn-submit">حفظ التسميع</button>
         </form>
     </div>
 
@@ -68,18 +68,18 @@
 
     <div class="card shadow-sm">
         <div class="card-header py-3">
-            <h6 class="m-0 fw-bold text-primary">الامتحانات المسجّلة للطالب</h6>
+            <h6 class="m-0 fw-bold text-primary">التسميعات المسجّلة للطالب</h6>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 @if($studentProfile->exams()->count() === 0)
-                    <p class="text-center text-muted py-4 mb-0">لا توجد امتحانات مسجّلة بعد.</p>
+                    <p class="text-center text-muted py-4 mb-0">لا توجد تسميعات مسجّلة بعد.</p>
                 @else
                     <table class="table table-striped table-hover mb-0">
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
-                                <th>اسم الامتحان</th>
+                                <th>عدد الصفحات</th>
                                 <th>النقاط</th>
                                 <th>الدرجة</th>
                                 <th>التاريخ</th>
@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function() {
     toggle.addEventListener('click', () => {
         const isHidden = form.style.display === 'none' || !form.style.display;
         form.style.display = isHidden ? 'block' : 'none';
-        toggle.textContent = isHidden ? 'إلغاء' : 'إضافة امتحان جديد';
+        toggle.textContent = isHidden ? 'إلغاء' : 'إضافة تسميع جديد';
     });
 });
 </script>

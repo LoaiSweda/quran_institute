@@ -1,3 +1,4 @@
+{{-- resources/views/manager/students/index.blade.php --}}
 @php use Carbon\Carbon; @endphp
 @extends('layouts.app')
 @section('title','إدارة الطلاب')
@@ -43,6 +44,26 @@
                                class="form-control form-control-sm">
                     </div>
 
+                    {{-- فلتر الأجزاء المحفوظة --}}
+                    <div class="col-md-2">
+                        <label class="form-label">أجزاء محفوظة ≥</label>
+                        <input type="number" name="min_parts"
+                               value="{{ request('min_parts') }}"
+                               min="0" max="60"
+                               class="form-control form-control-sm">
+                    </div>
+
+                    {{-- فلتر الحالة المادية --}}
+                    <div class="col-md-2">
+                        <label class="form-label">الحالة المادية</label>
+                        <select name="financial_status" class="form-select form-select-sm">
+                            <option value="">الكل</option>
+                            <option value="ممتاز" {{ request('financial_status') == 'ممتاز' ? 'selected' : '' }}>ممتاز</option>
+                            <option value="متوسط" {{ request('financial_status') == 'متوسط' ? 'selected' : '' }}>متوسط</option>
+                            <option value="ضعيف" {{ request('financial_status') == 'ضعيف' ? 'selected' : '' }}>ضعيف</option>
+                        </select>
+                    </div>
+
                     {{-- زر تطبيق / إعادة ضبط --}}
                     <div class="col-md-2 text-end">
                         <button type="submit" class="btn btn-outline-primary btn-sm w-100">
@@ -67,9 +88,9 @@
                         <tr>
                             <th>#</th>
                             <th>الاسم</th>
-                            <th>رقم الهاتف</th>
-                            <th>العنوان</th>
-                            <th>تاريخ الميلاد</th>
+                            <th>الهاتف</th>
+                            <th>الأجزاء المحفوظة</th>
+                            <th>الحالة المادية</th>
                             <th>نسبة الحضور</th>
                             <th>أقصى تسميع</th>
                             <th class="text-center">إجراءات</th>
@@ -78,23 +99,46 @@
                         <tbody>
                         @forelse($students as $student)
                             <tr>
-                                <td>{{ $loop->iteration
-                                + ($students->currentPage()-1)*$students->perPage() }}</td>
+                                <td>{{ $loop->iteration + ($students->currentPage()-1)*$students->perPage() }}</td>
                                 <td>
-                                    {{ $student->first_name }} {{ $student->last_name }}
+                                    <div class="d-flex align-items-center">
+                                        @if($student->image)
+                                            <img src="{{ asset('storage/' . $student->image) }}" alt="صورة الطالب"
+                                                 class="rounded-circle me-2"
+                                                 style="width: 32px; height: 32px; object-fit: cover;">
+                                        @else
+                                            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-2"
+                                                 style="width: 32px; height: 32px;">
+                                                <i class="bi bi-person text-white"></i>
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <div>{{ $student->first_name }} {{ $student->last_name }}</div>
+                                            <small class="text-muted">{{ $student->school_name ?: '—' }}</small>
+                                        </div>
+                                    </div>
                                 </td>
-
+                                <td>{{ $student->phone ?: '—' }}</td>
                                 <td>
-                                    {{ $student->phone }}
-                                </td> <td>
-                                    {{ $student->address }}
+                                    <span class="badge bg-info">{{ $student->memorized_parts }} جزء</span>
                                 </td>
-
                                 <td>
-                                    {{ $student->birthdate }}
+                                    @if($student->financial_status)
+                                        <span class="badge bg-{{ $student->financial_status == 'ممتاز' ? 'success' : ($student->financial_status == 'متوسط' ? 'warning' : 'secondary') }}">
+                                            {{ $student->financial_status }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
                                 </td>
-
-                                <td>{{ $student->present_percentage }}%</td>
+                                <td>
+                                    <div class="progress" style="height: 6px; width: 80px;">
+                                        <div class="progress-bar bg-{{ $student->present_percentage >= 75 ? 'success' : ($student->present_percentage >= 50 ? 'warning' : 'danger') }}"
+                                             style="width: {{ $student->present_percentage }}%">
+                                        </div>
+                                    </div>
+                                    <small>{{ $student->present_percentage }}%</small>
+                                </td>
                                 <td>
                                     {{
                                       $student->exams
@@ -125,7 +169,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">
+                                <td colspan="8" class="text-center text-muted py-4">
                                     لا توجد نتائج
                                 </td>
                             </tr>

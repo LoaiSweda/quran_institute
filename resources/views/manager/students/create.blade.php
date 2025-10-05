@@ -98,7 +98,76 @@
                     <input type="text" name="father_name" value="{{ old('father_name') }}"
                            class="form-control form-control-sm">
                 </div>
+                {{-- عمل الأب --}}
+                <div class="col-md-6">
+                    <label class="form-label">عمل الأب</label>
+                    <input type="text" name="father_job" value="{{ old('father_job') }}"
+                           class="form-control form-control-sm">
+                </div>
 
+                {{-- عمل الأم --}}
+                <div class="col-md-6">
+                    <label class="form-label">عمل الأم</label>
+                    <input type="text" name="mother_job" value="{{ old('mother_job') }}"
+                           class="form-control form-control-sm">
+                </div>
+
+                {{-- اسم المدرسة --}}
+                <div class="col-md-6">
+                    <label class="form-label">اسم المدرسة</label>
+                    <input type="text" name="school_name" value="{{ old('school_name') }}"
+                           class="form-control form-control-sm">
+                </div>
+
+                {{-- الحالة المادية --}}
+                <div class="col-md-6">
+                    <label class="form-label">الحالة المادية</label>
+                    <select name="financial_status" class="form-select form-select-sm bg-white text-dark">
+                        <option value="">-- اختر الحالة المادية --</option>
+                        <option value="ممتاز" {{ old('financial_status') == 'ممتاز' ? 'selected' : '' }}>ممتاز</option>
+                        <option value="متوسط" {{ old('financial_status') == 'متوسط' ? 'selected' : '' }}>متوسط</option>
+                        <option value="ضعيف" {{ old('financial_status') == 'ضعيف' ? 'selected' : '' }}>ضعيف</option>
+                    </select>
+                </div>
+
+                {{-- الحالة الصحية --}}
+                <div class="col-12">
+                    <label class="form-label">الحالة الصحية</label>
+                    <textarea name="health_status" rows="2" class="form-control form-control-sm">{{ old('health_status') }}</textarea>
+                </div>
+
+                {{-- عدد الأجزاء المحفوظة --}}
+                <div class="col-md-4">
+                    <label class="form-label">عدد الأجزاء المحفوظة</label>
+                    <input type="number" name="memorized_parts" value="{{ old('memorized_parts', 0) }}"
+                           min="0" max="60"
+                           class="form-control form-control-sm">
+                </div>
+
+                {{-- هل لديه أخ مسجل --}}
+                <div class="col-md-4">
+                    <label class="form-label">هل لديه أخ مسجل في الدورة؟</label>
+                    <div class="mt-2">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="has_sibling" id="has_sibling_yes"
+                                   value="1" {{ old('has_sibling') == '1' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="has_sibling_yes">نعم</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="has_sibling" id="has_sibling_no"
+                                   value="0" {{ old('has_sibling') !== '1' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="has_sibling_no">لا</label>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- عدد الإخوة --}}
+                <div class="col-md-4">
+                    <label class="form-label">عدد الإخوة المسجلين</label>
+                    <input type="number" name="siblings_count" value="{{ old('siblings_count', 0) }}"
+                           min="0"
+                           class="form-control form-control-sm">
+                </div>
                 {{-- الوصي --}}
                 <div class="col-md-6">
                     <label class="form-label">الوصي</label>

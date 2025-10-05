@@ -7,20 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     protected $fillable = [
-        'image','first_name','last_name','guardian_id','qr','phone',
-        'address','birthdate','father_name','points','user_id','present_percentage'
+        'image', 'first_name', 'last_name', 'guardian_id', 'qr', 'phone',
+        'address', 'birthdate', 'father_name', 'points', 'user_id', 'present_percentage',
+        'father_job', 'mother_job', 'school_name', 'financial_status',
+        'health_status', 'memorized_parts', 'has_sibling', 'siblings_count'
     ];
+
     protected $casts = [
         'birthdate' => 'date:Y-m-d',
+        'has_sibling' => 'boolean',
     ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function guardian()
     {
         return $this->belongsTo(Guardian::class);
     }
+
     public function progress()
     {
         return $this->hasMany(StudentProgress::class);
@@ -34,14 +41,12 @@ class Student extends Model
     public function classes()
     {
         return $this->belongsToMany(
-            EducationClass::class, 
-            'users_classes',      
-            'user_id',             
-            'class_id',            
-            'user_id',             
-            'id'                   
+            EducationClass::class,
+            'users_classes',
+            'user_id',
+            'class_id',
+            'user_id',
+            'id'
         )->withTimestamps();
     }
-
 }
-

@@ -509,3 +509,26 @@ Route::middleware(['auth','role:admin'])
         Route::get('schedules', [SupervisorSchedulesController::class,'index'])
             ->name('schedules.index');
     });
+
+
+/////////////////////////////
+Route::middleware(['auth','role:teacher'])
+    ->get('/attendance/scan', [\App\Http\Controllers\Teacher\AttendanceScanController::class, 'show'])
+    ->name('attendance.scan.teacher');
+
+Route::middleware(['auth','role:teacher'])
+    ->post('/attendance/scan', [\App\Http\Controllers\Teacher\AttendanceScanController::class,'scan'])
+    ->name('attendance.scan.post');
+
+// إضافة مسار جديد لتسجيل الغياب
+Route::middleware(['auth','role:teacher'])
+    ->post('/attendance/mark-absent', [\App\Http\Controllers\Teacher\AttendanceScanController::class, 'markAbsent'])
+    ->name('attendance.mark.absent');
+
+Route::middleware(['auth','role:teacher'])
+    ->get('/attendance/status', [\App\Http\Controllers\Teacher\AttendanceScanController::class, 'attendanceStatus'])
+    ->name('attendance.status');
+
+Route::middleware(['auth','role:teacher'])
+    ->get('/attendance/session-status', [\App\Http\Controllers\Teacher\AttendanceScanController::class, 'sessionStatus'])
+    ->name('attendance.session-status');

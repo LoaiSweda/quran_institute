@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Manager;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 use App\Http\Controllers\Controller;
 use App\Models\EducationClass;
@@ -86,16 +87,24 @@ class StudentsController extends Controller
         $inst = $this->currentInstitute();
 
         $data = $request->validate([
-            'first_name'   => 'required|string|max:50',
-            'last_name'    => 'required|string|max:50',
-            'birthdate'    => 'nullable|date',
-            'phone'        => 'nullable|string',
-            'address'      => 'nullable|string',
-            'father_name'  => 'nullable|string',
-            'guardian_id'  => 'nullable|exists:guardians,id',
-            'email'        => ['required','email','unique:users,email'],
-            'password'     => 'required|string|min:6|confirmed',
-            'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // إضافة التحقق من الصورة
+            'first_name'        => 'required|string|max:50',
+            'last_name'         => 'required|string|max:50',
+            'birthdate'         => 'nullable|date',
+            'phone'             => 'nullable|string',
+            'address'           => 'nullable|string',
+            'father_name'       => 'nullable|string',
+            'father_job'        => 'nullable|string|max:100',
+            'mother_job'        => 'nullable|string|max:100',
+            'school_name'       => 'nullable|string|max:100',
+            'financial_status'  => 'nullable|in:ممتاز,متوسط,ضعيف',
+            'health_status'     => 'nullable|string|max:500',
+            'memorized_parts'   => 'nullable|integer|min:0|max:60',
+            'has_sibling'       => 'nullable|boolean',
+            'siblings_count'    => 'nullable|integer|min:0',
+            'guardian_id'       => 'nullable|exists:guardians,id',
+            'email'             => ['required','email','unique:users,email'],
+            'password'          => 'required|string|min:6|confirmed',
+            'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         $qr = Str::upper(Str::random(8));
@@ -127,12 +136,20 @@ class StudentsController extends Controller
                 'phone'              => $data['phone'] ?? null,
                 'address'            => $data['address'] ?? null,
                 'father_name'        => $data['father_name'] ?? null,
+                'father_job'         => $data['father_job'] ?? null,
+                'mother_job'         => $data['mother_job'] ?? null,
+                'school_name'        => $data['school_name'] ?? null,
+                'financial_status'   => $data['financial_status'] ?? null,
+                'health_status'      => $data['health_status'] ?? null,
+                'memorized_parts'    => $data['memorized_parts'] ?? 0,
+                'has_sibling'        => $data['has_sibling'] ?? false,
+                'siblings_count'     => $data['siblings_count'] ?? 0,
                 'guardian_id'        => $data['guardian_id'] ?? null,
                 'qr'                 => $qr,
                 'user_id'            => $user->id,
                 'points'             => 0,
                 'present_percentage' => 0,
-                'image'              => $imagePath, // حفظ مسار الصورة
+                'image'              => $imagePath,
             ]);
 
             $user->institutes()->sync([
@@ -143,7 +160,6 @@ class StudentsController extends Controller
         return redirect()->route('manager.students.index')
             ->with('success','تم إضافة الطالب وربطه بالمعهد الحالي فقط.');
     }
-
 
     public function show(Student $student)
     {
@@ -181,14 +197,22 @@ class StudentsController extends Controller
         abort_if(!$allowed, 403, 'لا تملك صلاحية على هذا الطالب.');
 
         $data = $request->validate([
-            'first_name'   => 'required|string|max:50',
-            'last_name'    => 'required|string|max:50',
-            'birthdate'    => 'nullable|date',
-            'phone'        => 'nullable|string',
-            'address'      => 'nullable|string',
-            'father_name'  => 'nullable|string',
-            'guardian_id'  => 'nullable|exists:guardians,id',
-            'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // إضافة التحقق من الصورة
+            'first_name'        => 'required|string|max:50',
+            'last_name'         => 'required|string|max:50',
+            'birthdate'         => 'nullable|date',
+            'phone'             => 'nullable|string',
+            'address'           => 'nullable|string',
+            'father_name'       => 'nullable|string',
+            'father_job'        => 'nullable|string|max:100',
+            'mother_job'        => 'nullable|string|max:100',
+            'school_name'       => 'nullable|string|max:100',
+            'financial_status'  => 'nullable|in:ممتاز,متوسط,ضعيف',
+            'health_status'     => 'nullable|string|max:500',
+            'memorized_parts'   => 'nullable|integer|min:0|max:60',
+            'has_sibling'       => 'nullable|boolean',
+            'siblings_count'    => 'nullable|integer|min:0',
+            'guardian_id'       => 'nullable|exists:guardians,id',
+            'image'             => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         // معالجة رفع الصورة
@@ -200,15 +224,14 @@ class StudentsController extends Controller
             $imagePath = $request->file('image')->store('students', 'public');
             $data['image'] = $imagePath;
         } else {
-            unset($data['image']); // عدم تحديث الصورة إذا لم يتم رفع جديدة
+            unset($data['image']);
         }
 
         $student->update($data);
 
         return redirect()->route('manager.students.show', $student)
             ->with('success','تم تحديث بيانات الطالب.');
-    }
-    public function destroy(Student $student)
+    }    public function destroy(Student $student)
     {
         $inst = $this->currentInstitute();
 
